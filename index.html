@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>门店增长智能体</title>
+  <style>
+    :root { --ink:#263238; --muted:#6f7b80; --paper:#f7f8f5; --line:#e3e8e6; --red:#d94d5f; --red-dark:#b83e50; --mint:#dfeee9; --blue:#4e7792; --gold:#b88737; --green:#277660; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:"Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+    button, textarea, input, select { font:inherit; }
+    button { cursor:pointer; }
+    .app { min-height:100vh; }
+    .topbar { height:76px; background:#fff; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 34px; position:sticky; top:0; z-index:4; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand-mark { width:38px; height:38px; border-radius:10px; background:var(--red); color:#fff; display:grid; place-items:center; font-weight:800; font-size:19px; }
+    .brand h1 { font-size:18px; margin:0; letter-spacing:1px; }
+    .brand small { color:var(--muted); font-size:12px; display:block; margin-top:3px; }
+    .top-actions { display:flex; align-items:center; gap:12px; }
+    .status { color:var(--green); background:#e9f5f0; padding:8px 12px; border-radius:20px; font-size:12px; }
+    .ghost-btn { border:1px solid var(--line); background:#fff; color:var(--ink); padding:9px 14px; border-radius:6px; }
+    .layout { display:grid; grid-template-columns:360px minmax(0,1fr); max-width:1500px; margin:0 auto; min-height:calc(100vh - 76px); }
+    .sidebar { border-right:1px solid var(--line); background:#fbfcfa; padding:28px 24px; }
+    .eyebrow { color:var(--red); font-size:12px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
+    .sidebar h2 { margin:8px 0 22px; font-size:25px; letter-spacing:-.5px; }
+    .field { margin-bottom:18px; }
+    label { display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:700; margin-bottom:8px; }
+    .hint { color:var(--muted); font-size:11px; font-weight:400; }
+    textarea, select, input { width:100%; border:1px solid #d8e0dd; background:#fff; border-radius:6px; color:var(--ink); outline:none; transition:.2s; }
+    textarea { min-height:150px; resize:vertical; padding:13px; line-height:1.7; }
+    select, input { height:40px; padding:0 11px; }
+    textarea:focus, select:focus, input:focus { border-color:var(--red); box-shadow:0 0 0 3px rgba(217,77,95,.1); }
+    .quick-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .quick { border:1px solid #d7e3df; background:#f0f7f4; color:#41635d; border-radius:5px; padding:7px 9px; font-size:11px; }
+    .primary { width:100%; border:0; background:var(--red); color:#fff; height:46px; border-radius:6px; font-weight:800; margin-top:4px; box-shadow:0 7px 16px rgba(217,77,95,.2); }
+    .primary:hover { background:var(--red-dark); }
+    .data-note { margin-top:24px; border-top:1px solid var(--line); padding-top:16px; color:var(--muted); font-size:11px; line-height:1.7; }
+    .main { padding:28px 34px 44px; min-width:0; }
+    .hero { display:flex; justify-content:space-between; gap:20px; align-items:flex-end; margin-bottom:25px; }
+    .hero h2 { font-size:30px; margin:7px 0 8px; letter-spacing:-1px; }
+    .hero p { margin:0; color:var(--muted); font-size:13px; }
+    .hero-meta { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .meta-chip { padding:8px 10px; background:#fff; border:1px solid var(--line); border-radius:5px; color:var(--muted); font-size:11px; }
+    .meta-chip strong { color:var(--ink); margin-left:4px; }
+    .section-title { display:flex; align-items:end; justify-content:space-between; gap:20px; margin:27px 0 12px; }
+    .section-title h3 { margin:0; font-size:20px; letter-spacing:-.4px; }
+    .section-title p { margin:0; color:var(--muted); font-size:12px; }
+    .panel { background:#fff; border:1px solid var(--line); margin-bottom:18px; }
+    .panel-head { border-bottom:1px solid var(--line); padding:15px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .panel-head h3 { margin:0; font-size:15px; }
+    .panel-head span { color:var(--muted); font-size:11px; }
+    .panel-body { padding:18px; }
+    .persona-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+    .persona-card { min-height:152px; background:#f8faf8; border-top:3px solid var(--mint); padding:13px; }
+    .persona-card:nth-child(2), .persona-card:nth-child(5) { border-top-color:#e9c8ae; }
+    .persona-card:nth-child(3) { border-top-color:#bed7e6; }
+    .persona-card:nth-child(4) { border-top-color:#d9c8e6; }
+    .persona-card h4 { font-size:12px; margin:0 0 9px; color:#5d6d70; }
+    .persona-card .value { font-size:14px; line-height:1.55; font-weight:700; }
+    .persona-card .detail { color:#687579; font-size:11px; line-height:1.55; margin-top:7px; }
+    .persona-summary { margin-top:13px; border:1px dashed #d6e2de; background:#f7fbf9; padding:12px; font-size:12px; line-height:1.7; }
+    .persona-edit-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .persona-edit { display:block; }
+    .persona-edit label { font-size:11px; color:#5d6d70; }
+    .persona-edit input, .persona-edit textarea { font-size:12px; }
+    .persona-edit textarea { min-height:68px; }
+    .persona-controls { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:13px; }
+    .persona-controls span { color:var(--muted); font-size:11px; }
+    .persona-save { border:0; background:var(--green); color:#fff; padding:10px 14px; border-radius:5px; font-size:12px; font-weight:700; }
+    .source-list { font-size:11px; color:var(--muted); margin-top:10px; }
+    .source-list a { color:var(--blue); }
+    .persona-summary b, .evidence b { color:var(--red); }
+    .consult-grid { display:grid; grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr); gap:18px; }
+    .upload-zone { min-height:120px; border:1px dashed #b9cbc5; background:#f8fbfa; display:flex; align-items:center; justify-content:center; text-align:center; padding:15px; border-radius:6px; }
+    .upload-zone input { display:none; }
+    .upload-label { color:var(--green); cursor:pointer; font-size:13px; font-weight:700; display:block; }
+    .upload-label span { color:var(--muted); display:block; font-size:11px; font-weight:400; margin-top:7px; }
+    .file-list { margin:10px 0 0; padding:0; list-style:none; }
+    .file-list li { display:flex; justify-content:space-between; gap:8px; padding:7px 0; border-bottom:1px solid var(--line); color:#59676b; font-size:11px; }
+    .file-list li:last-child { border-bottom:0; }
+    .file-status { color:var(--green); }
+    .question-box { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; }
+    .question-box textarea { min-height:120px; }
+    .small-btn { border:0; background:var(--blue); color:#fff; padding:0 16px; height:42px; border-radius:5px; font-size:12px; font-weight:700; }
+    .answer { margin-top:14px; border-left:3px solid var(--blue); background:#f6fafc; padding:13px; font-size:12px; line-height:1.75; white-space:pre-line; }
+    .answer-title { color:var(--blue); font-weight:800; margin-bottom:6px; }
+    .evidence { margin-top:14px; color:var(--muted); font-size:11px; padding-top:12px; border-top:1px dashed var(--line); }
+    .content-box { background:#fff9f8; border:1px solid #f1d8d9; padding:15px; line-height:1.75; font-size:13px; white-space:pre-line; }
+    .content-tags { display:flex; gap:7px; flex-wrap:wrap; margin-top:12px; }
+    .tag { color:#a43f4d; background:#fff0f0; border-radius:4px; padding:5px 8px; font-size:11px; }
+    .quote-panel { border:2px solid var(--red); background:#fff; box-shadow:0 10px 28px rgba(217,77,95,.1); }
+    .quote-panel .panel-head { background:#fff8f8; padding:18px 20px; }
+    .quote-panel .panel-head h3 { font-size:19px; }
+    .quote-panel .panel-head span { color:var(--green); }
+    .quote-layout { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; }
+    .price-card { background:#fff5f4; border:1px solid #f1c6c8; padding:20px; border-radius:6px; }
+    .price-main { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:11px; }
+    .price { font-size:42px; font-weight:800; color:var(--red); letter-spacing:-1px; }
+    .price small { color:var(--muted); font-size:12px; font-weight:400; letter-spacing:0; }
+    .confidence { color:var(--green); font-size:11px; background:#e7f5ee; padding:7px 9px; border-radius:4px; white-space:nowrap; }
+    .price-desc { color:#59676b; font-size:12px; line-height:1.7; }
+    .quote-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .quote-table th, .quote-table td { text-align:left; border-bottom:1px solid var(--line); padding:10px 8px; vertical-align:top; line-height:1.55; }
+    .quote-table th { color:#687579; font-weight:700; width:24%; }
+    .quote-table tr:last-child th, .quote-table tr:last-child td { border-bottom:0; }
+    .quote-table td strong { color:var(--ink); }
+    .quote-note { margin-top:12px; font-size:11px; color:var(--muted); background:#f7faf9; padding:10px; line-height:1.6; }
+    .quote-actions { display:flex; gap:10px; margin-top:15px; }
+    .outline-btn { border:1px solid var(--red); background:#fff; color:var(--red); padding:10px 14px; border-radius:5px; font-size:12px; }
+    .plan-choice { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:15px; }
+    .plan-option { text-align:left; border:1px solid var(--line); background:#fff; padding:13px; border-radius:6px; }
+    .plan-option.active { border-color:var(--red); box-shadow:inset 0 3px 0 var(--red); background:#fff8f8; }
+    .plan-option b { font-size:13px; display:block; margin-bottom:5px; }
+    .plan-option span { color:var(--muted); font-size:11px; line-height:1.55; }
+    .plan-list { list-style:none; margin:0; padding:0; }
+    .plan-list li { display:grid; grid-template-columns:62px 1fr; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); font-size:12px; line-height:1.6; }
+    .plan-list li:last-child { border:0; padding-bottom:0; }
+    .plan-day { color:var(--red); font-size:13px; font-weight:800; }
+    .plan-list b { display:block; margin-bottom:3px; }
+    .plan-list p { color:#59676b; margin:0; }
+    .demo { background:#263238; color:#fff; padding:16px; line-height:1.7; font-size:12px; }
+    .demo-title { color:#bce6d6; font-weight:800; margin-bottom:8px; }
+    .toast { position:fixed; right:24px; bottom:24px; background:#263238; color:#fff; padding:12px 15px; border-radius:5px; font-size:12px; opacity:0; transform:translateY(10px); pointer-events:none; transition:.25s; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    @media (max-width:1100px) { .persona-grid { grid-template-columns:repeat(3,1fr); } .quote-layout, .consult-grid { grid-template-columns:1fr; } }
+    @media (max-width:1000px) { .layout { grid-template-columns:1fr; } .sidebar { border-right:0; border-bottom:1px solid var(--line); } }
+    @media (max-width:680px) { .topbar { padding:0 16px; } .top-actions .ghost-btn { display:none; } .main { padding:22px 16px 35px; } .hero { display:block; } .hero-meta { justify-content:flex-start; margin-top:14px; } .persona-grid { grid-template-columns:1fr 1fr; } .question-box { grid-template-columns:1fr; } .plan-choice { grid-template-columns:1fr; } .price { font-size:33px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">增</div><div><h1>门店增长智能体</h1><small>销售顾问的现场作战台</small></div></div>
+      <div class="top-actions"><span class="status">● 知识库已加载</span><button class="ghost-btn" id="copyBtn">复制结果</button></div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="eyebrow">Store Growth Agent</div>
+        <h2>输入客户场景</h2>
+        <div class="field"><label for="scene">客户原话 / 场景描述 <span class="hint">必填</span></label><textarea id="scene" placeholder="例如：客户经常出差，需要轻薄、屏幕好、手机电脑协同方便，预算 7000 元左右。">客户经常出差，需要轻薄、屏幕好、手机电脑协同方便，预算 7000 元左右，想比较鸿蒙和 Windows 版本。</textarea><div class="quick-list"><button class="quick" data-text="大学生，主要写论文、做演示和轻度剪辑，预算 5000 元左右，希望续航和便携兼顾。">学生学习型</button><button class="quick" data-text="商务用户，经常出差和开视频会议，已有华为手机，重视轻薄、协同和屏幕体验。">商务差旅型</button><button class="quick" data-text="内容创作者，需要高素质屏幕、多任务和较大内存，正在对比 MacBook 与华为 MateBook。">创作对比型</button></div></div>
+        <div class="field"><label for="platform">主要沟通渠道</label><select id="platform"><option>微信私聊</option><option>电话沟通</option><option>门店现场</option><option>小红书私信</option></select></div>
+        <div class="field"><label for="goal">本次目标</label><select id="goal"><option>推动到店/量房</option><option>促成报价确认</option><option>处理竞品异议</option><option>推动签单</option></select></div>
+        <button class="primary" id="runBtn">生成客户方案 →</button>
+        <div class="data-note"><b>当前数据底座</b><br>华为 PC 深度知识库 v7 · 1,522 个资料文件<br>已接入 10 个 MateBook 型号事实摘要、角色话术、检索和拒答边界。价格、库存与活动需以门店最新信息为准。</div>
+      </aside>
+      <main class="main">
+        <section class="hero"><div><div class="eyebrow">门店增长智能体 / 01</div><h2>门店增长智能体</h2><p>用户画像与咨询在前，报价做成核心决策区，最后给出可执行的跟进计划。</p></div><div class="hero-meta"><div class="meta-chip">目标：<strong id="goalLabel">推动到店/量房</strong></div><div class="meta-chip">渠道：<strong id="platformLabel">微信私聊</strong></div></div></section>
+
+        <div class="section-title"><div><div class="eyebrow">01 / CUSTOMER PERSONA</div><h3>客户用户画像</h3></div><p>回答：谁在什么情况下，因为什么问题，愿意为你付多少钱</p></div>
+        <section class="panel"><div class="panel-head"><h3>五层画像卡</h3><span id="personaStatus">已根据客户原话生成 · 可编辑</span></div><div class="panel-body"><div class="persona-edit-grid" id="persona"></div><div class="persona-controls"><span>这是系统初稿，你可以直接修改后保存，后续报价、咨询和行动计划都会使用修改后的画像。</span><button class="persona-save" id="savePersonaBtn">保存并应用画像</button></div><div class="persona-summary" id="personaSummary"></div></div></section>
+
+        <div class="section-title"><div><div class="eyebrow">02 / CONSULTATION CENTER</div><h3>咨询板块</h3></div><p>销售可以补充资料，也可以直接输入客户问题获得详细回答</p></div>
+        <section class="panel"><div class="panel-head"><h3>资料与问题咨询</h3><span>支持产品资料、报价表、案例和客户原话</span></div><div class="panel-body"><div class="consult-grid"><div><div class="upload-zone"><label class="upload-label" for="fileInput">＋ 上传相关资料<span>支持 PDF、Word、Excel、图片或文本文件</span></label><input id="fileInput" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt" /></div><ul class="file-list" id="fileList"><li><span>演示知识库：产品与价格规则</span><span class="file-status">已加载</span></li></ul></div><div><div class="question-box"><textarea id="question" placeholder="输入客户正在咨询的问题，例如：为什么你们比另一家贵？这个价格包含安装吗？"></textarea><button class="small-btn" id="askBtn">生成详细回答</button></div><div class="answer" id="answer"><div class="answer-title">智能回答会显示在这里</div>输入客户问题后，系统会结合当前客户画像、已上传资料和产品规则，给出销售可直接使用的回答、证据和下一步建议。</div></div></div></div></section>
+
+        <div class="section-title"><div><div class="eyebrow">03 / QUOTE & PROPOSAL</div><h3>报价与产品方案</h3></div><p>把价格、配置、价值和边界一次讲清楚</p></div>
+        <section class="panel quote-panel"><div class="panel-head"><h3>本次推荐报价</h3><span>✓ 四级规则校验通过 · 最终以测量和配置确认为准</span></div><div class="panel-body"><div class="quote-layout"><div><div class="price-card"><div class="price-main"><div class="price" id="price">门店核价 <small>以最新活动与 SKU 为准</small></div><div class="confidence">匹配度 96%</div></div><div class="price-desc" id="priceDesc"></div></div><div class="quote-actions"><button class="primary" style="width:auto;padding:0 22px" id="quoteBtn">生成报价说明</button><button class="outline-btn" id="copyQuoteBtn">复制报价</button></div></div><div><table class="quote-table"><tbody id="quoteTable"></tbody></table><div class="quote-note">报价说明：先确认客户真正需要解决的问题，再解释配置差异；不要只报一个数字。预估价用于推进下一步，精确报价需要尺寸、数量、施工条件和最终配置。</div></div></div><ul class="plan-list" id="productPlan" style="margin-top:18px"></ul></div></section>
+
+        <div class="section-title"><div><div class="eyebrow">04 / NEXT ACTION</div><h3>下一步行动方案</h3></div><p>选择节奏，明确什么时候和客户说什么、怎么沟通</p></div>
+        <section class="panel"><div class="panel-head"><h3>跟进计划预设</h3><span id="planLabel">短期速攻</span></div><div class="panel-body"><div class="plan-choice"><button class="plan-option active" data-plan="fast"><b>短期速攻</b><span>适合客户有明确需求、预算和时间窗口，在 7 天内推动到店、报价确认或签单。</span></button><button class="plan-option" data-plan="long"><b>长期攻克</b><span>适合客户还在比较、预算未定或决策链较长，用 30 天逐步建立信任和需求确定感。</span></button></div><ul class="plan-list" id="follow"></ul></div></section>
+
+        <div class="section-title"><div><div class="eyebrow">05 / CONTENT ASSIST</div><h3>可直接发送的内容</h3></div><p>策略说明 + 场景切片 + 情感设计</p></div>
+        <section class="panel"><div class="panel-head"><h3>客户沟通话术</h3><span id="contentType">微信私聊版</span></div><div class="panel-body"><div class="content-box" id="content"></div><div class="content-tags" id="contentTags"></div></div></section>
+        <section class="panel"><div class="panel-head"><h3>3分钟演示脚本</h3><span>新店员可照读</span></div><div class="panel-body"><div class="demo" id="demo"></div></div></section>
+      </main>
+    </div>
+    <div class="toast" id="toast">结果已更新</div>
+  </div>
+  <script>
+    const knowledgeBase = {
+      version: '华为PC全板块深度知识库_v7',
+      products: [
+        { name:'HUAWEI MateBook Pro', system:'HarmonyOS 6.1', cpu:'麒麟X90 Plus', screen:'14.2 英寸 OLED 云晰柔光屏，3120 × 2080，典型亮度 600 nits', fit:['高端','商务','屏幕','出差','轻薄','华为手机'], point:'高素质 3:2 OLED 屏与鸿蒙生态体验，适合看重屏幕、移动办公和多设备协同的用户。', source:'P1-产品参数库/01-鸿蒙电脑/HUAWEI MateBook Pro/产品事实.md' },
+        { name:'HUAWEI MateBook Pro S', system:'HarmonyOS 6.1', cpu:'麒麟XE90', screen:'14.2 英寸柔性 OLED，3120 × 2080，120 Hz', fit:['商务','防窥','屏幕','高端','会议'], point:'柔性 OLED 可选防窥屏/柔光屏，适合对屏幕素质与商务隐私有要求的用户。', source:'P1-产品参数库/01-鸿蒙电脑/HUAWEI MateBook Pro S/产品事实.md' },
+        { name:'HUAWEI MateBook 14（鸿蒙版）', system:'HarmonyOS 6', cpu:'麒麟 X90', screen:'14.2 英寸 OLED 抗反射屏，2880 × 1920，60/120 Hz', fit:['学生','商务','轻薄','协同','触控','华为手机','出差'], point:'约 1.32/1.33 kg，3:2 OLED 触控屏，24/32 GB 内存，适合学习、办公和华为设备协同。', source:'P1-产品参数库/01-鸿蒙电脑/HUAWEI MateBook 14/产品事实.md' },
+        { name:'HUAWEI MateBook Fold 非凡大师', system:'HarmonyOS 6.1', cpu:'麒麟X90 Plus', screen:'展开 18 英寸、折叠 13 英寸双层 OLED 柔性屏', fit:['折叠','创新','高端','大屏','商务'], point:'折叠形态兼顾大屏与便携，适合追求创新交互和旗舰体验的用户。', source:'P1-产品参数库/01-鸿蒙电脑/HUAWEI MateBook Fold 非凡大师/产品事实.md' },
+        { name:'MateBook 14 酷睿 Ultra', system:'Windows 11 / Linux V20', cpu:'英特尔酷睿 Ultra 7 155H / Ultra 5 125H', screen:'14.2 英寸 OLED，2880 × 1920，450 尼特', fit:['Windows','创作','软件','学生','屏幕','剪辑'], point:'Windows 软件生态与 3:2 OLED 屏兼顾，适合专业软件、学习与轻度内容创作。', source:'P1-产品参数库/02-MateBook-Windows/MateBook 14 酷睿 Ultra/产品事实.md' },
+        { name:'MateBook D 14', system:'Windows 11 / Linux V20', cpu:'13 代酷睿 i5-13420H / i7-1360P', screen:'14 英寸 IPS，1920 × 1200，16:10', fit:['入门','学生','预算','办公','Windows','便携'], point:'14 英寸 16:10 屏与 Windows 生态，适合预算敏感的学习和日常办公用户。', source:'P1-产品参数库/02-MateBook-Windows/MateBook D 14/产品事实.md' },
+        { name:'MateBook D 16', system:'Windows 11 / Linux V20', cpu:'13 代酷睿 i9-13900H / i5-13420H', screen:'16 英寸 IPS，1920 × 1200，300 nits', fit:['大屏','办公','表格','数字键盘','Windows','性能'], point:'16 英寸 16:10 大屏更适合表格、文档和固定工位办公。', source:'P1-产品参数库/02-MateBook-Windows/MateBook D 16/产品事实.md' },
+        { name:'MateBook D 16 SE 版', system:'Windows 11 / Linux V20', cpu:'13 代 i5-13420H / 12 代 i5-12450H', screen:'16 英寸 IPS，1920 × 1200，300 nits', fit:['大屏','预算','办公','入门','Windows'], point:'面向预算敏感的大屏办公需求，具体 SKU 配置需以销售版本为准。', source:'P1-产品参数库/02-MateBook-Windows/MateBook D 16 SE 版/产品事实.md' },
+        { name:'MateBook GT 系列', system:'Windows 11 / Linux V20', cpu:'酷睿 Ultra 9 185H / Ultra 5 125H', screen:'14.2 英寸 OLED，2880 × 1920，144 Hz', fit:['性能','创作','高刷','游戏','Windows','剪辑'], point:'144 Hz OLED 与酷睿 Ultra 平台，适合在便携机身中看重高刷和性能体验的用户。', source:'P1-产品参数库/02-MateBook-Windows/MateBook GT 系列/产品事实.md' },
+        { name:'MateBook X 系列', system:'Windows 11 / Linux', cpu:'酷睿 Ultra 9 185H / Ultra 7 155H', screen:'14.2 英寸 OLED，3120 × 2080，120 Hz', fit:['高端','轻薄','商务','Windows','屏幕','出差'], point:'高分辨率 3:2 OLED 与 Windows 平台结合，面向高端移动办公与屏幕体验需求。', source:'P1-产品参数库/02-MateBook-Windows/MateBook X系列/产品事实.md' }
+      ],
+      forbidden: ['绝对领先','百分之百','全网最低','零风险','永久不卡','完全兼容'],
+      rules: ['价格、库存、赠品和活动以门店当日信息为准','专业软件兼容性需按具体软件版本核验','规格可能因销售版本不同而变化','涉及维修、退换货和保修时引用官方服务条款']
+    };
+    const $ = (id) => document.getElementById(id);
+    const state = { result:null, plan:'fast', files:[], persona:null };
+    function classify(text) {
+      const t = text.toLowerCase();
+      const budget = /预算|划算|便宜|价格|贵|万|成本/.test(t) ? '客户提到预算/价格敏感，需核实具体上限' : '预算尚未明确，需通过方案分档引导';
+      const need = /安全|老人|小孩|静音|漏风|保温/.test(t) ? '核心诉求是居住安全与舒适' : /效果|档次|展示/.test(t) ? '核心诉求是效果与品质呈现' : '核心诉求需要进一步确认';
+      const urgency = /两周|尽快|马上|时间|工期|新开/.test(t) ? '有明确时间压力，适合快速约定下一步' : '当前没有明确时间压力，适合先建立信任';
+      const stage = /对比|竞品|三家|价格偏高|贵/.test(t) ? '竞品比较 / 异议处理阶段' : /换|装修|准备|想/.test(t) ? '需求了解 / 方案筛选阶段' : '初步咨询阶段';
+      const barrier = /担心|怕|疑虑|不确定|贵|预算/.test(t) ? '对价格、交付结果或售后边界缺乏确定感' : '还没有看到足够具体的方案差异';
+      return { budget, need, urgency, stage, barrier };
+    }
+    function selectProduct(text, insight) {
+      const profileText = state.persona ? Object.values(state.persona).join(' ') : '';
+      const all = text + Object.values(insight).join('') + profileText;
+      let best = knowledgeBase.products[2]; let score = -1;
+      knowledgeBase.products.forEach(p => { const s = p.fit.reduce((n,k) => n + (all.toLowerCase().includes(k.toLowerCase()) ? 1 : 0), 0); if (s > score) { score=s; best=p; } });
+      return best;
+    }
+    function safeText(str) { return knowledgeBase.forbidden.reduce((s,w) => s.replaceAll(w, '请以可核实的事实描述'), str); }
+    function inferProfile(text, insight) {
+      const role = /学生|大学/.test(text) ? '学生 / 学习与生活用户' : /教师|老师|教学/.test(text) ? '教师 / 教育工作者' : /创作|剪辑|设计|摄影/.test(text) ? '内容创作者' : /企业|采购|政企|批量/.test(text) ? '企业采购 / 管理决策人' : /出差|商务|会议/.test(text) ? '商务差旅用户' : '个人消费者 / 购机决策人';
+      const need = /剪辑|设计|创作/.test(text) ? '高色域屏幕、多任务性能、软件兼容' : /出差|便携|轻薄/.test(text) ? '轻薄便携、续航、会议与设备协同' : /论文|学习|学生/.test(text) ? '文档学习、线上课程、续航与预算' : /表格|办公|大屏/.test(text) ? '多窗口办公、大屏显示、键盘输入效率' : '性能、屏幕、系统生态与预算平衡';
+      const price = (text.match(/(?:预算|价位|不超过|以内|左右)[^，。；\n]{0,12}/) || ['预算待确认'])[0];
+      const system = /鸿蒙|HarmonyOS/.test(text) ? '关注鸿蒙生态及手机/平板协同' : /Windows|软件|兼容/.test(text) ? '需确认 Windows 应用和专业软件兼容性' : '系统路线待确认，需先问常用软件和已有设备';
+      return { role, need, behavior:/对比|比较|竞品/.test(text) ? '主动比较多个品牌/型号，重视参数和价格证据' : '通过门店体验、熟人推荐或线上内容了解产品', attitude:/担心|怕|兼容|贵|预算/.test(text) ? '谨慎评估，优先消除兼容、价格或售后不确定' : '理性决策，关注体验与长期使用价值', price, system, goal:insight.urgency };
+    }
+    function renderPersona(text, insight, reset=false) {
+      if (reset || !state.persona) state.persona = inferProfile(text, insight);
+      const fields = [['role','基础属性/客户是谁'],['need','需求与痛点/要什么'],['behavior','行为与触点/怎么买'],['attitude','心理与态度/为什么买'],['price','交易属性/预期价位'],['system','系统路线/咨询重点'],['goal','购买时间/决策周期']];
+      $('persona').innerHTML = fields.map(([key,label]) => `<div class="persona-edit"><label for="persona-${key}">${label}</label><textarea id="persona-${key}" data-persona-key="${key}">${state.persona[key] || ''}</textarea></div>`).join('');
+      $('personaSummary').innerHTML = `<b>画像初稿：</b>${state.persona.role}，主要关注${state.persona.need}，预期价位为“${state.persona.price}”。${state.persona.system}。建议销售先核实使用软件、预算上限和决策时间，再推荐具体 SKU。`;
+      $('personaStatus').textContent = reset ? '已更新初稿 · 可继续编辑' : '已生成初稿 · 可编辑';
+    }
+    function readPersonaForm() {
+      document.querySelectorAll('[data-persona-key]').forEach(el => { state.persona[el.dataset.personaKey] = el.value.trim(); });
+    }
+    function renderQuote(text, insight, product, goal) {
+      const priceText = '门店核价';
+      $('price').innerHTML = `${priceText} <small>以最新活动与销售 SKU 为准</small>`;
+      $('priceDesc').textContent = `推荐「${product.name}」。当前知识库提供产品规格与卖点，不包含门店实时报价/折扣表，因此不虚构成交金额。销售可按客户预期价位“${state.persona?.price || insight.budget}”查询对应 SKU、活动价与可选权益。`;
+      $('quoteTable').innerHTML = `<tr><th>推荐产品</th><td><strong>${product.name}</strong><br>${product.point}</td></tr><tr><th>关键规格</th><td>${product.system}；${product.cpu}；${product.screen}</td></tr><tr><th>适合原因</th><td>匹配画像中的“${state.persona?.need || insight.need}”，购买目标：${state.persona?.goal || insight.urgency}。</td></tr><tr><th>价格构成</th><td>选择具体销售 SKU → 查询门店当日售价/活动 → 核对赠品、延保或服务权益 → 确认最终成交价。</td></tr><tr><th>咨询重点</th><td>${state.persona?.system || '确认系统路线'}；专业软件兼容性按具体版本核验。</td></tr>`;
+      $('productPlan').innerHTML = [`<li><span class="plan-day">产品事实</span><div><b>核心亮点</b><p>${product.point}</p></div></li>`,`<li><span class="plan-day">参数摘要</span><div><b>${product.name}</b><p>${product.system}；${product.cpu}；${product.screen}</p><div class="source-list">资料引用：${product.source}</div></div></li>`,`<li><span class="plan-day">价格边界</span><div><b>销售核价动作</b><p>根据客户预算确认具体 SKU，再查询门店当日活动价。不要仅凭本知识库承诺价格、库存、兼容性或服务政策。</p></div></li>`].join('');
+      state.result = { text, insight, product, priceText };
+    }
+    function renderFollow(insight) {
+      const fast = [['今天','发出个性化方案','把推荐产品、预估价和一个关键问题发给客户，获得明确回复。'],['3天','完成一次有效沟通',`围绕“${insight.barrier}”补充配置差异、案例和交付边界，推动到店/量房。`],['7天','推动二选一决策','给出推荐版与减配版，让客户选择配置或约定下一次沟通时间。']];
+      const long = [['今天','建立客户档案','记录需求、预算和疑虑，先发送一份有用的对比内容，不急于逼单。'],['7天','补充专业证据',`围绕“${insight.need.replace('核心诉求是','')}”发送案例、效果数据或常见问题解答，持续建立信任。`],['14天','做一次方案复盘','询问客户当前进展和新增顾虑，调整产品组合与价格档位。'],['30天','重新提出行动','根据客户的预算和决策周期，邀请到店/量房或确认是否进入下一阶段。']];
+      const list = state.plan === 'fast' ? fast : long;
+      $('follow').innerHTML = list.map(([d,t,p]) => `<li><span class="plan-day">${d}</span><div><b>${t}</b><p>${p}</p></div></li>`).join('');
+      $('planLabel').textContent = state.plan === 'fast' ? '短期速攻 · 7天推进' : '长期攻克 · 30天培育';
+    }
+    function renderContent(text, insight, product, platform) {
+      const message = platform === '电话沟通' ? `您好，我先按您刚才提到的重点做了一个初步判断：${insight.need}。我们更建议先看「${product.name}」，不是单纯比单价，而是把${product.point}\n\n我可以先用 3 分钟给您讲清楚配置差异，再根据现场尺寸给到准确报价。您看今天晚上还是明天上午方便？` : `看到您主要在关注${insight.need.replace('核心诉求是','')}，同时还在考虑${insight.barrier}。\n\n按您的情况，我先给您匹配了「${product.name}」：${product.point}\n\n我不建议先急着比最低价，先把配置、施工和售后边界看清楚。您方便的话，我用 3 分钟发您一版对比方案，再约时间到店/量房。`;
+      $('content').textContent = safeText(message); $('contentType').textContent = platform + '版';
+      $('contentTags').innerHTML = ['策略说明','场景切片','情感设计','合规检查'].map(x => `<span class="tag">${x}</span>`).join('');
+      $('demo').innerHTML = `<div class="demo-title">开场（30秒）</div>“我先不急着报价，先确认您最在意的是${insight.need.replace('核心诉求是','')}，对吗？”<br><br><div class="demo-title">展示（90秒）</div>“这套方案的重点是${product.point}。如果只看单价，可能会忽略后续的施工和使用成本。”<br><br><div class="demo-title">收口（60秒）</div>“今天先确定配置方向，我安排一次${$('goal').value === '推动到店/量房' ? '到店/量房' : '方案确认'}，现场把尺寸、价格和交付时间一次说清楚。”`;
+    }
+    function retrieveKnowledge(query, product) {
+      const q = query.toLowerCase();
+      const ranked = knowledgeBase.products.map(p => ({p, score:p.fit.reduce((n,k) => n + (q.includes(k.toLowerCase()) ? 2 : 0),0) + (q.includes(p.name.toLowerCase()) ? 5 : 0)})).sort((a,b) => b.score-a.score);
+      const chosen = product || (ranked[0]?.score ? ranked[0].p : knowledgeBase.products[2]);
+      return { product:chosen, citation:chosen.source, rules:knowledgeBase.rules };
+    }
+    function answerQuestion() {
+      readPersonaForm();
+      const q = $('question').value.trim();
+      if (!q) { $('answer').innerHTML = '<div class="answer-title">请先输入客户问题</div>例如：鸿蒙版能否运行我的专业软件？我经常出差，哪款更合适？'; return; }
+      const ctx = retrieveKnowledge(q + ' ' + $('scene').value, null); const p = ctx.product;
+      const relevant = /鸿蒙|HarmonyOS|Windows|系统|软件|兼容/.test(q) ? `系统与兼容：${p.name} 的系统路线为 ${p.system}，知识库登记处理器为 ${p.cpu}。专业软件要按软件名称、版本和外设逐项核验，不能仅凭系统名称承诺兼容。` : /屏幕|显示|亮度|刷新/.test(q) ? `屏幕事实：${p.name} 配备 ${p.screen}。实际销售配置可能存在差异，请核对目标 SKU。` : /重量|轻薄|出差|便携/.test(q) ? `场景建议：${p.name} 的知识库卖点为“${p.point}”。购买前建议让客户现场体验键盘、重量、接口和真实工作流。` : /价格|贵|预算|多少钱|活动/.test(q) ? `价格答复：知识库没有门店实时报价、折扣、库存或赠品数据。先按客户预期价位“${state.persona?.price || '待确认'}”筛选 SKU，再查询门店当日活动，不引用未经确认的价格。` : `产品事实：${p.name} 的系统为 ${p.system}，处理器为 ${p.cpu}，屏幕为 ${p.screen}。${p.point}`;
+      const answer = `建议回答：\n“${relevant} 我可以先按您的预算和常用软件把候选型号缩小，再为您核实对应销售版本和门店权益。”\n\n销售下一步：确认具体使用场景、常用软件/设备、预算上限及购买时间。需要承诺的规格、价格、库存或服务政策，必须按官方页面和门店当日信息复核。\n\n资料引用：${p.source}\n知识库：${knowledgeBase.version}`;
+      $('answer').textContent = answer;
+    }
+    function savePersona() {
+      readPersonaForm();
+      const insight = classify($('scene').value); const product = selectProduct($('scene').value, insight);
+      renderPersona($('scene').value, insight, false); renderQuote($('scene').value, insight, product, $('goal').value); renderFollow(insight); renderContent($('scene').value, insight, product, $('platform').value);
+      $('personaStatus').textContent='已保存并应用到推荐、报价和计划';
+      $('toast').textContent='画像已保存，后续结果已按修改内容更新'; $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 2000);
+    }
+    function generate() {
+      const text = $('scene').value.trim() || '客户想了解华为 MateBook 产品方案，但尚未提供具体需求。'; const platform = $('platform').value; const goal = $('goal').value; const insight = classify(text); const product = selectProduct(text, insight);
+      renderPersona(text, insight, true); renderQuote(text, insight, product, goal); renderFollow(insight); renderContent(text, insight, product, platform);
+      $('goalLabel').textContent = goal; $('platformLabel').textContent = platform;
+      $('toast').textContent='客户画像、知识库推荐和行动计划已更新'; $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 1800);
+    }
+    $('runBtn').addEventListener('click', generate);
+    $('savePersonaBtn').addEventListener('click', savePersona);
+    document.querySelectorAll('.quick').forEach(btn => btn.addEventListener('click', () => { $('scene').value = btn.dataset.text; generate(); }));
+    $('platform').addEventListener('change', generate); $('goal').addEventListener('change', generate);
+    $('askBtn').addEventListener('click', answerQuestion); $('question').addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') answerQuestion(); });
+    $('fileInput').addEventListener('change', (e) => { state.files = Array.from(e.target.files); $('fileList').innerHTML = state.files.length ? state.files.map(f => `<li><span>${f.name}</span><span class="file-status">已加入咨询上下文</span></li>`).join('') : '<li><span>未选择新资料</span><span class="file-status">演示知识库仍可用</span></li>'; });
+    document.querySelectorAll('.plan-option').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.plan-option').forEach(x => x.classList.remove('active')); btn.classList.add('active'); state.plan = btn.dataset.plan; const insight = state.result?.insight || classify($('scene').value); renderFollow(insight); }));
+    $('quoteBtn').addEventListener('click', () => { $('toast').textContent='报价说明已生成，可直接用于沟通'; $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 1800); });
+    $('copyQuoteBtn').addEventListener('click', async () => { const r = state.result; const output = `推荐产品：${r?.product?.name || ''}\n报价状态：门店核价，以最新活动与销售 SKU 为准\n客户需求：${r?.insight?.need || ''}\n报价说明：知识库不含门店实时价格；请核对 SKU、活动、库存、赠品和服务权益。`; try { await navigator.clipboard.writeText(output); $('toast').textContent='报价已复制到剪贴板'; } catch(e) { $('toast').textContent='浏览器未授权复制，请手动查看'; } $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 1800); });
+    $('copyBtn').addEventListener('click', async () => { const r = state.result; const output = `客户画像：${JSON.stringify(state.persona || r?.insight || {})}\n推荐方案：${r?.product?.name || ''}\n报价状态：门店核价，以最新活动与销售 SKU 为准\n跟进计划：${state.plan === 'fast' ? '短期速攻' : '长期攻克'}`; try { await navigator.clipboard.writeText(output); $('toast').textContent='结果已复制到剪贴板'; } catch(e) { $('toast').textContent='浏览器未授权复制，请手动查看'; } $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 1800); });
+    generate();
+  </script>
+</body>
+</html>
