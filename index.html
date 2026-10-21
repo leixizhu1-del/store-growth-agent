@@ -448,6 +448,32 @@
     .canva-handoff .promo-more-body.canva-handoff { display:block; padding-top:0; }
     @media(max-width:620px) { .accio-pick { grid-template-columns:1fr; } }
 
+    .accio-plans-bar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin:14px 0 10px; padding:10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--accent-soft); }
+    .accio-plans-bar span { font-size:12.5px; color:var(--ink); font-weight:600; }
+    .accio-plans { display:grid; gap:10px; margin:0 0 6px; }
+    .accio-plan { padding:14px 16px; border:1px solid var(--line); border-radius:10px; background:#fff; transition:border-color .15s ease,box-shadow .15s ease; }
+    .accio-plan.is-active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+    .accio-plan-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .accio-plan-no { flex:0 0 22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+    .accio-plan-title { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; min-width:0; }
+    .accio-plan-name { font-size:14px; font-weight:700; color:var(--ink); }
+    .accio-plan-en { font-size:10.5px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+    .accio-plan-tag { margin-left:auto; font-size:11px; color:var(--muted); white-space:nowrap; }
+    .accio-plan-traits { margin:8px 0 0; font-size:12.5px; color:var(--ink); line-height:1.6; opacity:.86; }
+    .accio-plan-meta { margin:6px 0 0; font-size:11.5px; color:var(--muted); line-height:1.5; }
+    .accio-plan-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
+    .accio-plan-actions .outline-btn { padding:7px 12px; font-size:12px; }
+    .accio-catalog { display:grid; gap:10px; }
+    .accio-catalog-item { padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.012); }
+    .accio-catalog-head { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+    .accio-catalog-name { font-size:13px; font-weight:700; color:var(--ink); }
+    .accio-catalog-en { font-size:10px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
+    .accio-catalog-tag { margin-left:auto; font-size:10.5px; color:var(--muted); }
+    .accio-catalog-desc { margin:5px 0 0; font-size:12px; color:var(--muted); line-height:1.6; }
+    .accio-catalog-for { margin:4px 0 0; font-size:11px; color:var(--accent); }
+    @media(max-width:620px) { .accio-plan-tag { margin-left:0; } }
+
+
     @media(max-width:560px) { .promotion-editor textarea { min-height:300px; } #promotionPage .action-row > button { flex:1 1 160px; } }
   </style>
 </head>
@@ -618,20 +644,27 @@
                 <p class="poster-editbar" id="posterEditBar" hidden><span class="dot"></span>点图上任意文字就能直接改，改完立刻是最终效果；导出的是你现在看到的这一版。</p>
                 <div class="cover-links" id="promotionCoverLinks" hidden><a id="promotionCoverSaveLink" download="小红书封面.png">备用：保存 PNG</a><a id="promotionCoverOpenLink" target="_blank" rel="noopener noreferrer">打开原图</a></div>
                 <div class="accio-handoff" id="accioHandoff">
-                  <h5>想要更好看？交给 Accio 精修</h5>
-                  <p class="promotion-note">上面的 12 套模板是「本地直接出图」，够快但偏简洁。想让人像、场景、质感更好看，用 Accio 的视觉设计智能体生成；提示词会自动带过去，生成后还能在对话里继续改。</p>
+                  <h5>想要更好看？挑版式交给 Accio 出图</h5>
+                  <p class="promotion-note">上面的 12 套模板是「本地直接出图」，够快但版式偏克制。下面是按真实商业海报拆出来的版式库：选人群和型号，一次给你几套不同方向的提示词，你可以都试一遍再挑。</p>
                   <div class="accio-pick">
-                    <div class="field"><label for="accioModel">推广型号</label><select id="accioModel" autocomplete="off">                  <option value="">— 选择型号 —</option></select><p class="promotion-note" id="accioModelHint">选型号后会自动带出已收录参数。</p></div>
-                    <div class="field"><label for="accioStyle">想要的风格 <span class="hint">可选</span></label><select id="accioStyle"><option value="clean">干净高级 · 白底留白</option><option value="scene">真实场景 · 桌面实拍感</option><option value="bold">大字冲击 · 促销感</option><option value="magazine">杂志质感 · 编辑排版</option><option value="tech">科技感 · 深色光影</option></select></div>
+                    <div class="field"><label for="accioModel">推广型号</label><select id="accioModel" autocomplete="off"><option value="">— 选择型号 —</option></select><p class="promotion-note" id="accioModelHint">选型号后会自动带出已收录参数。</p></div>
+                    <div class="field"><label for="accioAudience">给谁看 <span class="hint">决定版式和口吻</span></label><select id="accioAudience"></select></div>
                   </div>
+                  <div class="field"><label for="accioLayout">版式 <span class="hint">留空=按人群自动配几套</span></label><select id="accioLayout"></select><p class="promotion-note" id="accioLayoutHint">不选版式就按人群推荐一次给 3 套；选了就只出那一套。</p></div>
                   <div class="field"><label for="accioHighlight">这次特别想宣传的亮点 <span class="hint">留空则自动补充</span></label><textarea id="accioHighlight" maxlength="600" style="min-height:76px;font-family:inherit;font-size:13px" placeholder="例：3:2 OLED 触控屏，写作业和看剧都够用&#10;不填也行 —— 留空会按已收录卖点 + 推广人群自动补一条，你再改。"></textarea><p class="promotion-note" id="accioHighlightHint" role="status" aria-live="polite">留空时自动用已收录卖点补充，不会编造价格或活动。</p></div>
-                  <div class="action-row"><button class="primary" id="accioMakePrompt" type="button">生成提示词</button><button class="outline-btn" id="accioCopyPrompt" type="button" disabled>只复制提示词</button><button class="outline-btn" id="accioOpen" type="button" disabled>打开 Accio 并带上提示词</button></div>
-                  <p class="promotion-note" id="accioStatus" role="status" aria-live="polite">先选型号，再点「生成提示词」。</p>
+                  <div class="action-row"><button class="primary" id="accioMakePrompt" type="button">生成方案</button><button class="outline-btn" id="accioOpen" type="button" disabled>打开当前这套</button></div>
+                  <p class="promotion-note" id="accioStatus" role="status" aria-live="polite">先选型号和人群，再点「生成方案」。</p>
+                  <div class="accio-plans-bar" id="accioPlansBar" hidden><span id="accioPlansCount"></span><button class="outline-btn" id="accioOpenAll" type="button">全部打开试试</button></div>
+                  <div class="accio-plans" id="accioPlans" hidden></div>
                   <details class="promo-more" id="accioPromptBox" hidden>
-                    <summary>查看 / 修改提示词（发过去之前可以自己改）</summary>
+                    <summary>查看 / 修改当前这套的提示词</summary>
                     <div class="promo-more-body">
-                      <div class="field"><label for="accioPrompt">提示词全文</label><textarea id="accioPrompt" spellcheck="false" aria-describedby="accioPromptNote"></textarea><p class="promotion-note" id="accioPromptNote">可以直接在这里改；改完点「打开 Accio」会用你改后的版本。</p></div>
+                      <div class="field"><label for="accioPrompt">提示词全文</label><textarea id="accioPrompt" spellcheck="false" aria-describedby="accioPromptNote"></textarea><p class="promotion-note" id="accioPromptNote">可以直接在这里改；改完点「打开当前这套」会用你改后的版本。</p></div>
                     </div>
+                  </details>
+                  <details class="promo-more">
+                    <summary>版式库都有哪些（点开看适用范围）</summary>
+                    <div class="promo-more-body"><div id="accioLayoutCatalog"></div></div>
                   </details>
                   <details class="promo-more">
                     <summary>Accio 里怎么继续改（生成后）</summary>
@@ -2091,12 +2124,201 @@ const POSTER_TEMPLATES = [
      * 定位：本地 12 套模板负责「快」，Accio 的视觉设计智能体负责「好看」。
      * 关键约束：Accio 支持 ?askParams={"question":...} 深链，提示词能自动带过去；
      *          但首次使用要登录，且对话式改图在它那边完成，本页不接管。 */
-    const ACCIO_STYLE_TEXT = {
-      clean: '干净高级：大留白、单一视觉焦点、无装饰边框，接近苹果官网那种克制排版',
-      scene: '真实场景：笔记本放在桌面或书桌上，有咖啡/笔记本/台灯等自然道具，生活实拍感，不要像渲染图',
-      bold: '大字冲击：主标题占画面 1/3 以上，色块对比强烈，一眼在信息流里被抓住',
-      magazine: '杂志质感：编辑式排版、粗细字重对比、细分割线、留白讲究，像时尚杂志内页',
-      tech: '科技感：深色背景、屏幕冷光、材质反光、渐变光影，突出硬件的精密感'
+    /* 当前这批方案只存在内存里：型号/人群/版式任一变化就作废，不跨会话残留。 */
+    const accioState = { plans: [], activeIndex: 0, product: '' };
+    /* ============ 版式库 ============
+     * 每套版式拆自真实商业海报的版式规律，不是「感觉好看」的形容词堆砌。
+     * 字段刻意写成可执行的构图/字体/配色规则，因为这些会原样进提示词 —— 描述越具体，
+     * AI 出图越靠近参考图；写成「科技感」「高级感」这种词，出来的就是千篇一律的渐变。 */
+    const POSTER_LAYOUTS = [
+      {
+        id: 'street', name: '街头主角', en: 'STREET HERO',
+        tag: '人物实拍 · 大字压天',
+        source: '参考图1（NOREL 音箱）',
+        traits: '真人实拍占满画面，人物表情和动作是主角；超大无衬线标题压在天空或纯色留白区，字不遮脸。',
+        compose: [
+          '人物从画面下缘进入，上半身或半身特写，视线/动作朝向产品；产品由人物自然握持或举起，不要悬空摆放',
+          '主标题放在画面上 1/3 的留白区（天空、墙面），三行以内，行距紧凑，字号大到接近出血',
+          '底部留一条横向信息带：3–4 个线性图标 + 两行短标签，图标细线风格，不用彩色实心图标',
+          '左上角放品牌字标，字号克制，不要盖过主标题'
+        ],
+        type: '超粗无衬线（类似 Helvetica Now Black / Inter Black），全大写或全小写均可；标题行距 0.95–1.0，字距略收紧；中文用思源黑体 Heavy。',
+        color: '一个高饱和主色（天空蓝/亮红/柠黄）+ 大面积自然肤色和服装色；文字纯白压深色区，绝不描边。',
+        bestFor: ['创作者', '工作党'],
+        mood: '有活力、可信、像真人用着不错'
+      },
+      {
+        id: 'giant', name: '巨字遮罩', en: 'GIANT TYPE',
+        tag: '产品压字 · 规格脊',
+        source: '参考图2（DJI OSMO）',
+        traits: '产品名放大到几乎占满上半幅，产品实体压在字上形成前后遮挡；整张图像一张产品海报。',
+        compose: [
+          '把产品英文名或型号拆成 2–3 行，字号大到单字接近画面宽度，排在上半部并允许超出左右边缘',
+          '产品竖立在正中偏下，实拍或高质量渲染，明确压在巨字之上（层次必须是 产品 > 字 > 背景）',
+          '底部一行 4–5 个规格小方块：极简线框图标 + 一行参数，等距排列，像产品页的规格脊',
+          '右下或左下放 3 行竖排小字做补充，字重轻，与巨字形成强对比'
+        ],
+        type: '巨字用压缩体（类似 Druk Condensed / Anton），字重要 ultra black；辅助文字用轻字重无衬线，大小对比拉到 10 倍以上。',
+        color: '深空灰/炭黑底 + 米白巨字，产品保留真实材质色；只允许一处小面积强调色（橙/红）。',
+        bestFor: ['工作党', '商务差旅'],
+        mood: '专业、有参数底气、像旗舰发布'
+      },
+      {
+        id: 'pastel', name: '柔光留白', en: 'SOFT PASTEL',
+        tag: '浅色渐变 · 中文垫底',
+        source: '参考图3（粉色便携风扇）',
+        traits: '浅色柔和渐变底，超大中文字作为背景垫在产品后面，产品干净居中，四周大量呼吸空间。',
+        compose: [
+          '底色用同色系浅渐变（粉/米/浅蓝），从上到下极轻微过渡，不要出现第三种颜色',
+          '把一句 4 字中文（如「轻奢极简」）放大到几乎撑满画面下 2/3，作为背景字，透明度 12–18%，被产品压住',
+          '产品正面居中、垂直站立，柔和落地阴影，不要硬边投影',
+          '右侧竖排 3–4 个小标签，每行两字，用细线框或小圆点引导；顶部一行英文标题，字距拉开'
+        ],
+        type: '英文标题用几何无衬线并拉宽字距；背景中文用极粗黑体但压低透明度；小标签用细字重，字号不超过主体的 1/6。',
+        color: '单色系渐变 + 白色主体；强调色只在标签边框和一两个小圆点上，饱和度低。',
+        bestFor: ['大学生', '送礼'],
+        mood: '温柔、干净、适合送礼和女生向'
+      },
+      {
+        id: 'industrial', name: '工业硬核', en: 'INDUSTRIAL BOLD',
+        tag: '竖排巨字 · 力量感',
+        source: '参考图4（蓝色电动工具）',
+        traits: '强对比天空蓝底，字号夸张的浅色字竖排占据左半幅，实拍人物/产品在中右侧，底部大数字加三栏说明。',
+        compose: [
+          '左侧 45% 宽度放竖排巨字（2–3 个词，每词一行），字被中部主体自然遮挡一部分',
+          '主体（人物施工/设备运转/产品工作状态）在正中偏右，带真实颗粒、粉尘、光影，不要棚拍干净背景',
+          '底部横向信息带：左侧一个超大数字（如续航 12h、重量 1.3kg）+ 单位说明，右侧 3 栏各两行小字',
+          '右侧边缘竖排一行极小字作为装饰，字距很大'
+        ],
+        type: '巨字用超粗窄体，米白或浅杏色；说明文字用紧凑无衬线，全大写，行距 1.2；数字要比说明文字大 4 倍以上。',
+        color: '高饱和主色大背景（正蓝/工程黄）+ 米白字；产品保留真实工业配色，黄黑警示色可少量使用。',
+        bestFor: ['创作者', '工作党'],
+        mood: '硬核、耐用、能干活'
+      },
+      {
+        id: 'concept', name: '概念隐喻', en: 'CONCEPT METAPHOR',
+        tag: '极简 · 一图一说',
+        source: '参考图5（猫进门变虎）',
+        traits: '整张图只有一个视觉隐喻，大量留白，一句短文案，看完会心一笑。不出现产品也能成立。',
+        compose: [
+          '大面积纯色或极浅渐变背景（灰/米/浅蓝），主体只占画面中央 30–40%',
+          '用一个具体物件承载隐喻（门、镜子、抽屉、窗口、门槛），前后两侧状态不同，形成「变化」的叙事',
+          '文案只有 1–2 行短句，放在主体右上方或正下方，字号中等，绝不铺满',
+          '品牌字标放在最底部居中，字距拉开，作为收尾'
+        ],
+        type: '文案用中性无衬线，字重 semibold，全大写；不要花体、不要手写体；字号控制在主体的 1/5 左右。',
+        color: '低饱和单色底（浅灰/米白）+ 主体自然色；全图彩色面积不超过 20%。',
+        bestFor: ['商务差旅', '大学生'],
+        mood: '聪明、克制、有品'
+      },
+      {
+        id: 'warm', name: '暖调圆角', en: 'WARM ROUNDED',
+        tag: '柔和色块 · 电商主图',
+        source: '参考图6（亚马逊宠物主图）',
+        traits: '米色系暖调，大圆角和柔和有机色块分割画面，产品图放在圆角容器里，文字短句加一行小字说明。',
+        compose: [
+          '底色暖米/浅棕，用 2–3 个大圆角或有机曲线色块（同色系深浅）分割版面，不要直角硬边',
+          '产品放在圆角矩形或圆形色块里，像电商主图那样干净，可有 2–3 个小圆点做装饰',
+          '标题两行以内，英文或中文均可，下方跟一行 60% 透明度的小字说明',
+          '如有多规格，用等分宫格排列，每格一个产品图 + 一行标签'
+        ],
+        type: '标题用圆润无衬线（类似 Poppins Medium），小字用常规字重；中英文混排时中文字重略轻于英文。',
+        color: '同色系暖调（米/浅棕/奶白），色块之间只差明度；不加第三种彩色。',
+        bestFor: ['家庭', '送礼'],
+        mood: '温和、居家、适合日百和礼品'
+      },
+      {
+        id: 'backdrop', name: '背影大字', en: 'BACKDROP TYPE',
+        tag: '中文垫字 · 慢节奏',
+        source: '参考图3 的中文垫底技法强化版',
+        traits: '把中文成语或产品口号做成画面背景层，字号夸张但透明度极低，产品在前景，节奏慢、气质重。',
+        compose: [
+          '4 个字的中文口号放大到每字约占画面宽度 45%，两行排布并允许出血',
+          '背景字透明度 10–15%，颜色比底色深一档，仅作为肌理存在，不能被一眼读完',
+          '前景产品单独立在中央，边缘清晰，与背景字形成「实 vs 虚」',
+          '只保留一处小面积实色标签，其余全部低对比'
+        ],
+        type: '背景中文用最粗黑体（思源黑体 Heavy / 阿里巴巴普惠体 Bold）；前景只放一行小字说明，字重轻。',
+        color: '同色系深浅两层（浅底 + 深一档的字），或深底 + 浅一档的字；不出现第三种颜色。',
+        bestFor: ['大学生', '创作者'],
+        mood: '有设计感、不吵、适合做内容'
+      },
+      {
+        id: 'poster3d', name: '立体展台', en: '3D PEDESTAL',
+        tag: '产品立台 · 光影',
+        source: '综合参考图2/图6 的产品呈现方式',
+        traits: '产品像摆在展台上，有明确的顶光和环境反射，底部柔和接触阴影，背景是渐变空间。',
+        compose: [
+          '产品居中放在一个不可见的平面上，底部必须有柔和接触阴影（不是硬投影）',
+          '背景用同色系径向渐变，中心略亮，模拟柔光箱照明',
+          '产品背后可放一个大的圆角几何块或半透明圆形作为层次',
+          '文字只放在上下两极：顶部一行主标题，底部一行参数，中间完全留给产品'
+        ],
+        type: '标题用中等字重无衬线，字距略宽；参数文字极小，全大写。',
+        color: '单色系渐变 + 产品真实材质；高光处可提亮但不能泛白。',
+        bestFor: ['工作党', '商务差旅'],
+        mood: '精致、像开箱图、有质感'
+      }
+    ];
+
+    /* ============ 人群画像 ============
+     * 每个人群不只是换个名字，文案口吻、痛点、拒绝的说法都不同 —— 这些会进提示词，
+     * 让 AI 写出来的文案像「对这个人群说话」，而不是通用广告腔。 */
+    const ACCIO_AUDIENCES = {
+      '大学生': {
+        label: '大学生',
+        alias: '学生党 / 在校生',
+        hook: '上课、图书馆、宿舍、社团，一天换三个地方',
+        pain: '预算有限，怕买错；宿舍桌面小，还要背去教室',
+        voice: '直白、有点自嘲、不装；可以说「早八」「占座」「宿舍」这类真实场景词',
+        avoid: '不要写「尊贵」「成功人士」「商务精英」，不要说教，不要用「犒劳自己」这种消费话术',
+        layouts: ['pastel', 'backdrop', 'concept']
+      },
+      '工作党': {
+        label: '工作党',
+        alias: '职场新人 / 上班族',
+        hook: '通勤挤地铁、开不完的会、下班还要改方案',
+        pain: '一天背下来肩膀疼；开会共享屏幕卡；回家还要接着干',
+        voice: '务实、讲效率、算得清；可以用「通勤」「会议」「加班」这类词',
+        avoid: '不要喊「升职加薪」口号，不要用夸张的「效率翻倍」承诺，不写具体续航小时数除非已核实',
+        layouts: ['giant', 'street', 'poster3d']
+      },
+      '创作者': {
+        label: '创作者',
+        alias: '剪辑 / 设计 / 摄影 / 自媒体',
+        hook: '素材越攒越多，导出等到怀疑人生',
+        pain: '屏幕颜色不准、预览卡、接口不够插硬盘',
+        voice: '专业但克制；用「时间线」「色准」「调色」「素材」这类行内词，不装专家',
+        avoid: '不要许愿「渲染快 3 倍」这类未实测数据，不要承诺专业级色准',
+        layouts: ['industrial', 'street', 'backdrop']
+      },
+      '商务差旅': {
+        label: '商务差旅',
+        alias: '出差 / 客户拜访',
+        hook: '一周三个城市，包里只能带一台',
+        pain: '会议软件要稳、接口要够、飞机上还得改稿',
+        voice: '简洁、可信、不啰嗦；用「会议室」「客户」「航班」这类词',
+        avoid: '不要写「彰显身份」「成功之选」，不要承诺全天续航',
+        layouts: ['concept', 'giant', 'poster3d']
+      },
+      '家庭': {
+        label: '家庭共用',
+        alias: '家里一起用 / 给孩子买',
+        hook: '一台电脑，孩子网课、大人做表、老人视频',
+        pain: '担心用不明白、外设接不上、坏了没人管',
+        voice: '踏实、少术语、多解释；用「网课」「做表」「视频」这类词',
+        avoid: '不要用参数堆砌吓人，不写「一步到位」这种绝对话',
+        layouts: ['warm', 'pastel', 'concept']
+      },
+      '送礼': {
+        label: '送礼',
+        alias: '送人 / 开学礼 / 生日',
+        hook: '不知道送什么，怕送错用不上',
+        pain: '要有面子、要实用、怕买贵了被说',
+        voice: '温和、有分寸；可以提「开学」「入职」「生日」这些节点',
+        avoid: '不要标具体价格和折扣（未核实），不写「最值得送」这种绝对话',
+        layouts: ['pastel', 'warm', 'poster3d']
+      }
     };
     /* 从已收录产品取一条可用的亮点兜底：优先官方 point，其次人群标签。
      * 绝不编造价格、库存、活动 —— 这些必须人工核实。 */
@@ -2112,128 +2334,271 @@ const POSTER_TEMPLATES = [
     function accioProductByModel(name) {
       return knowledgeBase.products.find(product => product.name === name) || null;
     }
-    function buildAccioPrompt(product, highlight, styleKey) {
+    function accioLayoutById(id) {
+      return POSTER_LAYOUTS.find(layout => layout.id === id) || POSTER_LAYOUTS[0];
+    }
+    function accioAudienceById(key) {
+      return ACCIO_AUDIENCES[key] || null;
+    }
+    /* 单套方案的提示词。audienceKey 为空时退回通用口吻，但版式仍然生效。
+     * 每套提示词都把「构图/字体/配色」写成可执行条目 —— 这是让 AI 出图不像模板的关键。 */
+    function buildAccioPrompt(product, highlight, layoutId, audienceKey) {
       if (!product) return '';
-      const style = ACCIO_STYLE_TEXT[styleKey] || ACCIO_STYLE_TEXT.clean;
-      const usedAuto = !highlight;
-      const point = usedAuto ? accioAutoHighlight(product) : highlight;
+      const layout = accioLayoutById(layoutId);
+      const aud = accioAudienceById(audienceKey);
+      const point = highlight || accioAutoHighlight(product);
       const main = ($('promotionCoverMain').value || '').trim();
       const emph = ($('promotionCoverEmph').value || '').trim();
       const sub = ($('promotionCoverSub').value || '').trim();
-      const audience = $('promotionAudience').value;
       const purpose = $('promotionPurpose').value;
-      const accent = $('promotionCoverColor').value;
 
-      const lines = [
-        '请帮我做一张小红书封面海报，用你的海报生成能力直接出图。',
-        '',
-        '【画幅】3:4 竖版，1080 × 1440 px。主体和文字都不要贴边，四周至少留 72px 安全边。',
-        '',
-        '【产品】' + product.name,
-        '品类：' + product.category,
-        '系统：' + product.system,
-        '处理器（系列选项，不代表当前实机 SKU）：' + product.cpu,
-        '屏幕：' + product.screen
-      ];
+      const lines = [];
+      lines.push('做一张小红书封面，3:4 竖版 1080×1440，四周留 72px 安全边。用海报生成能力直接出图。');
+      lines.push('');
+      lines.push('【版式】' + layout.name + '：' + layout.traits);
+      layout.compose.forEach((rule, i) => lines.push((i + 1) + '. ' + rule));
+      lines.push('【字体】' + layout.type);
+      lines.push('【配色】' + layout.color);
+      lines.push('');
+      lines.push('【产品】' + product.name + '｜' + product.category + '｜' + product.system);
+      lines.push('处理器（系列选项，非当前实机 SKU）：' + product.cpu);
+      lines.push('屏幕：' + product.screen);
       if (product.weight) lines.push('重量：' + product.weight);
-      lines.push(
-        '',
-        '【这一版要突出】',
-        point || '（未填，请按上面的屏幕与系统信息提炼一条，不要编造）',
-        '',
-        '【文案】',
-        '主标题：' + (main || '请按产品亮点自己拟一条，8–14 字'),
-        '第二行：' + (emph || '可省略'),
-        '副标题：' + (sub || '可省略')
-      );
-      if (main) lines.push('（主标题已定，图上必须原样出现这行字，不要改写、不要加字）');
-      lines.push(
-        '',
-        '【风格】' + style,
-        '',
-        '【配色】主色 ' + accent + '，整张图只用这一个彩色，不要加第二个高饱和色。文字与底色对比要够，缩到手机小图也能读清。',
-        '',
-        '【给谁看】' + audience + '；这条内容是「' + purpose + '」用的，语气贴近真实店员，不喊口号。',
-        '',
-        '【硬性要求】',
-        '1. 图上文字只用上面给出的中文，不要自己加英文标语、假 logo、假评分、假奖项。',
-        '2. 不要出现价格、折扣、库存、赠品、活动期限 —— 这些还没核实。',
-        '3. 产品外观按真实笔记本比例画，不要变形、不要长出不存在的接口和图案。',
-        '4. 先给我 3 个不同方向，我挑一个再细改。'
-      );
+      lines.push('【要突出】' + (point || '按上面的屏幕与系统提炼一条，不要编造'));
+      lines.push('');
+      lines.push('【文案】');
+      lines.push('主标题：' + (main || '按这个版式和人群自己拟，8–14 字'));
+      if (emph) lines.push('第二行：' + emph);
+      if (sub) lines.push('副标题：' + sub);
+      if (main) lines.push('主标题已定，图上必须原样出现，不要改写或加字。');
+      lines.push('');
+      if (aud) {
+        lines.push('【给谁看】' + aud.label + '（' + aud.alias + '）。日常：' + aud.hook);
+        lines.push('顾虑：' + aud.pain);
+        lines.push('口吻：' + aud.voice);
+        lines.push('禁止：' + aud.avoid);
+      } else {
+        lines.push('【给谁看】通用；语气像真实店员，不喊口号。');
+      }
+      lines.push('用途：' + purpose + '。');
+      lines.push('');
+      lines.push('【硬性要求】');
+      lines.push('1. 中文只用上面给的文字，不加英文标语、假 logo、假评分。');
+      lines.push('2. 不出现价格、折扣、库存、赠品、活动期限。');
+      lines.push('3. 产品按真实笔记本比例画，不变形、不加不存在的接口。');
+      lines.push('4. 只出这一张，不要换版式。');
       return lines.join('\n');
+    }
+    /* 按人群挑版式，一次给多套。每套含：版式、人群、提示词、一句话思路（给用户挑的时候看）。 */
+    function buildAccioPlans(product, highlight, audienceKey, layoutId) {
+      if (!product) return [];
+      const aud = accioAudienceById(audienceKey);
+      // 用户指定了版式就只出那一套；否则按人群推荐的版式全出
+      const ids = layoutId ? [layoutId] : (aud ? aud.layouts : POSTER_LAYOUTS.slice(0, 3).map(l => l.id));
+      const accent = $('promotionCoverColor').value;
+      return ids.map((id, index) => {
+        const layout = accioLayoutById(id);
+        return {
+          index: index + 1,
+          layoutId: layout.id,
+          layoutName: layout.name,
+          layoutEn: layout.en,
+          tag: layout.tag,
+          mood: layout.mood,
+          traits: layout.traits,
+          source: layout.source,
+          audienceKey: audienceKey || '',
+          audienceLabel: aud ? aud.label : '通用',
+          accent,
+          prompt: buildAccioPrompt(product, highlight, id, audienceKey)
+        };
+      });
     }
     /* Accio 的 Web Portal 入口，question 会自动填进输入框 */
     function accioDeepLink(prompt) {
       return 'https://www.accio.com/work/app?askParams=' +
         encodeURIComponent(JSON.stringify({ question: prompt, questionType: 'v1_biz' }));
     }
-    function accioReady() {
-      const prompt = ($('accioPrompt')?.value || '').trim();
-      return prompt.length > 0;
-    }
-    function setAccioButtons(ready) {
-      $('accioCopyPrompt').disabled = !ready;
-      $('accioOpen').disabled = !ready;
+    function accioPlansReady() {
+      return Array.isArray(accioState.plans) && accioState.plans.length > 0;
     }
     function accioModelHint(product) {
       if (!product) return '选型号后会自动带出已收录参数。';
       return '已收录：' + product.system + ' ｜ ' + product.screen;
     }
-    function makeAccioPrompt() {
-      const model = $('accioModel').value;
-      const product = accioProductByModel(model);
+    function escapeAccioAttr(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    /* 多套方案卡片：让用户在点开 Accio 之前就能看清「这套想做什么」，
+     * 而不是盲开三个标签页再一张张看完再关。 */
+    function renderAccioPlans() {
+      const host = $('accioPlans');
+      if (!host) return;
+      if (!accioState.plans.length) {
+        host.replaceChildren();
+        host.hidden = true;
+        $('accioPlansBar').hidden = true;
+        return;
+      }
+      host.hidden = false;
+      $('accioPlansBar').hidden = false;
+      $('accioPlansCount').textContent = '共 ' + accioState.plans.length + ' 套方案 —— 挑一套，或者全部试一遍';
+      host.innerHTML = accioState.plans.map(plan => {
+        const active = accioState.activeIndex === plan.index ? ' is-active' : '';
+        return '<div class="accio-plan' + active + '" data-plan-index="' + plan.index + '">' +
+          '<div class="accio-plan-head">' +
+            '<span class="accio-plan-no">' + plan.index + '</span>' +
+            '<div class="accio-plan-title">' +
+              '<span class="accio-plan-name">' + escapeAccioAttr(plan.layoutName) + '</span>' +
+              '<span class="accio-plan-en">' + escapeAccioAttr(plan.layoutEn) + '</span>' +
+            '</div>' +
+            '<span class="accio-plan-tag">' + escapeAccioAttr(plan.tag) + '</span>' +
+          '</div>' +
+          '<p class="accio-plan-traits">' + escapeAccioAttr(plan.traits) + '</p>' +
+          '<p class="accio-plan-meta">人群：' + escapeAccioAttr(plan.audienceLabel) + ' ｜ 气质：' + escapeAccioAttr(plan.mood) + '</p>' +
+          '<div class="accio-plan-actions">' +
+            '<button class="outline-btn" type="button" data-plan-open="' + plan.index + '">打开这套</button>' +
+            '<button class="outline-btn" type="button" data-plan-copy="' + plan.index + '">复制提示词</button>' +
+            '<button class="outline-btn" type="button" data-plan-edit="' + plan.index + '">编辑提示词</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      host.querySelectorAll('[data-plan-open]').forEach(btn => {
+        btn.addEventListener('click', () => openAccioPlan(Number(btn.dataset.planOpen)));
+      });
+      host.querySelectorAll('[data-plan-copy]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const plan = accioState.plans.find(p => p.index === Number(btn.dataset.planCopy));
+          if (!plan) return;
+          copyText(plan.prompt, '第 ' + plan.index + ' 套「' + plan.layoutName + '」提示词已复制');
+          $('accioStatus').textContent = '已复制第 ' + plan.index + ' 套。到 Accio 新建任务粘贴发送即可。';
+        });
+      });
+      host.querySelectorAll('[data-plan-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const plan = accioState.plans.find(p => p.index === Number(btn.dataset.planEdit));
+          if (!plan) return;
+          accioState.activeIndex = plan.index;
+          setAccioPrompt(plan.prompt);
+          $('accioPromptBox').hidden = false;
+          $('accioPromptBox').open = true;
+          $('accioPromptBox').scrollIntoView({ block: 'nearest' });
+          $('accioStatus').textContent = '正在编辑第 ' + plan.index + ' 套「' + plan.layoutName + '」。改完点「打开 Accio」会用你改后的版本。';
+          renderAccioPlans();
+        });
+      });
+    }
+    function currentAccioPrompt() {
+      const manual = ($('accioPrompt').value || '').trim();
+      if (manual) return manual;
+      const plan = accioState.plans.find(p => p.index === accioState.activeIndex);
+      return plan ? plan.prompt : '';
+    }
+    /* 程序里改提示词不会触发 input 事件，「打开」按钮的可用状态得手动同步，
+     * 否则生成完按钮还是灰的，用户点了没反应。 */
+    function setAccioPrompt(value) {
+      $('accioPrompt').value = value || '';
+      $('accioOpen').disabled = !($('accioPrompt').value || '').trim();
+    }
+    function makeAccioPlans() {
+      const product = accioProductByModel($('accioModel').value);
       if (!product) {
         $('accioStatus').textContent = '请先选择一个推广型号。不认识的产品不会凭空生成参数。';
         return;
       }
       const typed = $('accioHighlight').value.trim();
-      const prompt = buildAccioPrompt(product, typed, $('accioStyle').value);
-      $('accioPrompt').value = prompt;
+      const audienceKey = $('accioAudience').value;
+      const layoutId = $('accioLayout').value;
+      const plans = buildAccioPlans(product, typed, audienceKey, layoutId);
+      if (!plans.length) { $('accioStatus').textContent = '没能生成方案，请检查型号与版式选择。'; return; }
+      accioState.plans = plans;
+      accioState.activeIndex = plans[0].index;
+      accioState.product = product.name;
+      renderAccioPlans();
+      // 提示词框先放第一套，方便直接看/改；收起状态由用户自己决定
+      setAccioPrompt(plans[0].prompt);
       $('accioPromptBox').hidden = false;
-      $('accioPromptBox').open = true;
-      setAccioButtons(true);
+      $('accioPromptBox').open = false;
       $('accioHighlightHint').textContent = typed
-        ? '已用你填的亮点；生成前可以再改。'
+        ? '已用你填的亮点，' + plans.length + ' 套方案共用这条亮点。'
         : '你没填亮点，已按已收录卖点自动补了一条：' + accioAutoHighlight(product);
-      $('accioStatus').textContent = '提示词已生成（' + prompt.length + ' 字）。可以点「打开 Accio 并带上提示词」，提示词会自动填进输入框。';
-      showToast('提示词已生成');
+      const aud = accioAudienceById(audienceKey);
+      $('accioStatus').textContent = '已生成 ' + plans.length + ' 套方案' +
+        (aud ? '（面向' + aud.label + '）' : '') +
+        '。挑一套打开，或者逐套都试，留下最合适的；每套的提示词都能单独改。';
+      showToast('已生成 ' + plans.length + ' 套方案');
     }
-    function openAccio() {
-      const prompt = ($('accioPrompt').value || '').trim();
-      if (!prompt) { $('accioStatus').textContent = '还没有提示词，请先点「生成提示词」。'; return; }
+    function openAccioPlan(index) {
+      const plan = accioState.plans.find(p => p.index === index);
+      if (!plan) return;
+      // 编辑过就以编辑框内容为准，否则用这套的原始提示词
+      const edited = (accioState.activeIndex === index) ? ($('accioPrompt').value || '').trim() : '';
+      const prompt = edited || plan.prompt;
       const url = accioDeepLink(prompt);
-      if (url.length > 7500) {
-        $('accioStatus').textContent = '提示词太长（' + prompt.length + ' 字），链接可能被浏览器截断。请点「只复制提示词」，到 Accio 里粘贴。';
-        copyText(prompt, '提示词已复制，去 Accio 粘贴');
+      if (url.length > 8000) {
+        copyText(prompt, '提示词已复制');
+        $('accioStatus').textContent = '这套的提示词太长（' + prompt.length + ' 字），链接可能被截断，已复制到剪贴板，请到 Accio 里粘贴。';
         return;
       }
       window.open(url, '_blank', 'noopener,noreferrer');
-      $('accioStatus').textContent = '已在新标签打开 Accio。首次使用需登录；登录后提示词会自动填进输入框，确认后发送。生成后直接说要改哪里，它会接着改。';
+      $('accioStatus').textContent = '已打开第 ' + index + ' 套「' + plan.layoutName + '」。首次使用需登录；登录后提示词会自动填进输入框。';
+    }
+    function openAccio() {
+      const prompt = currentAccioPrompt();
+      if (!prompt) { $('accioStatus').textContent = '还没有提示词，请先点「生成方案」。'; return; }
+      openAccioPlan(accioState.activeIndex || 1);
+    }
+    /* 一次开全部：浏览器通常会拦截连续 popup，所以逐个开并给出提示，
+     * 被拦截时退回「复制全部提示词」，保证用户至少拿到内容。 */
+    function openAllAccioPlans() {
+      if (!accioPlansReady()) return;
+      const plans = accioState.plans;
+      let opened = 0;
+      plans.forEach(plan => {
+        const url = accioDeepLink(plan.prompt);
+        if (url.length > 8000) return;
+        const win = window.open(url, '_blank', 'noopener,noreferrer');
+        if (win) opened++;
+      });
+      if (opened === plans.length) {
+        $('accioStatus').textContent = '已打开 ' + opened + ' 个标签页，每套一个。生成后挑喜欢的留下，其余关掉即可。';
+      } else {
+        const all = plans.map(p => '=== 第 ' + p.index + ' 套：' + p.layoutName + ' ===\n' + p.prompt).join('\n\n');
+        copyText(all, '全部提示词已复制');
+        $('accioStatus').textContent = '浏览器拦截了弹窗，只打开了 ' + opened + ' 个。已把全部 ' + plans.length + ' 套提示词复制到剪贴板，可到 Accio 逐个粘贴。';
+      }
     }
     function syncAccioModelFromProduct(product) {
       if (!$('accioModel')) return;
       $('accioModel').value = product?.name || '';
       $('accioModelHint').textContent = accioModelHint(product);
       if (product) {
-        // 型号变了，旧提示词就过期了，避免拿 A 的提示词生 B 的图
-        $('accioPrompt').value = '';
-        setAccioButtons(false);
-        $('accioStatus').textContent = '型号已切换为「' + product.name + '」，请重新生成提示词。';
+        // 型号变了，旧方案就过期了，避免拿 A 的提示词生 B 的图
+        accioState.plans = [];
+        accioState.activeIndex = 0;
+        if (typeof renderAccioPlans === 'function') renderAccioPlans();
+        setAccioPrompt('');
+        $('accioPromptBox').hidden = true;
+        $('accioOpen').disabled = true;
+        $('accioStatus').textContent = '型号已切换为「' + product.name + '」，请重新生成方案。';
       }
     }
     function initAccioHandoff() {
-      const select = $('accioModel');
-      if (!select) return;
+      const modelSelect = $('accioModel');
+      if (!modelSelect) return;
+
+      /* --- 型号下拉：按品类分组 --- */
       const groups = {};
       knowledgeBase.products.forEach(product => {
         const key = product.category || '其他';
         (groups[key] = groups[key] || []).push(product);
       });
-      select.replaceChildren();
+      modelSelect.replaceChildren();
       const blank = document.createElement('option');
       blank.value = ''; blank.textContent = '— 选择型号 —';
-      select.appendChild(blank);
+      modelSelect.appendChild(blank);
       Object.keys(groups).forEach(category => {
         const group = document.createElement('optgroup');
         group.label = category;
@@ -2243,37 +2608,125 @@ const POSTER_TEMPLATES = [
           option.textContent = product.name;
           group.appendChild(option);
         });
-        select.appendChild(group);
+        modelSelect.appendChild(group);
       });
-      select.value = promotion.product?.name || '';
+      modelSelect.value = promotion.product?.name || '';
       $('accioModelHint').textContent = accioModelHint(promotion.product);
 
-      select.addEventListener('change', () => {
-        const product = accioProductByModel(select.value);
+      /* --- 人群下拉：与「给谁看」主表单同步 --- */
+      const audienceSelect = $('accioAudience');
+      audienceSelect.replaceChildren();
+      Object.keys(ACCIO_AUDIENCES).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = ACCIO_AUDIENCES[key].label + '（' + ACCIO_AUDIENCES[key].alias + '）';
+        audienceSelect.appendChild(option);
+      });
+      // 主表单的「给谁看」有四个值，能对上就直接用，对不上默认大学生
+      const mapAudience = () => {
+        const main = $('promotionAudience').value;
+        const direct = Object.keys(ACCIO_AUDIENCES).find(k => k === main);
+        if (direct) return direct;
+        const table = { '学生': '大学生', '差旅': '商务差旅', '创作者': '创作者', '家庭办公': '家庭' };
+        return table[main] || '大学生';
+      };
+      audienceSelect.value = mapAudience();
+
+      /* --- 版式下拉：留空=按人群自动配 --- */
+      const layoutSelect = $('accioLayout');
+      layoutSelect.replaceChildren();
+      const auto = document.createElement('option');
+      auto.value = ''; auto.textContent = '自动：按人群配 3 套';
+      layoutSelect.appendChild(auto);
+      POSTER_LAYOUTS.forEach(layout => {
+        const option = document.createElement('option');
+        option.value = layout.id;
+        option.textContent = layout.name + ' · ' + layout.tag;
+        layoutSelect.appendChild(option);
+      });
+
+      /* --- 版式库目录（折叠区里，给想自己挑的人看） --- */
+      const catalog = $('accioLayoutCatalog');
+      if (catalog) {
+        catalog.className = 'accio-catalog';
+        catalog.innerHTML = POSTER_LAYOUTS.map(layout =>
+          '<div class="accio-catalog-item">' +
+            '<div class="accio-catalog-head">' +
+              '<span class="accio-catalog-name">' + escapeAccioAttr(layout.name) + '</span>' +
+              '<span class="accio-catalog-en">' + escapeAccioAttr(layout.en) + '</span>' +
+              '<span class="accio-catalog-tag">' + escapeAccioAttr(layout.tag) + '</span>' +
+            '</div>' +
+            '<p class="accio-catalog-desc">' + escapeAccioAttr(layout.traits) + '</p>' +
+            '<p class="accio-catalog-for">适合：' + escapeAccioAttr(layout.bestFor.join(' / ')) +
+              ' ｜ 气质：' + escapeAccioAttr(layout.mood) +
+              ' ｜ 出处：' + escapeAccioAttr(layout.source) + '</p>' +
+          '</div>').join('');
+      }
+
+      const invalidatePlans = reason => {
+        accioState.plans = [];
+        accioState.activeIndex = 0;
+        renderAccioPlans();
+        setAccioPrompt('');
+        $('accioPromptBox').hidden = true;
+        $('accioOpen').disabled = true;
+        if (reason) $('accioStatus').textContent = reason;
+      };
+
+      modelSelect.addEventListener('change', () => {
+        const product = accioProductByModel(modelSelect.value);
         setPromotionProduct(product, product
           ? '已从 Accio 型号下拉选择：' + product.name + '（' + product.category + '）。'
           : '尚未确认产品。');
-        // setPromotionProduct 内部会回到 syncAccioModelFromProduct，这里补一次提示
         $('accioModelHint').textContent = accioModelHint(product);
-        if (product) $('accioStatus').textContent = '型号已选「' + product.name + '」，点「生成提示词」即可。';
+        if (product) $('accioStatus').textContent = '型号已选「' + product.name + '」，点「生成方案」即可。';
       });
-      $('accioMakePrompt').addEventListener('click', makeAccioPrompt);
-      $('accioCopyPrompt').addEventListener('click', () => {
-        const prompt = $('accioPrompt').value.trim();
-        if (!prompt) return;
-        copyText(prompt, '提示词已复制');
-        $('accioStatus').textContent = '已复制。到 Accio 新建任务，粘贴发送即可。';
+
+      audienceSelect.addEventListener('change', () => {
+        invalidatePlans('人群已切换为「' + ACCIO_AUDIENCES[audienceSelect.value].label + '」，版式和口吻会跟着变，请重新生成方案。');
       });
+
+      layoutSelect.addEventListener('change', () => {
+        const hint = $('accioLayoutHint');
+        if (layoutSelect.value) {
+          const layout = accioLayoutById(layoutSelect.value);
+          hint.textContent = '只出「' + layout.name + '」一套：' + layout.traits;
+          invalidatePlans('已锁定版式「' + layout.name + '」，请重新生成。');
+        } else {
+          hint.textContent = '不选版式就按人群推荐一次给 3 套；选了就只出那一套。';
+          invalidatePlans('已改回自动配版式，请重新生成。');
+        }
+      });
+
+      $('accioMakePrompt').addEventListener('click', makeAccioPlans);
       $('accioOpen').addEventListener('click', openAccio);
-      // 用户改了提示词正文，按钮状态跟着变
-      $('accioPrompt').addEventListener('input', () => setAccioButtons(accioReady()));
+      $('accioOpenAll').addEventListener('click', openAllAccioPlans);
+
+      $('accioPrompt').addEventListener('input', () => {
+        const prompt = $('accioPrompt').value.trim();
+        $('accioOpen').disabled = !prompt;
+        if (!prompt) {
+          $('accioStatus').textContent = '提示词被清空了。可以点某套的「编辑提示词」恢复，或重新生成方案。';
+          return;
+        }
+        $('accioStatus').textContent = '正在编辑第 ' + (accioState.activeIndex || 1) + ' 套（' + prompt.length + ' 字）。改完点「打开当前这套」。';
+      });
+
       $('accioHighlight').addEventListener('input', () => {
         $('accioHighlightHint').textContent = $('accioHighlight').value.trim()
           ? '已用你填的亮点。'
           : '留空时自动用已收录卖点补充，不会编造价格或活动。';
       });
-    }
 
+      // 主表单的「给谁看」变了，人群下拉跟着走（但只在用户没手动改过时）
+      $('promotionAudience').addEventListener('change', () => {
+        if (audienceSelect.dataset.touched === 'true') return;
+        audienceSelect.value = mapAudience();
+      });
+      audienceSelect.addEventListener('change', () => { audienceSelect.dataset.touched = 'true'; });
+
+      invalidatePlans();
+    }
     function openCanvaTemplate(){
       const raw=$('promotionCanvaUrl').value.trim();
       if(!raw){$('promotionCanvaStatus').textContent='请先粘贴可画模板分享链接；也可以先复制设计简报。';return;}

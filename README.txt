@@ -36,4 +36,4 @@
 - node tests/layout-check.js     布局检查（44 组）
 - node tests/cover-test.js       封面专项
 - node tests/e2e-test.js         端到端交互
-- node tests/accio-test.js       Accio 提示词交接（27 项）
+- node tests/accio-test.js       Accio 多套方案交接（54 项）
