@@ -434,6 +434,20 @@
     .title-alt-btn { text-align:left; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:12.5px; color:var(--text); cursor:pointer; line-height:1.45; transition:border-color .15s ease,background .15s ease; }
     .title-alt-btn:hover { border-color:var(--accent); background:rgba(49,103,227,.03); }
     @media(max-width:760px) { .cover-templates, .canva-gallery-links { grid-template-columns:1fr; } .promo-inline-row { grid-template-columns:1fr; } }
+
+    /* ---------- Accio 精修海报交接 ---------- */
+    .accio-handoff { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+    .accio-handoff h5 { margin:0 0 6px; font-size:14px; }
+    .accio-pick { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 0; }
+    .accio-pick .field { min-width:0; margin:0; }
+    .accio-handoff input, .accio-handoff select { width:100%; }
+    .accio-handoff textarea { width:100%; min-height:160px; font-size:12px; line-height:1.65; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .accio-handoff .promo-more { margin:12px 0 0; }
+    .promotion-cover .canva-handoff { margin-top:18px; padding-top:0; border-top:0; }
+    .promotion-cover .canva-handoff > summary { font-size:13px; font-weight:500; padding:12px 0; }
+    .canva-handoff .promo-more-body.canva-handoff { display:block; padding-top:0; }
+    @media(max-width:620px) { .accio-pick { grid-template-columns:1fr; } }
+
     @media(max-width:560px) { .promotion-editor textarea { min-height:300px; } #promotionPage .action-row > button { flex:1 1 160px; } }
   </style>
 </head>
@@ -603,9 +617,37 @@
                 <div class="cover-preview"><div class="poster-stage" id="promotionPosterStage" role="group" aria-label="海报预览，点文字可直接修改"></div></div>
                 <p class="poster-editbar" id="posterEditBar" hidden><span class="dot"></span>点图上任意文字就能直接改，改完立刻是最终效果；导出的是你现在看到的这一版。</p>
                 <div class="cover-links" id="promotionCoverLinks" hidden><a id="promotionCoverSaveLink" download="小红书封面.png">备用：保存 PNG</a><a id="promotionCoverOpenLink" target="_blank" rel="noopener noreferrer">打开原图</a></div>
-                <div class="canva-handoff" aria-labelledby="canvaHandoffHeading">
-                  <h5 id="canvaHandoffHeading">去可画换更好看的模板</h5>
-                  <p class="promotion-note">自己找模板、自己排版更容易做出好看的图。下面三个入口都是可画官方模板库，点开挑一个，再用下面的「产品信息卡」把文字贴进去。</p>
+                <div class="accio-handoff" id="accioHandoff">
+                  <h5>想要更好看？交给 Accio 精修</h5>
+                  <p class="promotion-note">上面的 12 套模板是「本地直接出图」，够快但偏简洁。想让人像、场景、质感更好看，用 Accio 的视觉设计智能体生成；提示词会自动带过去，生成后还能在对话里继续改。</p>
+                  <div class="accio-pick">
+                    <div class="field"><label for="accioModel">推广型号</label><select id="accioModel" autocomplete="off">                  <option value="">— 选择型号 —</option></select><p class="promotion-note" id="accioModelHint">选型号后会自动带出已收录参数。</p></div>
+                    <div class="field"><label for="accioStyle">想要的风格 <span class="hint">可选</span></label><select id="accioStyle"><option value="clean">干净高级 · 白底留白</option><option value="scene">真实场景 · 桌面实拍感</option><option value="bold">大字冲击 · 促销感</option><option value="magazine">杂志质感 · 编辑排版</option><option value="tech">科技感 · 深色光影</option></select></div>
+                  </div>
+                  <div class="field"><label for="accioHighlight">这次特别想宣传的亮点 <span class="hint">留空则自动补充</span></label><textarea id="accioHighlight" maxlength="600" style="min-height:76px;font-family:inherit;font-size:13px" placeholder="例：3:2 OLED 触控屏，写作业和看剧都够用&#10;不填也行 —— 留空会按已收录卖点 + 推广人群自动补一条，你再改。"></textarea><p class="promotion-note" id="accioHighlightHint" role="status" aria-live="polite">留空时自动用已收录卖点补充，不会编造价格或活动。</p></div>
+                  <div class="action-row"><button class="primary" id="accioMakePrompt" type="button">生成提示词</button><button class="outline-btn" id="accioCopyPrompt" type="button" disabled>只复制提示词</button><button class="outline-btn" id="accioOpen" type="button" disabled>打开 Accio 并带上提示词</button></div>
+                  <p class="promotion-note" id="accioStatus" role="status" aria-live="polite">先选型号，再点「生成提示词」。</p>
+                  <details class="promo-more" id="accioPromptBox" hidden>
+                    <summary>查看 / 修改提示词（发过去之前可以自己改）</summary>
+                    <div class="promo-more-body">
+                      <div class="field"><label for="accioPrompt">提示词全文</label><textarea id="accioPrompt" spellcheck="false" aria-describedby="accioPromptNote"></textarea><p class="promotion-note" id="accioPromptNote">可以直接在这里改；改完点「打开 Accio」会用你改后的版本。</p></div>
+                    </div>
+                  </details>
+                  <details class="promo-more">
+                    <summary>Accio 里怎么继续改（生成后）</summary>
+                    <div class="promo-more-body">
+                      <p class="canva-step" style="margin:0"><b>1</b> 首次使用要先登录 Accio（网页版免下载）；提示词会自动填进输入框，确认后发送。</p>
+                      <p class="canva-step" style="margin:0"><b>2</b> 它会一次给几张不同风格；挑一张，直接说哪里改，例如「横幅文字被压住了」「首页没有产品」「主标题再大一点」。</p>
+                      <p class="canva-step" style="margin:0"><b>3</b> 满意后下载图片；需要 3:4 竖版就再说一句「导出 1080×1440 竖版」。</p>
+                      <p class="promotion-note" style="margin:0">价格、库存、活动、门店信息：提示词里已经写了「未核实不得编造」，生成后请自己再核一遍再发布。</p>
+                    </div>
+                  </details>
+                </div>
+
+                <details class="promo-more canva-handoff" aria-labelledby="canvaHandoffHeading">
+                  <summary id="canvaHandoffHeading">备选：去可画自己挑模板</summary>
+                  <div class="promo-more-body canva-handoff">
+                  <p class="promotion-note">想自己控制排版就用可画。下面三个入口都是可画官方模板库，点开挑一个，再用「产品信息卡」把文字贴进去。</p>
                   <div class="canva-gallery-links">
                     <a class="gallery-link" href="https://www.canva.cn/rednote/templates/posts/" target="_blank" rel="noopener noreferrer"><span class="gallery-name">小红书封面模板库</span><span class="gallery-desc">上万套，3:4 竖版</span></a>
                     <a class="gallery-link" href="https://www.canva.cn/templates/?query=%E7%94%B5%E5%95%86%E6%B5%B7%E6%8A%A5" target="_blank" rel="noopener noreferrer"><span class="gallery-name">电商海报模板</span><span class="gallery-desc">促销、上新、主图</span></a>
@@ -625,7 +667,8 @@
                       <div class="action-row"><button class="outline-btn" id="promotionOpenCanva" type="button">打开我的模板</button></div>
                     </div>
                   </details>
-                </div>
+                  </div>
+                </details>
               </section>
               <p id="promotionStatus" class="promotion-note" role="status" aria-live="polite">填写素材后生成三平台草稿。切换平台不丢失编辑，重新生成先预览候选稿。</p>
               <div class="promotion-pending" id="promotionPending" hidden>
@@ -950,7 +993,25 @@
 
     async function handleFiles(files){state.files=Array.from(files);state.fileContexts=[];const results=[];for(const file of state.files){const ext=file.name.split('.').pop().toLowerCase();if(['txt','md','csv'].includes(ext)){if(file.size>1024*1024){results.push({name:file.name,status:'超过 1 MB，未读取'});continue;}try{const text=(await file.text()).slice(0,200000).replace(/\u0000/g,'');state.fileContexts.push({name:file.name,text});results.push({name:file.name,status:`已读取 ${text.length} 字符`});}catch{results.push({name:file.name,status:'读取失败'});}}else results.push({name:file.name,status:'格式未解析'});}$('fileList').innerHTML=results.length?results.map((item)=>`<li><span>${escapeHTML(item.name)}</span><span class="file-status">${escapeHTML(item.status)}</span></li>`).join(''):'<li><span>尚未选择文件</span><span class="file-status">无本地上下文</span></li>';showToast(`已读取 ${state.fileContexts.length} 个文本资料`);}
     function setReference(open){state.referenceOpen=open;document.querySelector('.consult-grid').style.gridTemplateColumns=open?'':'minmax(0,1fr)';$('referencePane').classList.toggle('collapsed',!open);$('referencePane').classList.toggle('mobile-collapsed',!open);$('referenceToggle').textContent=open?'隐藏资料栏':'恢复资料栏';$('referenceToggle').setAttribute('aria-expanded',String(open));}
-    async function copyText(text,message){if(!text){showToast('当前没有可复制内容');return;}try{await navigator.clipboard.writeText(text);showToast(message);}catch{showToast('浏览器未授权复制，请手动选择内容');}}
+    /* 复制文本：file:// 下 navigator.clipboard 常被禁用，需回退到 execCommand，否则按钮等于失效。 */
+    async function copyText(text,message){
+      if(!text){showToast('当前没有可复制内容');return false;}
+      try{await navigator.clipboard.writeText(text);showToast(message);return true;}catch{}
+      try{
+        const area=document.createElement('textarea');
+        area.value=text;
+        area.setAttribute('readonly','');
+        area.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+        document.body.appendChild(area);
+        area.select();
+        area.setSelectionRange(0,area.value.length);
+        const ok=document.execCommand('copy');
+        document.body.removeChild(area);
+        if(ok){showToast(message);return true;}
+      }catch{}
+      showToast('浏览器未授权复制，请手动选择内容');
+      return false;
+    }
     function savePersona(){readPersonaForm();const text=$('scene').value.trim(),insight=classify(text),product=selectProduct(text);renderPersona(text,insight,false);renderQuote(text,insight,product);renderFollow(insight);renderContent(text,insight,product,$('platform').value);if($('question').value.trim())answerQuestion();$('personaStatus').textContent='已保存并应用到咨询、报价、计划与介绍卡';persist();showToast('画像已保存并联动更新');}
     function generate({preservePersona=false}={}){const text=$('scene').value.trim()||'客户想了解华为 MateBook 产品方案，但尚未提供具体需求。',insight=classify(text);if(!preservePersona||!state.persona)state.persona=inferProfile(text,insight);const product=selectProduct(text);renderPersona(text,insight,false);renderQuote(text,insight,product);renderFollow(insight);renderContent(text,insight,product,$('platform').value);$('goalLabel').textContent=$('goal').value;$('platformLabel').textContent=$('platform').value;persist();showToast('新场景方案已更新');}
     function refreshAll(){if(!state.result)return;readQuoteForm();renderSelectedProductDetails();renderFollow(state.result.insight);renderContent(state.result.text,state.result.insight,state.result.product,$('platform').value);$('goalLabel').textContent=$('goal').value;$('platformLabel').textContent=$('platform').value;}
@@ -1054,6 +1115,7 @@
       $('promotionProductMatch').textContent=message||(product?`已匹配：${product.name}（${product.category}）。`:'尚未确认产品。');
       if(promotion.pending){promotion.pending=null;showPromotionPending();}$('promotionAiConsent').checked=false;
       if(coverState.photo||coverState.loading){$('promotionCoverPhoto').value='';loadCoverPhoto(null);}
+      syncAccioModelFromProduct(product);
       updatePromotionFacts();setCoverDefaults(true);markCoverStale('产品或来源已变化，请重新生成封面。');
     }
     function renderPromotionCandidates(matches){
@@ -2024,6 +2086,194 @@ const POSTER_TEMPLATES = [
       const platformDraft=promotion.current?.drafts?.xhs;
       return ["可画设计简报（换模板/改版式时给设计看的那份）","平台：小红书封面","尺寸：1080 × 1440 px（3:4 竖版）","留白：左右各 72px、上下各 60px 内不要放正文，避免被裁",`产品：${product.name}`,`主标题：${main||"待填写"}`,`第二行亮点：${emph||"无"}`,`副标题：${sub||"无"}`,`版式倾向：${template}`,coverTemplateTip(),`强调色：${accent}（整张图只用这一个彩色，别加第二个）`,`字数上限：主标题 ≤14 字、第二行 ≤12 字、副标题 ≤20 字`,`产品资料来源：${product.source}`,platformDraft?`小红书正文草稿（配套发布用，不进图）：\n${platformDraft.title}\n${platformDraft.body}`:"尚未生成小红书正文草稿","使用说明：可画不支持网页自动填充，请在可画里手动替换标题、亮点、副标题和产品照片；价格、库存、活动及门店信息需按已核实内容填写。"].join("\n");
     }
+
+    /* ================= Accio 精修海报交接 =================
+     * 定位：本地 12 套模板负责「快」，Accio 的视觉设计智能体负责「好看」。
+     * 关键约束：Accio 支持 ?askParams={"question":...} 深链，提示词能自动带过去；
+     *          但首次使用要登录，且对话式改图在它那边完成，本页不接管。 */
+    const ACCIO_STYLE_TEXT = {
+      clean: '干净高级：大留白、单一视觉焦点、无装饰边框，接近苹果官网那种克制排版',
+      scene: '真实场景：笔记本放在桌面或书桌上，有咖啡/笔记本/台灯等自然道具，生活实拍感，不要像渲染图',
+      bold: '大字冲击：主标题占画面 1/3 以上，色块对比强烈，一眼在信息流里被抓住',
+      magazine: '杂志质感：编辑式排版、粗细字重对比、细分割线、留白讲究，像时尚杂志内页',
+      tech: '科技感：深色背景、屏幕冷光、材质反光、渐变光影，突出硬件的精密感'
+    };
+    /* 从已收录产品取一条可用的亮点兜底：优先官方 point，其次人群标签。
+     * 绝不编造价格、库存、活动 —— 这些必须人工核实。 */
+    function accioAutoHighlight(product) {
+      if (!product) return '';
+      const fit = (product.fit || []).slice(0, 3);
+      const point = (product.point || '').replace(/[。\s]+$/, '');
+      if (point && fit.length) return point + '（重点覆盖：' + fit.join('、') + '）';
+      if (point) return point;
+      if (fit.length) return '主打方向：' + fit.join('、');
+      return '';
+    }
+    function accioProductByModel(name) {
+      return knowledgeBase.products.find(product => product.name === name) || null;
+    }
+    function buildAccioPrompt(product, highlight, styleKey) {
+      if (!product) return '';
+      const style = ACCIO_STYLE_TEXT[styleKey] || ACCIO_STYLE_TEXT.clean;
+      const usedAuto = !highlight;
+      const point = usedAuto ? accioAutoHighlight(product) : highlight;
+      const main = ($('promotionCoverMain').value || '').trim();
+      const emph = ($('promotionCoverEmph').value || '').trim();
+      const sub = ($('promotionCoverSub').value || '').trim();
+      const audience = $('promotionAudience').value;
+      const purpose = $('promotionPurpose').value;
+      const accent = $('promotionCoverColor').value;
+
+      const lines = [
+        '请帮我做一张小红书封面海报，用你的海报生成能力直接出图。',
+        '',
+        '【画幅】3:4 竖版，1080 × 1440 px。主体和文字都不要贴边，四周至少留 72px 安全边。',
+        '',
+        '【产品】' + product.name,
+        '品类：' + product.category,
+        '系统：' + product.system,
+        '处理器（系列选项，不代表当前实机 SKU）：' + product.cpu,
+        '屏幕：' + product.screen
+      ];
+      if (product.weight) lines.push('重量：' + product.weight);
+      lines.push(
+        '',
+        '【这一版要突出】',
+        point || '（未填，请按上面的屏幕与系统信息提炼一条，不要编造）',
+        '',
+        '【文案】',
+        '主标题：' + (main || '请按产品亮点自己拟一条，8–14 字'),
+        '第二行：' + (emph || '可省略'),
+        '副标题：' + (sub || '可省略')
+      );
+      if (main) lines.push('（主标题已定，图上必须原样出现这行字，不要改写、不要加字）');
+      lines.push(
+        '',
+        '【风格】' + style,
+        '',
+        '【配色】主色 ' + accent + '，整张图只用这一个彩色，不要加第二个高饱和色。文字与底色对比要够，缩到手机小图也能读清。',
+        '',
+        '【给谁看】' + audience + '；这条内容是「' + purpose + '」用的，语气贴近真实店员，不喊口号。',
+        '',
+        '【硬性要求】',
+        '1. 图上文字只用上面给出的中文，不要自己加英文标语、假 logo、假评分、假奖项。',
+        '2. 不要出现价格、折扣、库存、赠品、活动期限 —— 这些还没核实。',
+        '3. 产品外观按真实笔记本比例画，不要变形、不要长出不存在的接口和图案。',
+        '4. 先给我 3 个不同方向，我挑一个再细改。'
+      );
+      return lines.join('\n');
+    }
+    /* Accio 的 Web Portal 入口，question 会自动填进输入框 */
+    function accioDeepLink(prompt) {
+      return 'https://www.accio.com/work/app?askParams=' +
+        encodeURIComponent(JSON.stringify({ question: prompt, questionType: 'v1_biz' }));
+    }
+    function accioReady() {
+      const prompt = ($('accioPrompt')?.value || '').trim();
+      return prompt.length > 0;
+    }
+    function setAccioButtons(ready) {
+      $('accioCopyPrompt').disabled = !ready;
+      $('accioOpen').disabled = !ready;
+    }
+    function accioModelHint(product) {
+      if (!product) return '选型号后会自动带出已收录参数。';
+      return '已收录：' + product.system + ' ｜ ' + product.screen;
+    }
+    function makeAccioPrompt() {
+      const model = $('accioModel').value;
+      const product = accioProductByModel(model);
+      if (!product) {
+        $('accioStatus').textContent = '请先选择一个推广型号。不认识的产品不会凭空生成参数。';
+        return;
+      }
+      const typed = $('accioHighlight').value.trim();
+      const prompt = buildAccioPrompt(product, typed, $('accioStyle').value);
+      $('accioPrompt').value = prompt;
+      $('accioPromptBox').hidden = false;
+      $('accioPromptBox').open = true;
+      setAccioButtons(true);
+      $('accioHighlightHint').textContent = typed
+        ? '已用你填的亮点；生成前可以再改。'
+        : '你没填亮点，已按已收录卖点自动补了一条：' + accioAutoHighlight(product);
+      $('accioStatus').textContent = '提示词已生成（' + prompt.length + ' 字）。可以点「打开 Accio 并带上提示词」，提示词会自动填进输入框。';
+      showToast('提示词已生成');
+    }
+    function openAccio() {
+      const prompt = ($('accioPrompt').value || '').trim();
+      if (!prompt) { $('accioStatus').textContent = '还没有提示词，请先点「生成提示词」。'; return; }
+      const url = accioDeepLink(prompt);
+      if (url.length > 7500) {
+        $('accioStatus').textContent = '提示词太长（' + prompt.length + ' 字），链接可能被浏览器截断。请点「只复制提示词」，到 Accio 里粘贴。';
+        copyText(prompt, '提示词已复制，去 Accio 粘贴');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+      $('accioStatus').textContent = '已在新标签打开 Accio。首次使用需登录；登录后提示词会自动填进输入框，确认后发送。生成后直接说要改哪里，它会接着改。';
+    }
+    function syncAccioModelFromProduct(product) {
+      if (!$('accioModel')) return;
+      $('accioModel').value = product?.name || '';
+      $('accioModelHint').textContent = accioModelHint(product);
+      if (product) {
+        // 型号变了，旧提示词就过期了，避免拿 A 的提示词生 B 的图
+        $('accioPrompt').value = '';
+        setAccioButtons(false);
+        $('accioStatus').textContent = '型号已切换为「' + product.name + '」，请重新生成提示词。';
+      }
+    }
+    function initAccioHandoff() {
+      const select = $('accioModel');
+      if (!select) return;
+      const groups = {};
+      knowledgeBase.products.forEach(product => {
+        const key = product.category || '其他';
+        (groups[key] = groups[key] || []).push(product);
+      });
+      select.replaceChildren();
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— 选择型号 —';
+      select.appendChild(blank);
+      Object.keys(groups).forEach(category => {
+        const group = document.createElement('optgroup');
+        group.label = category;
+        groups[category].forEach(product => {
+          const option = document.createElement('option');
+          option.value = product.name;
+          option.textContent = product.name;
+          group.appendChild(option);
+        });
+        select.appendChild(group);
+      });
+      select.value = promotion.product?.name || '';
+      $('accioModelHint').textContent = accioModelHint(promotion.product);
+
+      select.addEventListener('change', () => {
+        const product = accioProductByModel(select.value);
+        setPromotionProduct(product, product
+          ? '已从 Accio 型号下拉选择：' + product.name + '（' + product.category + '）。'
+          : '尚未确认产品。');
+        // setPromotionProduct 内部会回到 syncAccioModelFromProduct，这里补一次提示
+        $('accioModelHint').textContent = accioModelHint(product);
+        if (product) $('accioStatus').textContent = '型号已选「' + product.name + '」，点「生成提示词」即可。';
+      });
+      $('accioMakePrompt').addEventListener('click', makeAccioPrompt);
+      $('accioCopyPrompt').addEventListener('click', () => {
+        const prompt = $('accioPrompt').value.trim();
+        if (!prompt) return;
+        copyText(prompt, '提示词已复制');
+        $('accioStatus').textContent = '已复制。到 Accio 新建任务，粘贴发送即可。';
+      });
+      $('accioOpen').addEventListener('click', openAccio);
+      // 用户改了提示词正文，按钮状态跟着变
+      $('accioPrompt').addEventListener('input', () => setAccioButtons(accioReady()));
+      $('accioHighlight').addEventListener('input', () => {
+        $('accioHighlightHint').textContent = $('accioHighlight').value.trim()
+          ? '已用你填的亮点。'
+          : '留空时自动用已收录卖点补充，不会编造价格或活动。';
+      });
+    }
+
     function openCanvaTemplate(){
       const raw=$('promotionCanvaUrl').value.trim();
       if(!raw){$('promotionCanvaStatus').textContent='请先粘贴可画模板分享链接；也可以先复制设计简报。';return;}
@@ -2089,6 +2339,7 @@ const POSTER_TEMPLATES = [
       $('promotionCoverColor').addEventListener('change',()=>setCoverColor($('promotionCoverColor').value));
       $('promotionCopyProductCard').addEventListener('click',()=>{const card=buildProductCard();if(!card){$('promotionCanvaStatus').textContent='请先查找并确认产品，再复制产品信息卡。';return;}copyText(card,'产品信息卡已复制，去可画粘进去');$('promotionCanvaStatus').textContent='已复制产品信息卡。在可画双击文字框，一次粘一段（主标题、亮点、副标题、产品名），粘完删掉【】这行。';});
       buildTemplateGallery();setCoverColor($('promotionCoverColor').value,true);
+      initAccioHandoff();
       $('promotionCoverGenerate').addEventListener('click',generatePoster);
       $('promotionCoverDownload').addEventListener('click',()=>{if(!coverState.generated||coverState.signature!==coverSignature()){markCoverStale('封面已过期，请重新生成后下载。');return;}try{const a=$('promotionCoverSaveLink');if(!a.href||!coverState.blobUrl)throw new Error('PNG 下载链接不存在');a.click();$('promotionCoverStatus').textContent='已发起 PNG 下载。如浏览器未保存，请使用下方持久备用链接，或打开原图后右键/长按保存。';}catch(error){$('promotionCoverStatus').textContent=`自动下载不可用：${error.message}。请使用下方“保存 PNG 图片”或“打开原图”备用链接。`;}});
       $('promotionEditors').innerHTML=Object.entries(promotionPlatforms).map(([key,label])=>`<div class="promotion-editor" id="promotionEditor-${key}" role="tabpanel" aria-labelledby="promotionTab-${key}" ${key==='xhs'?'':'hidden'}><label for="promotionTitle-${key}">${label}标题 · 可编辑</label><input id="promotionTitle-${key}" placeholder="生成后可修改标题" />${key==='xhs'?'<div class="title-alt" id="promotionAltTitles" hidden><span class="title-alt-label">换个标题</span><div class="title-alt-list" id="promotionAltList"></div></div>':''}<label for="promotionBody-${key}">${label}正文 · 可编辑</label><textarea id="promotionBody-${key}" placeholder="本地草稿将在这里生成"></textarea><div class="action-row"><button class="secondary-btn" type="button" data-promotion-copy="${key}" disabled>复制${label}标题与正文</button></div></div>`).join('');
