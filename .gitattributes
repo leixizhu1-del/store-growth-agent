@@ -1,0 +1,20 @@
+# 统一换行符处理，避免不同系统下产生无意义 diff
+#
+# 背景：index.html 一直是 CRLF（Windows 格式）。
+# 如果 Mac/Linux 协作者直接提交，整文件可能被转成 LF，产生 2000+ 行全文件 diff，
+# 让别人完全无法 review 实际改了什么。
+#
+# 规则：仓库内统一存 LF，检出时按平台自动转换。
+# Windows 上仍是 CRLF（和以前一样，编辑器不会报警），Mac/Linux 上是 LF。
+# GitHub 上存的始终是 LF，所以 diff 只反映真实内容变化。
+
+* text=auto
+
+# 二进制文件不做换行转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
