@@ -366,7 +366,9 @@
     .cover-preview { width:min(100%,380px); margin:18px auto; }
     #promotionCoverCanvas { display:block; width:100%; height:auto; aspect-ratio:3/4; border:1px solid var(--line); background:var(--paper-2); border-radius:6px; }
     .cover-links { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
-    .cover-links a,.promotion-source-links a { color:var(--accent); overflow-wrap:anywhere; }
+    .cover-links a { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:1px solid var(--line); border-radius:8px; font-size:12.5px; text-decoration:none; background:#fff; }
+    .cover-links a:hover { border-color:var(--accent); }
+    .promotion-source-links a { color:var(--accent); overflow-wrap:anywhere; }
     .promotion-source-links { display:flex; flex-wrap:wrap; gap:12px; font-size:12px; line-height:1.8; }
     .canva-handoff { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
     .canva-handoff h5 { margin:0 0 8px; font-size:14px; }
@@ -376,6 +378,40 @@
     @media(max-width:560px) { .cover-fields { grid-template-columns:1fr; } }
     #promotionPage button:disabled { opacity:.55; cursor:not-allowed; }
     @media(max-width:920px) { .promotion-layout { grid-template-columns:1fr; } }
+    .promo-hidden-field { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+    .promo-inline-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .promo-inline-row .field { min-width:0; margin:0; }
+    .promo-more { margin:14px 0 0; border:1px solid var(--line); border-radius:10px; padding:0 14px; background:rgba(0,0,0,.012); }
+    .promo-more > summary { cursor:pointer; padding:12px 0; font-size:13px; font-weight:500; list-style:none; display:flex; align-items:center; gap:8px; }
+    .promo-more > summary::-webkit-details-marker { display:none; }
+    .promo-more > summary::before { content:"+"; font-weight:400; font-size:15px; color:var(--muted); width:12px; }
+    .promo-more[open] > summary::before { content:"−"; }
+    .promo-more-body { padding:4px 0 14px; display:grid; gap:12px; }
+    .promo-more-body .field { margin:0; }
+    .cover-templates { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 16px; }
+    .cover-tpl { display:flex; flex-direction:column; gap:3px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; text-align:left; font-family:inherit; transition:border-color .15s ease; }
+    .cover-tpl:hover { border-color:var(--accent); }
+    .cover-tpl.is-active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+    .cover-tpl .tpl-name { font-size:13px; font-weight:500; color:var(--text); }
+    .cover-tpl .tpl-desc { font-size:11px; color:var(--muted); }
+    .cover-swatches { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; }
+    .swatch { width:26px; height:26px; border-radius:50%; border:2px solid transparent; background:var(--sw); cursor:pointer; padding:0; box-shadow:inset 0 0 0 1px rgba(255,255,255,.5); }
+    .swatch.is-active { border-color:var(--text); }
+    .swatch-custom { width:34px; height:28px; padding:2px; border-radius:8px; cursor:pointer; border:1px solid var(--line); background:#fff; }
+    .canva-gallery-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0; }
+    .gallery-link { display:flex; flex-direction:column; gap:3px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; text-decoration:none; transition:border-color .15s ease; }
+    .gallery-link:hover { border-color:var(--accent); }
+    .gallery-link .gallery-name { font-size:13px; font-weight:500; color:var(--text); }
+    .gallery-link .gallery-desc { font-size:11px; color:var(--muted); }
+    .canva-steps { display:grid; gap:6px; margin:0 0 14px; }
+    .canva-step { margin:0; font-size:12px; color:var(--muted); line-height:1.7; display:flex; gap:8px; align-items:flex-start; }
+    .canva-step b { flex:0 0 18px; height:18px; border-radius:50%; background:var(--accent); color:#fff; font-size:11px; font-weight:500; display:inline-flex; align-items:center; justify-content:center; margin-top:2px; }
+    .title-alt { margin:6px 0 2px; display:grid; gap:6px; }
+    .title-alt-label { font-size:11px; color:var(--muted); letter-spacing:.02em; }
+    .title-alt-list { display:grid; gap:6px; }
+    .title-alt-btn { text-align:left; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; font-size:12.5px; color:var(--text); cursor:pointer; line-height:1.45; transition:border-color .15s ease,background .15s ease; }
+    .title-alt-btn:hover { border-color:var(--accent); background:rgba(49,103,227,.03); }
+    @media(max-width:760px) { .cover-templates, .canva-gallery-links { grid-template-columns:1fr; } .promo-inline-row { grid-template-columns:1fr; } }
     @media(max-width:560px) { .promotion-editor textarea { min-height:300px; } #promotionPage .action-row > button { flex:1 1 160px; } }
   </style>
 </head>
@@ -484,22 +520,29 @@
         <div class="promotion-layout">
           <section class="panel"><div class="panel-head"><h3>真实素材表单</h3><span>独立于咨询与报价</span></div><div class="panel-body">
             <fieldset class="promotion-fields" id="promotionFields" aria-label="推广素材">
-              <div class="field"><label for="promotionProductQuery">想推广的产品</label><input id="promotionProductQuery" list="promotionProductOptions" maxlength="160" placeholder="输入产品名、别名或关键词，支持所有已收录分类" autocomplete="off" /><datalist id="promotionProductOptions"></datalist><div class="action-row"><button class="outline-btn" id="promotionFindProduct" type="button">查找产品资料</button></div><p class="promotion-note" id="promotionProductMatch" role="status" aria-live="polite">请输入产品或从下方选择，不会自动套用默认产品。</p><div class="promotion-candidates" id="promotionProductCandidates" aria-label="匹配产品候选"></div></div>
-              <div class="field"><label for="promotionProduct">已收录产品 · 全分类</label><select id="promotionProduct"></select></div>
-              <div class="field"><label for="promotionAudience">目标人群</label><select id="promotionAudience"><option>学生</option><option>差旅</option><option>创作者</option><option>家庭办公</option></select></div>
-              <div class="field"><label for="promotionPurpose">内容目的</label><select id="promotionPurpose"><option>邀约体验</option><option>选购答疑</option><option>门店日常</option></select></div>
-              <div class="field"><label for="promotionStore">门店名称</label><input id="promotionStore" maxlength="100" placeholder="填写真实店名；留空不会代编" /></div>
-              <div class="field"><label for="promotionAddress">门店地址</label><input id="promotionAddress" maxlength="240" placeholder="实际地址；留空改为私信确认路线" /></div>
-              <div class="field"><label for="promotionObservation">真实现场观察 · 关键差异化</label><textarea id="promotionObservation" maxlength="1600" placeholder="写下自己确实观察到的细节：什么场景、做了什么、看到了什么和限制条件。不填客户身份，不把计划写成已发生的体验。"></textarea></div>
-              <div class="field"><label for="promotionActivity">已确认活动 <span class="hint">可选，不填不写优惠</span></label><textarea id="promotionActivity" maxlength="1000" placeholder="仅填已获确认的活动原文，含适用型号/配置、时间、限制与审批依据；不猜折扣、赠品或库存。"></textarea></div>
-              <label class="promotion-check"><input type="checkbox" id="promotionActivityConfirmed" />已核实活动适用条件、有效期和授权；未勾选的活动不会进入文案或发送给模型。</label>
-              <div class="field"><label for="promotionAngle">素材角度</label><select id="promotionAngle"><option value="scene">场景任务拆解</option><option value="question">选购问题卡</option><option value="detail">现场细节记录</option><option value="checklist">到店验证清单</option></select></div>
+              <div class="field"><label for="promotionProductQuery">推广哪款产品</label><input id="promotionProductQuery" list="promotionProductOptions" maxlength="160" placeholder="输入产品名或关键词，如 MateBook D 16" autocomplete="off" /><datalist id="promotionProductOptions"></datalist><p class="promotion-note" id="promotionProductMatch" role="status" aria-live="polite">输入产品名就能看到候选，点一个确认；不会自动套用默认产品。</p><div class="promotion-candidates" id="promotionProductCandidates" aria-label="匹配产品候选"></div></div>
+              <div class="field promo-hidden-field"><label for="promotionProduct">已收录产品 · 全分类</label><select id="promotionProduct"></select></div>
+              <div class="promo-inline-row">
+                <div class="field"><label for="promotionAudience">给谁看</label><select id="promotionAudience"><option>学生</option><option>差旅</option><option>创作者</option><option>家庭办公</option></select></div>
+                <div class="field"><label for="promotionPurpose">这条想达成</label><select id="promotionPurpose"><option>邀约体验</option><option>选购答疑</option><option>门店日常</option></select></div>
+              </div>
+              <details class="promo-more" id="promotionMoreOptions">
+                <summary>更多选项 <span class="hint">门店信息、现场细节、活动、内容角度</span></summary>
+                <div class="promo-more-body">
+                  <div class="promo-inline-row">
+                    <div class="field"><label for="promotionStore">门店名称</label><input id="promotionStore" maxlength="100" placeholder="真实店名，留空则不写店名" /></div>
+                    <div class="field"><label for="promotionAddress">门店地址</label><input id="promotionAddress" maxlength="240" placeholder="留空则引导私信确认" /></div>
+                  </div>
+                  <div class="field"><label for="promotionObservation">现场观察 <span class="hint">最能拉开差异，建议填</span></label><textarea id="promotionObservation" maxlength="1600" placeholder="写下你确实看到的：什么场景、顾客问了什么、试了什么、卡在哪里。不写客户身份，不把计划写成已发生。"></textarea></div>
+                  <div class="field"><label for="promotionActivity">已确认活动 <span class="hint">没确认就留空</span></label><textarea id="promotionActivity" maxlength="1000" placeholder="只填已获确认的活动原文：适用型号、时间、限制、审批依据。不猜折扣、赠品或库存。"></textarea></div>
+                  <label class="promotion-check"><input type="checkbox" id="promotionActivityConfirmed" />活动已核实并获授权（未勾选不会写进文案）</label>
+                  <div class="field"><label for="promotionAngle">内容角度</label><select id="promotionAngle"><option value="scene">场景任务拆解</option><option value="question">选购问题卡</option><option value="detail">现场细节记录</option><option value="checklist">到店验证清单</option></select></div>
+                </div>
+              </details>
             </fieldset>
-            <div class="action-row"><button class="primary" id="promotionGenerate" type="button">一键生成三平台草稿</button><button class="outline-btn" id="promotionNextAngle" type="button">换角度（生成候选）</button></div>
-            <p class="promotion-note">生成方式：结构化本地草稿（规则模板，非 AI）。真实观察和验证问题用于差异化，不承诺全网或全球去重。资料只留在当前页面，刷新不保留；不会自动发布。</p>
+            <div class="action-row"><button class="primary" id="promotionGenerate" type="button">生成三平台文案</button><button class="outline-btn" id="promotionNextAngle" type="button">换个角度</button></div>
             <p class="promotion-note" id="promotionMissing" role="status"></p>
-            <details class="source-details"><summary>本次产品事实与来源</summary><p class="promotion-note" id="promotionFacts"></p><div class="promotion-source-links" id="promotionSourceLinks"></div></details>
-            <p class="promotion-note">查询使用当前页面已内嵌的知识库与官方资料，不实时抓取官网。官方链接供手动查阅，价格和现货需另行核实。</p>
+            <details class="source-details"><summary>产品事实与来源</summary><p class="promotion-note" id="promotionFacts"></p><div class="promotion-source-links" id="promotionSourceLinks"></div></details>
           </div></section>
           <div>
             <section class="panel"><div class="panel-head"><h3>三平台可编辑文案</h3><span id="promotionOrigin">尚未生成</span></div><div class="panel-body">
@@ -510,27 +553,60 @@
               </div>
               <div id="promotionEditors"></div>
               <section class="promotion-cover" id="promotionCover" aria-labelledby="promotionCoverHeading">
-                <h4 id="promotionCoverHeading">小红书封面制作</h4>
-                <p class="promotion-note">按 xhs-cover-maker 的 knowledge / interest / promo 模板规则移植到浏览器 Canvas 确定性排版；不在浏览器运行 Python。固定 1080×1440，左右至少 72px、上下至少 60px 安全区，最多一种强调色。无照片时生成纯色信息封面，不编造产品外观。</p>
+                <h4 id="promotionCoverHeading">小红书封面</h4>
                 <p class="promotion-note" id="promotionCoverSource">先查找并确认推广产品。</p>
-                <div class="cover-fields" id="promotionCoverFields">
-                  <div class="field cover-wide"><label for="promotionCoverMain">主标题（必填）<span class="hint">建议 8–14 字，过长会自动缩字</span></label><input id="promotionCoverMain" maxlength="180" required aria-describedby="promotionCoverTitleHint" /><p class="promotion-note" id="promotionCoverTitleHint">建议主标题不超过 14 字，细节放到副标题。</p></div>
-                  <div class="field cover-wide"><label for="promotionCoverEmph">强调句（可选）</label><input id="promotionCoverEmph" maxlength="120" placeholder="与主标题互补；不虚构价格、优惠或效果" /></div>
-                  <div class="field cover-wide"><label for="promotionCoverSub">副标题（可选）</label><input id="promotionCoverSub" maxlength="240" placeholder="关键词用 · 分隔" /></div>
-                  <div class="field"><label for="promotionCoverTemplate">封面模板</label><select id="promotionCoverTemplate"><option value="knowledge">knowledge · 上方大字 / 下方配图</option><option value="interest">interest · 上图下文 / 白色边框</option><option value="promo">promo · 顶部标题 / 利益点标签</option></select></div>
-                  <div class="field"><label for="promotionCoverColor">单一强调色</label><input id="promotionCoverColor" type="color" value="#ffe45c" /></div>
-                  <div class="field cover-wide"><label for="promotionCoverPhoto">本地产品照片（可选，≤20MB）</label><input id="promotionCoverPhoto" type="file" accept="image/*" /><p class="promotion-note" id="promotionCoverPhotoStatus" role="status">未上传照片：使用纯色信息封面。照片仅在本页处理，请上传与所选产品一致的真实照片。</p><div class="action-row"><button class="outline-btn" id="promotionCoverClearPhoto" type="button">移除照片</button><button class="outline-btn" id="promotionCoverDefaults" type="button">使用产品与人群默认文案</button></div></div>
+                <div class="cover-templates" id="promotionCoverTemplates" role="radiogroup" aria-label="选择封面版式">
+                  <button type="button" class="cover-tpl is-active" data-cover-tpl="bigword" role="radio" aria-checked="true"><span class="tpl-name">大字标题</span><span class="tpl-desc">纯色底 + 超大字</span></button>
+                  <button type="button" class="cover-tpl" data-cover-tpl="list" role="radio" aria-checked="false"><span class="tpl-name">清单预告</span><span class="tpl-desc">列 1/2/3 要点</span></button>
+                  <button type="button" class="cover-tpl" data-cover-tpl="photo" role="radio" aria-checked="false"><span class="tpl-name">实拍照片</span><span class="tpl-desc">上图下字</span></button>
                 </div>
-                <div class="action-row"><button class="primary" id="promotionCoverGenerate" type="button">生成封面预览</button><button class="outline-btn" id="promotionCoverDownload" type="button" disabled>下载 PNG · 1080×1440</button></div>
-                <p class="promotion-note" id="promotionCoverStatus" role="status" aria-live="polite">确认产品并填写主标题后生成预览。</p>
-                <div class="cover-preview"><canvas id="promotionCoverCanvas" width="1080" height="1440" role="img" aria-label="小红书封面预览，尚未生成">浏览器不支持 Canvas，请更换支持 Canvas 的浏览器。</canvas></div>
-                <div class="cover-links" id="promotionCoverLinks" hidden><a id="promotionCoverSaveLink" download="小红书封面.png">备用：保存 PNG 图片</a><a id="promotionCoverOpenLink" target="_blank" rel="noopener noreferrer">打开原图（可右键或长按保存）</a></div>
+                <input id="promotionCoverTemplate" type="hidden" value="bigword" />
+                <div class="cover-fields" id="promotionCoverFields">
+                  <div class="field cover-wide"><label for="promotionCoverMain">主标题 <span class="hint">8–14 字最好读</span></label><input id="promotionCoverMain" maxlength="180" required placeholder="例：14 寸轻薄本，通勤只背这一台" /><p class="promotion-note" id="promotionCoverTitleHint">一眼能读懂的短句，比堆参数有效。</p></div>
+                  <div class="field cover-wide"><label for="promotionCoverEmph">第二行亮点 <span class="hint">可选</span></label><input id="promotionCoverEmph" maxlength="120" placeholder="例：现场试机后再决定" /></div>
+                  <div class="field"><label for="promotionCoverColor">主色</label><div class="cover-swatches" id="promotionCoverSwatches" role="radiogroup" aria-label="主色">
+                    <button type="button" class="swatch is-active" data-color="#0B1F3A" style="--sw:#0B1F3A" role="radio" aria-checked="true" aria-label="深蓝"></button>
+                    <button type="button" class="swatch" data-color="#C2185B" style="--sw:#C2185B" role="radio" aria-checked="false" aria-label="玫红"></button>
+                    <button type="button" class="swatch" data-color="#D8452F" style="--sw:#D8452F" role="radio" aria-checked="false" aria-label="橙红"></button>
+                    <button type="button" class="swatch" data-color="#1D6E56" style="--sw:#1D6E56" role="radio" aria-checked="false" aria-label="墨绿"></button>
+                    <button type="button" class="swatch" data-color="#3A3A3C" style="--sw:#3A3A3C" role="radio" aria-checked="false" aria-label="炭黑"></button>
+                    <input id="promotionCoverColor" type="color" value="#0B1F3A" class="swatch-custom" aria-label="自定义主色" />
+                  </div></div>
+                  <div class="field"><label for="promotionCoverPhoto">产品照片 <span class="hint">可选</span></label><input id="promotionCoverPhoto" type="file" accept="image/*" /><p class="promotion-note" id="promotionCoverPhotoStatus" role="status">不传照片也能生成纯色封面。请用真实产品图。</p></div>
+                </div>
+                <details class="promo-more" id="promotionCoverMore">
+                  <summary>更多封面选项</summary>
+                  <div class="promo-more-body">
+                    <div class="field cover-wide"><label for="promotionCoverSub">副标题 <span class="hint">关键词用 · 分隔</span></label><input id="promotionCoverSub" maxlength="240" placeholder="例：学生在校 · 通勤 · 预算" /></div>
+                    <div class="action-row"><button class="outline-btn" id="promotionCoverClearPhoto" type="button">移除照片</button></div>
+                  </div>
+                </details>
+                <div class="action-row"><button class="primary" id="promotionCoverGenerate" type="button">生成封面</button><button class="outline-btn" id="promotionCoverDownload" type="button" disabled>下载 PNG</button></div>
+                <p class="promotion-note" id="promotionCoverStatus" role="status" aria-live="polite">确认产品并填写主标题后生成。</p>
+                <div class="cover-preview"><canvas id="promotionCoverCanvas" width="1080" height="1440" role="img" aria-label="小红书封面预览，尚未生成">浏览器不支持 Canvas，请更换浏览器。</canvas></div>
+                <div class="cover-links" id="promotionCoverLinks" hidden><a id="promotionCoverSaveLink" download="小红书封面.png">备用：保存 PNG</a><a id="promotionCoverOpenLink" target="_blank" rel="noopener noreferrer">打开原图</a></div>
                 <div class="canva-handoff" aria-labelledby="canvaHandoffHeading">
-                  <h5 id="canvaHandoffHeading">可选：交给可画模板继续编辑</h5>
-                  <p class="promotion-note">无需 OAuth。先由门店或品牌方在可画创建并分享一个模板链接，再粘贴到这里。网页会整理当前设计简报，但普通模板链接不能自动预填文字或图片；打开后需手动粘贴文案并替换产品图。</p>
-                  <div class="field"><label for="promotionCanvaUrl">可画模板分享链接</label><input id="promotionCanvaUrl" type="url" inputmode="url" maxlength="1200" placeholder="https://www.canva.cn/design/... 或门店提供的模板链接" /></div>
-                  <div class="action-row"><button class="outline-btn" id="promotionCopyDesignBrief" type="button">复制可画设计简报</button><button class="outline-btn" id="promotionOpenCanva" type="button">打开可画模板</button></div>
-                  <p class="promotion-note" id="promotionCanvaStatus" role="status" aria-live="polite">未填写模板链接时，也可以先复制设计简报。</p>
+                  <h5 id="canvaHandoffHeading">去可画换更好看的模板</h5>
+                  <p class="promotion-note">自己找模板、自己排版更容易做出好看的图。下面三个入口都是可画官方模板库，点开挑一个，再用下面的「产品信息卡」把文字贴进去。</p>
+                  <div class="canva-gallery-links">
+                    <a class="gallery-link" href="https://www.canva.cn/rednote/templates/posts/" target="_blank" rel="noopener noreferrer"><span class="gallery-name">小红书封面模板库</span><span class="gallery-desc">上万套，3:4 竖版</span></a>
+                    <a class="gallery-link" href="https://www.canva.cn/templates/?query=%E7%94%B5%E5%95%86%E6%B5%B7%E6%8A%A5" target="_blank" rel="noopener noreferrer"><span class="gallery-name">电商海报模板</span><span class="gallery-desc">促销、上新、主图</span></a>
+                    <a class="gallery-link" href="https://www.canva.cn/templates/?query=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E5%B0%81%E9%9D%A2" target="_blank" rel="noopener noreferrer"><span class="gallery-name">小红书封面搜索</span><span class="gallery-desc">按风格筛选</span></a>
+                  </div>
+                  <div class="canva-steps">
+                    <p class="canva-step"><b>1</b> 点上面任一入口，在可画挑一个模板</p>
+                    <p class="canva-step"><b>2</b> 回到这里点「复制产品信息卡」</p>
+                    <p class="canva-step"><b>3</b> 在可画里双击文字框，粘贴对应内容，再按喜好改字号和位置</p>
+                  </div>
+                  <div class="action-row"><button class="primary" id="promotionCopyProductCard" type="button">复制产品信息卡</button><button class="outline-btn" id="promotionCopyDesignBrief" type="button">复制完整设计简报</button></div>
+                  <p class="promotion-note" id="promotionCanvaStatus" role="status" aria-live="polite">可画暂不提供网页自动填充，需要手动粘贴；产品信息卡已按模板字段排好顺序。</p>
+                  <details class="promo-more">
+                    <summary>已有自己的可画模板链接？</summary>
+                    <div class="promo-more-body">
+                      <div class="field"><label for="promotionCanvaUrl">模板分享链接</label><input id="promotionCanvaUrl" type="url" inputmode="url" maxlength="1200" placeholder="https://www.canva.cn/design/..." /></div>
+                      <div class="action-row"><button class="outline-btn" id="promotionOpenCanva" type="button">打开我的模板</button></div>
+                    </div>
+                  </details>
                 </div>
               </section>
               <p id="promotionStatus" class="promotion-note" role="status" aria-live="polite">填写素材后生成三平台草稿。切换平台不丢失编辑，重新生成先预览候选稿。</p>
@@ -1021,16 +1097,51 @@
       };
       return actions[form.purpose]+(form.address?`\n地址（店员填写）：${form.address}；出发前请确认营业和演示安排。`:'\n需要到店路线请先私信确认，地址未填写，不直接导航。');
     }
+    function promoShortName(product){return coverProductLabel(product)||product?.name||'';}
+    function xhsShortName(product){return promoShortName(product).replace(/\s+/g,'');}
+    function xhsTitleSet(form,a){
+      const aud=form.audience,cat=form.product.category;
+      const make=[
+        `${aud}选${cat}，先看这三件事`,
+        `${aud}挑${cat}，别只盯参数`,
+        `${aud}选${cat}，容易踩的坑`,
+        `给${aud}的${cat}选购清单`
+      ];
+      const byAngle={
+        scene:[make[0],`${aud}一天下来最卡哪几步`,`${aud}的真实使用任务怎么排`],
+        question:[`${aud}选${cat}先问这一句`,`买${cat}前最容易漏的三问`,`${aud}该不该选这一款`],
+        detail:[`店里记下的一个细节`,`上手第一眼我盯的是这里`,`${aud}最容易忽略的地方`],
+        checklist:[`${aud}到店看${cat}带这张单`,`去店里之前先写这几项`,`照这张单子走一遍就够`]
+      };
+      return byAngle[form.angle]||byAngle.scene;
+    }
+    function xhsBody(form,a,angle){
+      const p=form.product,aud=form.audience,cat=p.category;
+      const hook={
+        scene:`${aud}选${cat}，先搞清自己一天里到底在跑什么任务，比挑型号有用。\n这次拿 ${p.name} 当例子，把任务一件件拆开。`,
+        question:`被问得最多的一句是：${promoShortName(p)}到底够不够用。\n答案取决于你拿它干什么。`,
+        detail:`今天在店里把 ${p.name} 摆出来看了一会儿，记一个不太起眼的细节。\n${form.observation?form.observation.split('\n')[0].slice(0,80):'（这条还没写现场观察，先按待验证项列。）'}`,
+        checklist:`不用先决定买哪款。把需求、常用软件和外设型号带上，到店逐项过一遍就行。\n这张单子可以直接照着走。`
+      }[form.angle];
+      const steps=a.tasks.map((x,idx)=>`${idx+1}️⃣ ${x}`).join('\n');
+      const fact=`资料上写的是：${p.system}；${p.screen}${p.weight?`，${p.weight}`:''}。\n这些是系列参数，具体配置按机身标签再核一遍。`;
+      const obs=form.observation&&form.angle!=='detail'?`这次在现场记到的：\n${form.observation}`:'';
+      const act=form.activity?`店里这条活动我照原文放这儿，条件和期限以门店确认为准：\n${form.activity}`:'';
+      const noPrice=form.activity?'':'价格和库存我没写，问清楚再说。';
+      const tags=[`#${a.tag}`,`#${cat}怎么选`,`#${aud}好物`,`#到店体验`].join(' ');
+      return [hook,obs,`这次按「${angle.label}」走：`,steps,fact,act,noPrice,promotionAction(form,a),tags].filter(Boolean).join('\n\n');
+    }
     function buildPromotionDraft(form){
       if(!form.product)return null;
       const a=promotionAudienceFor(form),angle=promotionAngleCopy(form,a),p=form.product;
       const facts=`知识库参考：${p.name}\n系统：${p.system}\n处理器：${p.cpu}\n屏幕：${p.screen}${p.weight?'\n重量：'+p.weight:''}\n以上按系列资料列示，实际 SKU 与软件适用情况需逐项核对。`;
       const identity=form.store?'门店：'+form.store:'',activity=form.activity?'活动信息（店员已确认原文，仍须复核有效期与条件）：\n'+form.activity:'';
-      const action=promotionAction(form,a),purposeLead={邀约体验:'把想验证的任务带到店里，先沟通演示安排，再决定是否适合。',选购答疑:'选购不是背参数，先分清已知事实和必须现场验证的问题。',门店日常:'这次的门店内容从真实记录出发；未观察到的结果不写成使用结论。'}[form.purpose];
-      const xhs={title:angle.title+'｜'+p.name,body:[angle.lead,purposeLead,angle.body,facts,identity,activity,action,`#${a.tag} #${p.category}选购 #门店记录`].filter(Boolean).join('\n\n')};
-      const wechat={title:`${form.audience}${p.category}选购笔记：${angle.title}`,body:[`一、先看使用场景\n${a.opening}\n${purposeLead}\n这篇围绕 ${p.name}，采用“${angle.label}”梳理问题，不替代具体版本的选购验证。`,`二、把问题落到任务上\n${angle.lead}\n\n${angle.body}`,`三、哪些是资料事实\n${facts}\n资料出处：${p.source}\n系列参数不能证明软件兼容、持续性能或续航表现。下单前需核对销售配置，未取得的价格与库存不作承诺。`,`四、为一次有效沟通做准备\n请准备常用软件名称、版本、文件类型及外设型号。验证时记下具体操作和条件，把实际看到的结果与尚未完成的测试分开记录。\n${a.tasks.map((x,i)=>`${i+1}）${x}`).join('\n')}`,activity?'五、已确认活动记录\n'+activity:'',`下一步\n${identity?identity+'\n':''}${action}`].filter(Boolean).join('\n\n')};
+      const action=promotionAction(form,a);
+      const titles=xhsTitleSet(form,a);
+      const xhs={title:titles[0],body:xhsBody(form,a,angle),alternates:titles};
+      const wechat={title:`${form.audience}选${p.category}：${angle.label}怎么做`,body:[`先看使用场景\n${a.opening}`,angle.body,`哪些是资料事实\n${facts}\n资料出处：${p.source}`,activity,'下一步\n'+[identity,action].filter(Boolean).join('\n')].filter(Boolean).join('\n\n')};
       const shortAngle={scene:a.short,question:a.question,detail:form.observation?'这次只记录一个现场细节，不把它推成所有人的体验。':'暂未填写现场观察，只整理待验证项。',checklist:'到店前准备：'+a.tasks[0]+'；再按实际 SKU 核价。'}[form.angle];
-      const moments={title:`${form.audience}选${p.category} · ${angle.label}`,body:[`${identity?identity+'｜':''}${p.name}`,shortAngle,form.observation?'现场记录'+(form.observation.length>90?'（原文节选，完整条件请私信核对）':'')+'：'+form.observation.slice(0,90)+(form.observation.length>90?'…':''):'尚无现场记录，不提供实测结论。',`资料参考：${p.system}（具体 SKU 与软件支持另核）。`,activity?'有店员已确认活动；适用条件、期限及完整活动内容请私信核对，不在此简写优惠。':'',action].filter(Boolean).join('\n\n')};
+      const moments={title:`${form.audience}选${p.category} · ${angle.label}`,body:[`${identity?identity+'｜':''}${p.name}`,shortAngle,form.observation?'现场记录'+(form.observation.length>90?'（原文节选，完整条件请私信核对）':'')+'：'+form.observation.slice(0,90)+(form.observation.length>90?'…':''):'',`资料参考：${p.system}（具体 SKU 与软件支持另核）。`,activity?'有店员已确认活动；适用条件、期限及完整活动内容请私信核对，不在此简写优惠。':'',action].filter(Boolean).join('\n\n')};
       return {form,formKey:promotionFormKey(form),drafts:{xhs,wechat,moments},origins:{xhs:'结构化本地草稿',wechat:'结构化本地草稿',moments:'结构化本地草稿'}};
     }
     function resetPromotionReview(){document.querySelectorAll('[data-promotion-check]').forEach(input=>input.checked=false);updatePromotionReview();}
@@ -1045,7 +1156,14 @@
       if(!promotion.current)return;
       Object.keys(promotionPlatforms).forEach(key=>{promotion.current.drafts[key]={title:$('promotionTitle-'+key).value,body:$('promotionBody-'+key).value};});
     }
+    function renderAltTitles(){
+      const list=$('promotionAltList'),box=$('promotionAltTitles');if(!list||!box)return;
+      const alts=promotion.current?.drafts?.xhs?.alternates||[];
+      box.hidden=alts.length<2;
+      list.replaceChildren(...alts.map(text=>{const b=document.createElement('button');b.type='button';b.className='title-alt-btn';b.textContent=text;b.title='点击替换标题';b.addEventListener('click',()=>{$('promotionTitle-xhs').value=text;syncPromotionEditors();resetPromotionReview();$('promotionStatus').textContent='已替换小红书标题，正文未改动；发布前请重新完成核对。';});return b;}));
+    }
     function displayPromotionCurrent(){
+      renderAltTitles();
       Object.keys(promotionPlatforms).forEach(key=>{const draft=promotion.current.drafts[key];$('promotionTitle-'+key).value=draft.title;$('promotionBody-'+key).value=draft.body;});
       $('promotionOrigin').textContent=promotion.current.origins[promotion.tab]+' · 可手工编辑';
       document.querySelectorAll('[data-promotion-copy]').forEach(button=>button.disabled=false);
@@ -1121,27 +1239,95 @@
       const product=promotion.product;if(!product){$('promotionCoverMain').value='';$('promotionCoverEmph').value='';$('promotionCoverSub').value='';updateCoverTitleHint();return;}
       const audience=$('promotionAudience').value,label=coverProductLabel(product);
       $('promotionCoverMain').value=`${label}怎么选`;
-      $('promotionCoverEmph').value=`${audience}选购清单`;
-      $('promotionCoverSub').value=`${product.category}·具体版本·真实需求`;
+      $('promotionCoverEmph').value=`${audience}先看这几项`;
+      $('promotionCoverSub').value=`${product.category} · 具体版本 · 真实需求`;
       const angle=$('promotionAngle').value,purpose=$('promotionPurpose').value;
-      $('promotionCoverTemplate').value=purpose==='门店日常'||angle==='scene'?'interest':purpose==='邀约体验'&&$('promotionActivityConfirmed').checked?'promo':'knowledge';
+      setCoverTemplate(coverState.photo?'photo':(purpose==='门店日常'||angle==='scene'?'list':'bigword'),true);
       updateCoverTitleHint();markCoverStale('默认文案已按产品与推广人群更新，请生成封面。');
     }
+    function setCoverTemplate(value,silent=false){
+      const allowed=['bigword','list','photo'];const next=allowed.includes(value)?value:'bigword';
+      $('promotionCoverTemplate').value=next;
+      document.querySelectorAll('[data-cover-tpl]').forEach(button=>{const on=button.dataset.coverTpl===next;button.classList.toggle('is-active',on);button.setAttribute('aria-checked',on?'true':'false');});
+      if(!silent)markCoverStale('版式已切换，请重新生成封面。');
+    }
+    function setCoverColor(value,silent=false){
+      const hex=/^#[0-9a-f]{6}$/i.test(String(value))?String(value).toLowerCase():'#0b1f3a';
+      $('promotionCoverColor').value=hex;
+      document.querySelectorAll('[data-color]').forEach(button=>{const on=button.dataset.color.toLowerCase()===hex;button.classList.toggle('is-active',on);button.setAttribute('aria-checked',on?'true':'false');});
+      if(!silent)markCoverStale('主色已修改，请重新生成封面。');
+    }
     function updateCoverTitleHint(){const count=Array.from($('promotionCoverMain').value.trim()).length;$('promotionCoverTitleHint').textContent=count>14?`当前 ${count} 字，超过 14 字建议；生成时会自动换行缩字，可将细节移到副标题。`:'建议主标题不超过 14 字，细节放到副标题。';}
+    function coverTemplateLabel(value){return {bigword:"大字标题",list:"清单预告",photo:"实拍照片"}[value]||"大字标题";}
+    function coverTemplateTip(value){return {bigword:"纯色底 + 超大字，适合一句结论；标题越短越有力。",list:"编号 1/2/3，适合「几条要点」预告；要点不要超过三条。",photo:"上图下字，适合真机实拍；照片要占满上半屏才好看。"}[value]||"";}
+    function buildProductCard(){
+      const product=promotion.product;if(!product)return "";
+      const main=$("promotionCoverMain").value.trim(),emph=$("promotionCoverEmph").value.trim(),sub=$("promotionCoverSub").value.trim();
+      const audience=$("promotionAudience").value,purpose=$("promotionPurpose").value,template=$("promotionCoverTemplate").value,accent=$("promotionCoverColor").value;
+      const blocks=[
+        "可画产品信息卡 · 小红书封面（1080 × 1440）",
+        "用法：在可画双击文字框，一次只粘一段，粘完把【】这行删掉。",
+        "",
+        "【主标题】",main||"（还没填：回本页填主标题再复制，不要在这里编）",
+        "【第二行亮点】",emph||"（可选，不需要就在可画删掉这个文本框）",
+        "【副标题】",sub||"（可选，关键词用 · 分隔）",
+        "",
+        "【产品名】",product.name,
+        "【一句话卖点】",product.point||"（暂无已收录卖点，请按实机核实后再写）",
+        "",
+        "【关键参数 · 已收录资料】",
+        "系统："+product.system,
+        "处理器（系列选项，非当前实机配置）："+product.cpu,
+        "屏幕："+product.screen+(product.weight?"\n重量："+product.weight:""),
+        "",
+        "【人群 / 目的】",audience+" · "+purpose,
+        "",
+        "【版式与主色】",
+        coverTemplateLabel(template)+" · "+accent,
+        coverTemplateTip(template),
+        "",
+        "【不要写进图里】",
+        "价格、库存、赠品、活动期限、门店优惠：未核实一律不写。",
+        "产品图请用自己拍的真机，别用官方渲染图当「实拍」。",
+        "",
+        "资料来源："+product.source+"（页面已收录，非实时官网抓取）"
+      ];
+      return blocks.join("\n");
+    }
     function buildCanvaDesignBrief(){
-      const product=promotion.product,main=$('promotionCoverMain').value.trim(),emph=$('promotionCoverEmph').value.trim(),sub=$('promotionCoverSub').value.trim(),template=$('promotionCoverTemplate').value,accent=$('promotionCoverColor').value;
-      if(!product)return '';
+      const product=promotion.product,main=$("promotionCoverMain").value.trim(),emph=$("promotionCoverEmph").value.trim(),sub=$("promotionCoverSub").value.trim(),template=coverTemplateLabel($("promotionCoverTemplate").value),accent=$("promotionCoverColor").value;
+      if(!product)return "";
       const platformDraft=promotion.current?.drafts?.xhs;
-      return ['可画设计简报',`平台：小红书封面`,`尺寸：1080 × 1440 px`,`产品：${product.name}`,`主标题：${main||'待填写'}`,`强调句：${emph||'无'}`,`副标题：${sub||'无'}`,`模板参考：${template}`,`强调色：${accent}`,`产品资料来源：${product.source}`,platformDraft?`小红书正文草稿（仅供配套发布）：\n${platformDraft.title}\n${platformDraft.body}`:'尚未生成小红书正文草稿',`使用说明：在可画打开模板后，手动替换标题、强调句、副标题和产品照片；价格、库存、活动及门店信息需按已核实内容填写。`].join('\n');
+      return ["可画设计简报（换模板/改版式时给设计看的那份）","平台：小红书封面","尺寸：1080 × 1440 px（3:4 竖版）","留白：左右各 72px、上下各 60px 内不要放正文，避免被裁",`产品：${product.name}`,`主标题：${main||"待填写"}`,`第二行亮点：${emph||"无"}`,`副标题：${sub||"无"}`,`版式倾向：${template}`,coverTemplateTip($("promotionCoverTemplate").value),`强调色：${accent}（整张图只用这一个彩色，别加第二个）`,`字数上限：主标题 ≤14 字、第二行 ≤12 字、副标题 ≤20 字`,`产品资料来源：${product.source}`,platformDraft?`小红书正文草稿（配套发布用，不进图）：\n${platformDraft.title}\n${platformDraft.body}`:"尚未生成小红书正文草稿","使用说明：可画不支持网页自动填充，请在可画里手动替换标题、亮点、副标题和产品照片；价格、库存、活动及门店信息需按已核实内容填写。"].join("\n");
     }
     function openCanvaTemplate(){
       const raw=$('promotionCanvaUrl').value.trim();
       if(!raw){$('promotionCanvaStatus').textContent='请先粘贴可画模板分享链接；也可以先复制设计简报。';return;}
       try{const url=new URL(raw);if(!/^https?:$/.test(url.protocol)||!/(^|\.)canva\.(cn|com)(\.|\/|$)/i.test(url.hostname))throw new Error('链接域名不是可画官网');window.open(url.href,'_blank','noopener,noreferrer');$('promotionCanvaStatus').textContent='已打开可画模板。普通模板链接不会自动填入本页文字，请按设计简报手动替换。';}catch(error){$('promotionCanvaStatus').textContent=`模板链接无效：${error.message}。请粘贴可画官网分享链接。`;}
     }
-    function wrapCanvasText(ctx,text,maxWidth){
+    const COVER_BREAK_AFTER=/[，,、；;：:！!？?。\s）】」]/;
+    const COVER_NO_LINE_START=/[，,、；;：:！!？?。）】」]/;
+    function wrapCanvasText(ctx,text,maxWidth,targetWidth){
       const chars=Array.from(String(text||'').trim()),lines=[];let line='';
-      for(const char of chars){if(char==='\n'){if(line)lines.push(line);line='';continue;}const next=line+char;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=char;}else line=next;}
+      const limit=targetWidth&&targetWidth>0?Math.min(targetWidth,maxWidth):maxWidth;
+      for(let i=0;i<chars.length;i++){
+        const char=chars[i];
+        if(char==='\n'){if(line)lines.push(line);line='';continue;}
+        const next=line+char;
+        if(line&&ctx.measureText(next).width>limit){
+          // 标点不收行首：把上一行末字一起带下
+          if(COVER_NO_LINE_START.test(char)&&line.length>1){
+            const carried=line.slice(-1);line=line.slice(0,-1);if(line)lines.push(line);line=carried+char;continue;
+          }
+          // 优先在标点/空格后断行
+          let cut=-1;
+          for(let k=line.length-1;k>=Math.max(1,line.length-6);k--){
+            if(COVER_BREAK_AFTER.test(line[k-1]||'')){cut=k;break;}
+          }
+          if(cut>0&&cut<line.length){lines.push(line.slice(0,cut));line=line.slice(cut)+char;}
+          else{lines.push(line);line=char;}
+        }else line=next;
+      }
       if(line)lines.push(line);return lines;
     }
     function fitCanvasText(ctx,text,{maxWidth,maxLines,startSize,minSize,weight=800}){
@@ -1156,39 +1342,79 @@
     function drawCover(){
       const canvas=$('promotionCoverCanvas'),ctx=canvas.getContext('2d');if(!ctx)throw new Error('当前浏览器无法创建 Canvas 画布。');
       const template=$('promotionCoverTemplate').value,accent=$('promotionCoverColor').value,main=$('promotionCoverMain').value.trim(),emph=$('promotionCoverEmph').value.trim(),sub=$('promotionCoverSub').value.trim(),photo=coverState.photo;
-      ctx.clearRect(0,0,1080,1440);ctx.textAlign='left';ctx.lineJoin='round';
-      const themes={knowledge:'#0B1F3A',interest:'#E4002B',promo:'#FF4D2D'},bg=themes[template];ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1440);
-      let textY=0,maxWidth=0;
-      if(template==='knowledge'){
-        if(photo)drawCoverPhoto(ctx,photo,0,960,1080,480);else{ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(72,1040,936,260);}
-        drawCoverBadge(ctx,'干货收藏',96,84,accent,coverContrastColor(accent));ctx.fillStyle=accent;ctx.fillRect(96,200,120,14);textY=258;maxWidth=888;
-        const title=fitCanvasText(ctx,main,{maxWidth,maxLines:3,startSize:104,minSize:54});textY=drawCanvasLines(ctx,title,96,textY,'#FFFFFF')+30;
-        if(emph){const layout=fitCanvasText(ctx,emph,{maxWidth,maxLines:2,startSize:60,minSize:38});textY=drawCanvasLines(ctx,layout,96,textY,accent)+20;}
-        if(sub){const layout=fitCanvasText(ctx,sub,{maxWidth,maxLines:2,startSize:38,minSize:28,weight:700});drawCanvasLines(ctx,layout,96,textY,'rgba(255,255,255,.82)');}
-      }else if(template==='interest'){
-        const titleTop=photo?810:220;if(photo)drawCoverPhoto(ctx,photo,0,0,1080,830);else{ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(72,72,936,86);ctx.font='700 28px "Microsoft YaHei",sans-serif';ctx.fillStyle='rgba(255,255,255,.82)';ctx.textBaseline='middle';ctx.fillText('纯色信息封面｜未使用产品照片',96,115);}
-        ctx.fillStyle=bg;ctx.fillRect(0,titleTop,1080,1440-titleTop);ctx.strokeStyle='#FFFFFF';ctx.lineWidth=6;ctx.strokeRect(75,titleTop+63,930,1440-titleTop-126);ctx.fillStyle=accent;ctx.fillRect(96,titleTop+115,12,178);textY=titleTop+108;maxWidth=824;
-        const title=fitCanvasText(ctx,main,{maxWidth,maxLines:2,startSize:82,minSize:48});textY=drawCanvasLines(ctx,title,140,textY,'#FFFFFF')+18;
-        if(emph){const layout=fitCanvasText(ctx,emph,{maxWidth,maxLines:1,startSize:58,minSize:36});textY=drawCanvasLines(ctx,layout,140,textY,accent)+18;}
-        if(sub){const layout=fitCanvasText(ctx,sub,{maxWidth,maxLines:2,startSize:38,minSize:27,weight:700});drawCanvasLines(ctx,layout,140,textY,'#FFFFFF');}
-      }else{
-        if(photo)drawCoverPhoto(ctx,photo,0,680,1080,760);else{ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(72,790,936,480);}
-        drawCoverBadge(ctx,'产品资料',80,72,'#FFFFFF',bg);ctx.fillStyle='#FFFFFF';ctx.fillRect(80,192,108,12);textY=246;maxWidth=920;
-        const title=fitCanvasText(ctx,main,{maxWidth,maxLines:2,startSize:88,minSize:50});textY=drawCanvasLines(ctx,title,80,textY,'#FFFFFF')+26;
-        if(emph){const layout=fitCanvasText(ctx,emph,{maxWidth:824,maxLines:1,startSize:58,minSize:36});const tagW=Math.min(920,Math.ceil(ctx.measureText(layout.lines[0]||'').width)+48);ctx.fillStyle=accent;ctx.fillRect(80,textY-10,tagW,layout.lineHeight+20);drawCanvasLines(ctx,layout,104,textY,coverContrastColor(accent));textY+=layout.lineHeight+30;}
-        if(sub){const layout=fitCanvasText(ctx,sub,{maxWidth,maxLines:2,startSize:34,minSize:26,weight:700});drawCanvasLines(ctx,layout,80,textY,'rgba(255,255,255,.9)');}
-        if(!photo){ctx.font='700 28px "Microsoft YaHei",sans-serif';ctx.fillStyle='rgba(255,255,255,.8)';ctx.textBaseline='bottom';ctx.fillText('纯色信息封面｜未使用产品照片',96,1320);}
+      const W=1080,H=1440,PAD=88;
+      ctx.clearRect(0,0,W,H);ctx.textAlign='left';ctx.lineJoin='round';ctx.textBaseline='top';
+      const dark=coverContrastColor(accent)==='#171717';
+      const bg=accent,ink=dark?'#141414':'#FFFFFF',inkSoft=dark?'rgba(20,20,20,.66)':'rgba(255,255,255,.76)';
+      if(template==='photo'&&photo){
+        drawCoverPhoto(ctx,photo,0,0,W,880);
+        const grad=ctx.createLinearGradient(0,700,0,880);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.34)');
+        ctx.fillStyle=grad;ctx.fillRect(0,700,W,180);
+        ctx.fillStyle=bg;ctx.fillRect(0,880,W,H-880);
+        ctx.fillStyle=ink;ctx.fillRect(PAD,940,96,10);
+        const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:3,startSize:96,minSize:56});
+        let y=drawCanvasLines(ctx,title,PAD,982,ink)+22;
+        if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:2,startSize:50,minSize:32,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.8)':'rgba(255,255,255,.9)')+14;}
+        if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:2,startSize:32,minSize:24,weight:500});drawCanvasLines(ctx,l,PAD,y,inkSoft);}
+        canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，实拍照片版式，1080×1440`);
+        return;
       }
-      canvas.setAttribute('aria-label',`${promotion.product.name} 小红书封面预览，${template} 模板，1080×1440`);
+      ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+      if(template==='list'){
+        ctx.fillStyle=ink;ctx.fillRect(PAD,104,88,10);
+        ctx.font='600 30px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle=inkSoft;ctx.textBaseline='top';ctx.fillText('选购清单',PAD+108,92);
+        const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:2,startSize:88,minSize:52});
+        let y=drawCanvasLines(ctx,title,PAD,168,ink)+18;
+        if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:1,startSize:44,minSize:28,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.72)':'rgba(255,255,255,.78)')+16;}
+        ctx.strokeStyle=dark?'rgba(20,20,20,.16)':'rgba(255,255,255,.22)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(PAD,y+18);ctx.lineTo(W-PAD,y+18);ctx.stroke();
+        const items=coverListItems(main,emph,sub);
+        if(!items.length)ctx.fillText('先填「第二行亮点」写清楚要点，比如：大屏 · 轻 · 预算',PAD,y+96);
+        let ry=y+72;
+        items.slice(0,3).forEach((text,index)=>{
+          const box=76,radius=box/2;
+          ctx.fillStyle=dark?'rgba(20,20,20,.9)':'rgba(255,255,255,.94)';
+          ctx.beginPath();ctx.arc(PAD+radius,ry+radius,radius,0,Math.PI*2);ctx.fill();
+          ctx.font='700 34px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle=bg;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(String(index+1),PAD+radius,ry+radius+2);
+          ctx.textAlign='left';ctx.textBaseline='top';
+          const l=fitCanvasText(ctx,text,{maxWidth:W-PAD*2-box-32,maxLines:2,startSize:42,minSize:30,weight:600});
+          drawCanvasLines(ctx,l,PAD+box+32,ry+8,ink);
+          ry+=Math.max(box+34,l.lines.length*l.lineHeight+28);
+        });
+        if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:1,startSize:30,minSize:24,weight:500});drawCanvasLines(ctx,l,PAD,H-140,l.lines.length?inkSoft:inkSoft);}
+        canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，清单版式，1080×1440`);
+        return;
+      }
+      ctx.fillStyle=ink;const barY=356;ctx.fillRect(PAD,barY,116,14);
+      const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:3,startSize:126,minSize:64});
+      let y=drawCanvasLines(ctx,title,PAD,barY+56,ink)+28;
+      if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:2,startSize:58,minSize:36,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.78)':'rgba(255,255,255,.84)')+18;}
+      ctx.strokeStyle=dark?'rgba(20,20,20,.2)':'rgba(255,255,255,.26)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(PAD,H-236);ctx.lineTo(W-PAD,H-236);ctx.stroke();
+      if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:2,startSize:34,minSize:26,weight:500});drawCanvasLines(ctx,l,PAD,H-196,inkSoft);}
+      canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，大字版式，1080×1440`);
+    }
+    function coverListItems(main,emph,sub){
+      const split=x=>String(x||'').split(/[·|｜、,，]/).map(t=>t.trim()).filter(Boolean);
+      let items=split(emph).concat(split(sub)).filter(t=>Array.from(t).length>=2);
+      items=[...new Set(items)];
+      if(items.length<3){
+        const fit=(promotion.product?.fit||[]).filter(t=>Array.from(t).length>=2&&!items.includes(t));
+        items=items.concat(fit).slice(0,3);
+      }
+      if(!items.length)return [];
+      return items.slice(0,3).map(x=>Array.from(x).length>26?Array.from(x).slice(0,25).join('')+'…':x);
     }
     function prepareCoverBlob(){
       return new Promise((resolve,reject)=>{$('promotionCoverCanvas').toBlob(blob=>{if(!blob){reject(new Error('浏览器未能导出 PNG。'));return;}resolve(blob);},'image/png');});
     }
     async function generateCover(){
+      if($('promotionCoverTemplate').value==='photo'&&!coverState.photo){markCoverStale('已选“实拍照片”版式，但还没上传照片；请选择产品照片，或把版式切回“大字标题”。');$('promotionCoverPhoto').focus();return;}
       markCoverStale('正在生成封面…');
       const main=$('promotionCoverMain').value.trim();if(!promotion.product){markCoverStale('未确认已收录产品，不能生成封面。');return;}if(!main){markCoverStale('主标题必填，请填写后再生成封面。');$('promotionCoverMain').focus();return;}if(coverState.loading){markCoverStale('照片仍在读取，请等待完成后生成封面。');return;}
       const revision=coverState.revision,signature=coverSignature();
-      try{drawCover();const blob=await prepareCoverBlob();if(revision!==coverState.revision||signature!==coverSignature())return;coverState.blobUrl=URL.createObjectURL(blob);for(const id of ['promotionCoverSaveLink','promotionCoverOpenLink'])$(id).href=coverState.blobUrl;$('promotionCoverLinks').hidden=false;coverState.generated=true;coverState.signature=signature;$('promotionCoverDownload').disabled=false;$('promotionCoverStatus').textContent=`已生成 1080×1440 PNG 预览（${$('promotionCoverTemplate').value} 模板）。备用保存与打开原图链接会保留到内容再次修改。`;}
+      try{drawCover();const blob=await prepareCoverBlob();if(revision!==coverState.revision||signature!==coverSignature())return;coverState.blobUrl=URL.createObjectURL(blob);for(const id of ['promotionCoverSaveLink','promotionCoverOpenLink'])$(id).href=coverState.blobUrl;$('promotionCoverLinks').hidden=false;coverState.generated=true;coverState.signature=signature;$('promotionCoverDownload').disabled=false;$('promotionCoverStatus').textContent=`已生成 1080×1440 PNG 预览（${coverTemplateLabel($('promotionCoverTemplate').value)}版式）。备用保存与打开原图链接会保留到内容再次修改。`;}
       catch(error){if(revision===coverState.revision)markCoverStale(`生成失败：${error.message}`);}
     }
     async function loadCoverPhoto(file){
@@ -1204,9 +1430,10 @@
       const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='请选择已收录产品（全分类）';
       $('promotionProduct').replaceChildren(placeholder,...knowledgeBase.products.map(p=>{const option=document.createElement('option');option.value=p.name;option.textContent=`${p.category} · ${p.name}`;return option;}));
       $('promotionProductOptions').replaceChildren(...knowledgeBase.products.flatMap(p=>[p.name,...(p.aliases||[])].map(name=>{const option=document.createElement('option');option.value=name;option.label=p.category;return option;})));
-      $('promotionFindProduct').addEventListener('click',findPromotionProduct);
+      $('promotionFindProduct')?.addEventListener('click',findPromotionProduct);
       $('promotionProductQuery').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();findPromotionProduct();}});
-      $('promotionProductQuery').addEventListener('input',()=>{promotion.product=null;$('promotionProduct').value='';$('promotionProductCandidates').replaceChildren();$('promotionProductMatch').textContent='输入已修改，请点击“查找产品资料”确认；不会保留旧产品匹配。';updatePromotionFacts();setCoverDefaults(true);markCoverStale('产品查询已变化，尚未确认产品，不能生成封面。');});
+      let promotionQueryTimer=0;
+      $('promotionProductQuery').addEventListener('input',()=>{promotion.product=null;$('promotionProduct').value='';clearTimeout(promotionQueryTimer);const query=$('promotionProductQuery').value.trim();if(!query){$('promotionProductCandidates').replaceChildren();$('promotionProductMatch').textContent='输入产品名即可看到候选，不用按回车。';updatePromotionFacts();setCoverDefaults(true);markCoverStale('产品查询已清空，请重新选择产品。');return;}promotionQueryTimer=setTimeout(()=>{const result=matchPromotionProducts(query);renderPromotionCandidates(result.matches);if(result.matches.length===1){setPromotionProduct(result.matches[0],`${result.kind==='exact'?'精确/别名':'模糊唯一'}匹配：${result.matches[0].name}（${result.matches[0].category}）。`);return;}$('promotionProductMatch').textContent=result.matches.length?`找到 ${result.matches.length} 个候选，点选一个确认：`:'未找到已收录产品。请换用完整名称/别名，或从下方“已收录产品”选择。';updatePromotionFacts();setCoverDefaults(true);markCoverStale('尚未确认产品，不能生成封面。');},260);});
       $('promotionProduct').addEventListener('change',()=>setPromotionProduct(knowledgeBase.products.find(p=>p.name===$('promotionProduct').value)||null));
       $('promotionCoverFields').addEventListener('input',event=>{if(event.target.id==='promotionCoverPhoto')return;updateCoverTitleHint();markCoverStale('封面已过期：文案或版式已修改，请重新生成后下载。');});
       $('promotionCoverFields').addEventListener('change',event=>{if(event.target.id!=='promotionCoverPhoto')markCoverStale('封面已过期：设置已修改，请重新生成后下载。');});
@@ -1214,10 +1441,15 @@
       $('promotionCoverClearPhoto').addEventListener('click',()=>{$('promotionCoverPhoto').value='';loadCoverPhoto(null);});
       $('promotionCopyDesignBrief').addEventListener('click',()=>{const brief=buildCanvaDesignBrief();copyText(brief,'可画设计简报已复制');$('promotionCanvaStatus').textContent=brief?'已复制可画设计简报。打开模板后手动替换文字和照片。':'请先查找并确认产品，再复制设计简报。';});
       $('promotionOpenCanva').addEventListener('click',openCanvaTemplate);
-      $('promotionCoverDefaults').addEventListener('click',()=>setCoverDefaults());
+      document.querySelectorAll('[data-cover-tpl]').forEach(button=>{button.addEventListener('click',()=>setCoverTemplate(button.dataset.coverTpl));});
+      document.querySelectorAll('[data-color]').forEach(button=>{button.addEventListener('click',()=>setCoverColor(button.dataset.color));});
+      $('promotionCoverColor').addEventListener('input',()=>setCoverColor($('promotionCoverColor').value,true));
+      $('promotionCoverColor').addEventListener('change',()=>setCoverColor($('promotionCoverColor').value));
+      $('promotionCopyProductCard').addEventListener('click',()=>{const card=buildProductCard();if(!card){$('promotionCanvaStatus').textContent='请先查找并确认产品，再复制产品信息卡。';return;}copyText(card,'产品信息卡已复制，去可画粘进去');$('promotionCanvaStatus').textContent='已复制产品信息卡。在可画双击文字框，一次粘一段（主标题、亮点、副标题、产品名），粘完删掉【】这行。';});
+      setCoverTemplate($('promotionCoverTemplate').value,true);setCoverColor($('promotionCoverColor').value,true);
       $('promotionCoverGenerate').addEventListener('click',generateCover);
       $('promotionCoverDownload').addEventListener('click',()=>{if(!coverState.generated||coverState.signature!==coverSignature()){markCoverStale('封面已过期，请重新生成后下载。');return;}try{const a=$('promotionCoverSaveLink');if(!a.href||!coverState.blobUrl)throw new Error('PNG 下载链接不存在');a.click();$('promotionCoverStatus').textContent='已发起 PNG 下载。如浏览器未保存，请使用下方持久备用链接，或打开原图后右键/长按保存。';}catch(error){$('promotionCoverStatus').textContent=`自动下载不可用：${error.message}。请使用下方“保存 PNG 图片”或“打开原图”备用链接。`;}});
-      $('promotionEditors').innerHTML=Object.entries(promotionPlatforms).map(([key,label])=>`<div class="promotion-editor" id="promotionEditor-${key}" role="tabpanel" aria-labelledby="promotionTab-${key}" ${key==='xhs'?'':'hidden'}><label for="promotionTitle-${key}">${label}标题 · 可编辑</label><input id="promotionTitle-${key}" placeholder="生成后可修改标题" /><label for="promotionBody-${key}">${label}正文 · 可编辑</label><textarea id="promotionBody-${key}" placeholder="本地草稿将在这里生成"></textarea><div class="action-row"><button class="secondary-btn" type="button" data-promotion-copy="${key}" disabled>复制${label}标题与正文</button></div></div>`).join('');
+      $('promotionEditors').innerHTML=Object.entries(promotionPlatforms).map(([key,label])=>`<div class="promotion-editor" id="promotionEditor-${key}" role="tabpanel" aria-labelledby="promotionTab-${key}" ${key==='xhs'?'':'hidden'}><label for="promotionTitle-${key}">${label}标题 · 可编辑</label><input id="promotionTitle-${key}" placeholder="生成后可修改标题" />${key==='xhs'?'<div class="title-alt" id="promotionAltTitles" hidden><span class="title-alt-label">换个标题</span><div class="title-alt-list" id="promotionAltList"></div></div>':''}<label for="promotionBody-${key}">${label}正文 · 可编辑</label><textarea id="promotionBody-${key}" placeholder="本地草稿将在这里生成"></textarea><div class="action-row"><button class="secondary-btn" type="button" data-promotion-copy="${key}" disabled>复制${label}标题与正文</button></div></div>`).join('');
       document.querySelectorAll('[data-promotion-tab]').forEach(button=>{button.addEventListener('click',()=>selectPromotionTab(button.dataset.promotionTab));button.addEventListener('keydown',event=>{const keys=Object.keys(promotionPlatforms),index=keys.indexOf(promotion.tab);let target;if(event.key==='ArrowRight')target=keys[(index+1)%keys.length];if(event.key==='ArrowLeft')target=keys[(index+keys.length-1)%keys.length];if(event.key==='Home')target=keys[0];if(event.key==='End')target=keys[keys.length-1];if(target){event.preventDefault();selectPromotionTab(target);$('promotionTab-'+target).focus();}});});
       $('promotionEditors').addEventListener('input',()=>{syncPromotionEditors();resetPromotionReview();});
       $('promotionEditors').addEventListener('click',event=>{const button=event.target.closest('[data-promotion-copy]');if(!button)return;const key=button.dataset.promotionCopy;copyText([$('promotionTitle-'+key).value,$('promotionBody-'+key).value].filter(Boolean).join('\n\n'),promotionPlatforms[key]+'草稿已复制，发布前请核对');});
