@@ -363,8 +363,30 @@
     .cover-fields .cover-wide { grid-column:1/-1; }
     .cover-fields label { justify-content:flex-start; gap:8px; flex-wrap:wrap; }
     .cover-fields input[type="color"] { height:42px; padding:4px; cursor:pointer; }
-    .cover-preview { width:min(100%,380px); margin:18px auto; }
-    #promotionCoverCanvas { display:block; width:100%; height:auto; aspect-ratio:3/4; border:1px solid var(--line); background:var(--paper-2); border-radius:6px; }
+    .cover-preview { width:min(100%,400px); margin:18px auto; }
+    /* 海报舞台：内部固定 1080x1440，用 transform 等比缩放 */
+    .poster-stage { position:relative; width:100%; aspect-ratio:3/4; overflow:hidden; border:1px solid var(--line); border-radius:8px; background:#0f172a; }
+    .poster-stage > .poster-root { position:absolute; top:0; left:0; transform-origin:top left; }
+    .poster-root { width:1080px; height:1440px; box-sizing:border-box; overflow:hidden; font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif; }
+/* 中文可在任意字间断行；balance 让两行长度接近，避免「表格」被拆成孤字 */
+.poster-root [data-field="main"] { text-wrap: balance; overflow-wrap: break-word; }
+    .poster-root [contenteditable="true"] { outline:none; cursor:text; border-radius:4px; }
+    .poster-root [contenteditable="true"]:hover { box-shadow:0 0 0 2px rgba(255,255,255,.34); }
+    .poster-root [contenteditable="true"]:focus { box-shadow:0 0 0 3px #4C8DFF; }
+    .poster-root .poster-photo { width:100%; height:100%; object-fit:cover; display:block; }
+    .poster-editbar { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:10px 0 0; font-size:12px; color:var(--muted); line-height:1.6; }
+    .poster-editbar .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); flex:0 0 auto; }
+    .tpl-gallery { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:0 0 16px; }
+    .tpl-card { padding:0; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; overflow:hidden; font-family:inherit; text-align:left; transition:border-color .15s ease,box-shadow .15s ease; }
+    .tpl-card:hover { border-color:var(--accent); }
+    .tpl-card.is-active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+    .tpl-card .tpl-thumb { position:relative; width:100%; aspect-ratio:3/4; overflow:hidden; background:#0f172a; }
+    .tpl-card .tpl-thumb > .poster-root { transform-origin:top left; pointer-events:none; }
+    .tpl-card .tpl-meta { display:block; padding:8px 10px 9px; }
+    .tpl-card .tpl-title { display:block; font-size:12px; font-weight:600; color:var(--text); line-height:1.3; }
+    .tpl-card .tpl-tag { display:block; margin-top:2px; font-size:10.5px; color:var(--muted); line-height:1.3; }
+    @media(max-width:900px) { .tpl-gallery { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media(max-width:620px) { .tpl-gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     .cover-links { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
     .cover-links a { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:1px solid var(--line); border-radius:8px; font-size:12.5px; text-decoration:none; background:#fff; }
     .cover-links a:hover { border-color:var(--accent); }
@@ -555,12 +577,7 @@
               <section class="promotion-cover" id="promotionCover" aria-labelledby="promotionCoverHeading">
                 <h4 id="promotionCoverHeading">小红书封面</h4>
                 <p class="promotion-note" id="promotionCoverSource">先查找并确认推广产品。</p>
-                <div class="cover-templates" id="promotionCoverTemplates" role="radiogroup" aria-label="选择封面版式">
-                  <button type="button" class="cover-tpl is-active" data-cover-tpl="bigword" role="radio" aria-checked="true"><span class="tpl-name">大字标题</span><span class="tpl-desc">纯色底 + 超大字</span></button>
-                  <button type="button" class="cover-tpl" data-cover-tpl="list" role="radio" aria-checked="false"><span class="tpl-name">清单预告</span><span class="tpl-desc">列 1/2/3 要点</span></button>
-                  <button type="button" class="cover-tpl" data-cover-tpl="photo" role="radio" aria-checked="false"><span class="tpl-name">实拍照片</span><span class="tpl-desc">上图下字</span></button>
-                </div>
-                <input id="promotionCoverTemplate" type="hidden" value="bigword" />
+                <div class="tpl-gallery" id="promotionCoverTemplates" role="radiogroup" aria-label="选择海报模板"></div>
                 <div class="cover-fields" id="promotionCoverFields">
                   <div class="field cover-wide"><label for="promotionCoverMain">主标题 <span class="hint">8–14 字最好读</span></label><input id="promotionCoverMain" maxlength="180" required placeholder="例：14 寸轻薄本，通勤只背这一台" /><p class="promotion-note" id="promotionCoverTitleHint">一眼能读懂的短句，比堆参数有效。</p></div>
                   <div class="field cover-wide"><label for="promotionCoverEmph">第二行亮点 <span class="hint">可选</span></label><input id="promotionCoverEmph" maxlength="120" placeholder="例：现场试机后再决定" /></div>
@@ -583,7 +600,8 @@
                 </details>
                 <div class="action-row"><button class="primary" id="promotionCoverGenerate" type="button">生成封面</button><button class="outline-btn" id="promotionCoverDownload" type="button" disabled>下载 PNG</button></div>
                 <p class="promotion-note" id="promotionCoverStatus" role="status" aria-live="polite">确认产品并填写主标题后生成。</p>
-                <div class="cover-preview"><canvas id="promotionCoverCanvas" width="1080" height="1440" role="img" aria-label="小红书封面预览，尚未生成">浏览器不支持 Canvas，请更换浏览器。</canvas></div>
+                <div class="cover-preview"><div class="poster-stage" id="promotionPosterStage" role="group" aria-label="海报预览，点文字可直接修改"></div></div>
+                <p class="poster-editbar" id="posterEditBar" hidden><span class="dot"></span>点图上任意文字就能直接改，改完立刻是最终效果；导出的是你现在看到的这一版。</p>
                 <div class="cover-links" id="promotionCoverLinks" hidden><a id="promotionCoverSaveLink" download="小红书封面.png">备用：保存 PNG</a><a id="promotionCoverOpenLink" target="_blank" rel="noopener noreferrer">打开原图</a></div>
                 <div class="canva-handoff" aria-labelledby="canvaHandoffHeading">
                   <h5 id="canvaHandoffHeading">去可画换更好看的模板</h5>
@@ -1007,7 +1025,7 @@
     $('colorPicker').addEventListener('change',renderPickerPrice);
 
     const promotion = {tab:'xhs',current:null,pending:null,busy:false,product:null};
-    const coverState = {photo:null,photoToken:0,loading:false,revision:0,generated:false,signature:'',blobUrl:''};
+    const coverState = {photoUrl:'',photoToken:0,loading:false,revision:0,generated:false,signature:'',blobUrl:''};
     const promotionPlatforms = {xhs:'小红书',wechat:'微信公众号',moments:'朋友圈'};
     const promotionAudiences = {
       '学生':{scene:'论文、课堂展示和课程软件怎么兼顾',opening:'课表里既有论文，也有课堂展示，选电脑先从课程任务排起。',tasks:['带一份匿名论文，检查排版、字体和批注','列出课程软件全名、版本与插件，再核对系统支持','按日常书包和配件一起试拿，预算按具体配置另核'],question:'你的课程里，哪一个软件必须在电脑上用？',short:'上课和写论文，先核对课程软件与文档排版，再谈配置。',tag:'学生选电脑',shot:'用自制课程清单与匿名论文拍一组“选软件—查系统—看排版”，不展示学生身份信息'},
@@ -1228,7 +1246,712 @@
       }catch(error){$('promotionStatus').textContent=(error.message==='FORMAT'?'模型未按纯文本标题与正文格式返回，未采用。':error.message==='CONSENT_CHANGED'?'配置或授权已变更，已丢弃返回内容。':modelError(error))+' 当前原稿与店员编辑均已保留。';}
       finally{promotion.busy=false;$('promotionFields').disabled=false;$('promotionGenerate').disabled=false;$('promotionNextAngle').disabled=false;$('promotionAiConsent').disabled=false;setApiBusy(false);}
     }
-    function coverSignature(){return JSON.stringify({product:promotion.product?.name||'',source:promotion.product?.source||'',audience:$('promotionAudience').value,main:$('promotionCoverMain').value,emph:$('promotionCoverEmph').value,sub:$('promotionCoverSub').value,template:$('promotionCoverTemplate').value,color:$('promotionCoverColor').value,photo:coverState.photoToken});}
+    function coverSignature(){return JSON.stringify({product:promotion.product?.name||'',source:promotion.product?.source||'',audience:$('promotionAudience').value,main:$('promotionCoverMain').value,emph:$('promotionCoverEmph').value,sub:$('promotionCoverSub').value,template:posterState.template,color:$('promotionCoverColor').value,photo:coverState.photoToken});}
+
+/* ===== 海报渲染与编辑 ===== */
+const posterState = { template: 'deep', editing: false, blobUrl: '', generated: false, signature: '', renderedFields: {} };
+
+function posterTemplateById(id) {
+  return POSTER_TEMPLATES.find(t => t.id === id) || POSTER_TEMPLATES[0];
+}
+
+/* 把 1080x1440 的内容等比缩放进容器 */
+function fitPosterScale(root, container) {
+  if (!root || !container) return 1;
+  const w = container.clientWidth || 1;
+  const scale = w / POSTER_W;
+  root.style.transform = `scale(${scale})`;
+  root.style.width = POSTER_W + 'px';
+  root.style.height = POSTER_H + 'px';
+  container.style.height = Math.round(POSTER_H * scale) + 'px';
+  return scale;
+}
+
+/* 收集图上被手动改过的文字，切换模板时保留 */
+/* 收集图上被手动改过的文字，切换模板时保留。
+ * 只记录「与上次渲染出来的内容不同」的字段 —— 否则旧占位文字会被当成用户编辑写回表单。 */
+function collectPosterEdits() {
+  const root = $('promotionPosterStage').querySelector('.poster-root');
+  if (!root) return null;
+  const rendered = posterState.renderedFields || {};
+  const edits = {};
+  let changed = false;
+  root.querySelectorAll('[contenteditable="true"][data-field]').forEach(el => {
+    const field = el.dataset.field;
+    const text = el.textContent.replace(/\u200b/g, '').trim();
+    if (!text) return;
+    if (text === '点这里改文字') return;              // 占位文案不算编辑
+    if (rendered[field] === text) return;             // 和渲染时一致，说明没动过
+    edits[field] = text;
+    changed = true;
+  });
+  return changed ? edits : null;
+}
+
+/* 把编辑内容写回表单（切换模板/重渲染时不丢） */
+function applyPosterEdits(edits) {
+  if (!edits) return;
+  if (typeof edits.main === 'string') $('promotionCoverMain').value = edits.main;
+  if (typeof edits.sub === 'string') $('promotionCoverSub').value = edits.sub;
+  // 「第二行亮点」有两个来源：emph 本体，或图上被逐条改过的 item0-2
+  const items = ['item0', 'item1', 'item2'].map(k => edits[k]).filter(v => v && v.trim());
+  if (typeof edits.emph === 'string') $('promotionCoverEmph').value = edits.emph;
+  else if (items.length) $('promotionCoverEmph').value = items.join(' · ');
+}
+
+/* 把编辑内容写回表单（切换模板/重渲染时不丢） */
+function applyPosterEdits(edits) {
+  if (!edits) return;
+  if (typeof edits.main === 'string') $('promotionCoverMain').value = edits.main;
+  if (typeof edits.emph === 'string') $('promotionCoverEmph').value = edits.emph;
+  if (typeof edits.sub === 'string') $('promotionCoverSub').value = edits.sub;
+  // item 类改动拼回「第二行亮点」，用 · 连接，下次 coverListItems 能再拆开
+  const items = ['item0', 'item1', 'item2'].map(k => edits[k]).filter(v => v && v.trim());
+  if (items.length) $('promotionCoverEmph').value = items.join(' · ');
+}
+
+function renderPoster(options) {
+  const opts = options || {};
+  const stage = $('promotionPosterStage');
+  if (!stage) return;
+  const tpl = posterTemplateById(posterState.template);
+  const data = posterData();
+
+  // 保持编辑内容：先抓当前图上的改动
+  let edits = opts.reset ? null : collectPosterEdits();
+  if (edits && !opts.reset) applyPosterEdits(edits);
+
+  const data2 = opts.reset ? posterData() : posterData();
+  let html = '';
+  try {
+    html = tpl.render(data2);
+  } catch (err) {
+    stage.innerHTML = `<div style="padding:40px;color:#fff;font-size:24px">模板渲染失败：${posterEsc(err.message)}</div>`;
+    return;
+  }
+  stage.innerHTML = html;
+  const root = stage.querySelector('.poster-root');
+  if (root) {
+    // 强制行内尺寸，避免模板里的 padding 影响导出
+    root.style.width = POSTER_W + 'px';
+    root.style.height = POSTER_H + 'px';
+    fitPosterScale(root, stage);
+  }
+  // 绑定编辑事件
+  // 记下这一版实际渲染出来的文字，供 collectPosterEdits 判断「用户到底改了没」
+  posterState.renderedFields = {};
+  if (root) root.querySelectorAll('[contenteditable="true"][data-field]').forEach(el => {
+    posterState.renderedFields[el.dataset.field] = el.textContent.replace(/\u200b/g, '').trim();
+  });
+  bindPosterEditing();
+  $('posterEditBar').hidden = !promotion.product;
+  updatePosterStatus();
+}
+
+/* 编辑：输入即写回表单，并让导出失效 */
+function bindPosterEditing() {
+  const stage = $('promotionPosterStage');
+  if (!stage || stage.dataset.bound === '1') return;
+  stage.dataset.bound = '1';
+  stage.addEventListener('input', event => {
+    const el = event.target.closest('[contenteditable="true"][data-field]');
+    if (!el) return;
+    const field = el.dataset.field;
+    const value = el.textContent.replace(/\u200b/g, '').trim();
+    if (field === 'main') $('promotionCoverMain').value = value;
+    else if (field === 'emph') $('promotionCoverEmph').value = value;
+    else if (field === 'sub') $('promotionCoverSub').value = value;
+    markPosterStale('图上文字已修改，请重新生成后再下载。');
+    updateCoverTitleHint();
+  });
+  // 聚焦时全选，避免用户还要手动清空
+  stage.addEventListener('focusin', event => {
+    const el = event.target.closest('[contenteditable="true"]');
+    if (!el) return;
+    if (el.textContent.trim() === '点这里改文字') {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+    }
+  });
+  // Enter 不换行，避免撑破版面
+  stage.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && event.target.closest('[contenteditable="true"]')) {
+      event.preventDefault();
+      event.target.blur();
+    }
+  });
+}
+
+function markPosterStale(message) {
+  coverState.revision++;
+  coverState.generated = false;
+  coverState.signature = '';
+  posterState.generated = false;
+  posterState.signature = '';
+  const btn = $('promotionCoverDownload');
+  if (btn) btn.disabled = true;
+  clearCoverBlob();
+  updatePosterStatus(message);
+}
+
+function updatePosterStatus(message) {
+  const el = $('promotionCoverStatus');
+  if (!el) return;
+  if (message) { el.textContent = message; return; }
+  if (!promotion.product) { el.textContent = '先查找并确认产品，再编辑海报。'; return; }
+  el.textContent = posterState.generated
+    ? `已生成可下载的 PNG（${posterTemplateById(posterState.template).name}）。图上文字可继续改，改完请重新生成。`
+    : '图上文字可直接点击修改；点「生成海报」导出 1080×1440 PNG。';
+}
+
+/* ===== 导出：HTML -> SVG foreignObject -> Canvas -> PNG ===== */
+function posterToSvgString(root) {
+  const clone = root.cloneNode(true);
+  // 清掉编辑态的高亮与光标
+  clone.querySelectorAll('[contenteditable]').forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.style.boxShadow = 'none';
+  });
+  clone.style.transform = 'none';
+  clone.style.width = POSTER_W + 'px';
+  clone.style.height = POSTER_H + 'px';
+
+  const wrap = document.createElement('div');
+  wrap.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+  wrap.setAttribute('style', `margin:0;padding:0;width:${POSTER_W}px;height:${POSTER_H}px;`);
+  wrap.appendChild(clone);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${POSTER_W}" height="${POSTER_H}" viewBox="0 0 ${POSTER_W} ${POSTER_H}">`
+    + `<foreignObject x="0" y="0" width="${POSTER_W}" height="${POSTER_H}">`
+    + new XMLSerializer().serializeToString(wrap)
+    + `</foreignObject></svg>`;
+}
+
+async function posterToBlob() {
+  const stage = $('promotionPosterStage');
+  const root = stage && stage.querySelector('.poster-root');
+  if (!root) throw new Error('海报还没渲染出来');
+  const svg = posterToSvgString(root);
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  const img = new Image();
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = () => reject(new Error('海报图片化失败，请换一个浏览器再试'));
+    img.src = url;
+  });
+  const cv = document.createElement('canvas');
+  cv.width = POSTER_W; cv.height = POSTER_H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, POSTER_W, POSTER_H);
+  ctx.drawImage(img, 0, 0, POSTER_W, POSTER_H);
+  return await new Promise((resolve, reject) => {
+    cv.toBlob(b => (b ? resolve(b) : reject(new Error('浏览器未能导出 PNG'))), 'image/png');
+  });
+}
+
+async function generatePoster() {
+  if (!promotion.product) { markPosterStale('未确认已收录产品，不能生成海报。'); return; }
+  const main = $('promotionCoverMain').value.trim();
+  if (!main) { markPosterStale('主标题必填，请填写后再生成海报。'); $('promotionCoverMain').focus(); return; }
+  const revision = coverState.revision;
+  const signature = coverSignature();
+  updatePosterStatus('正在生成 PNG…');
+  try {
+    renderPoster();
+    const blob = await posterToBlob();
+    if (revision !== coverState.revision || signature !== coverSignature()) return;
+    coverState.blobUrl = URL.createObjectURL(blob);
+    for (const id of ['promotionCoverSaveLink', 'promotionCoverOpenLink']) {
+      const a = $(id); if (a) a.href = coverState.blobUrl;
+    }
+    const links = $('promotionCoverLinks');
+    if (links) links.hidden = false;
+    coverState.generated = true;
+    coverState.signature = signature;
+    posterState.generated = true;
+    posterState.signature = signature;
+    const dl = $('promotionCoverDownload');
+    if (dl) dl.disabled = false;
+    const kb = Math.round(blob.size / 1024);
+    updatePosterStatus(`已生成 1080×1440 PNG（${posterTemplateById(posterState.template).name}，${kb} KB）。图上文字可继续改，改完请重新生成。`);
+  } catch (err) {
+    if (revision === coverState.revision) markPosterStale('生成失败：' + err.message);
+  }
+}
+
+/* ===== 模板画廊 ===== */
+function setPosterTemplate(id, silent) {
+  const allowed = POSTER_TEMPLATES.map(t => t.id);
+  posterState.template = allowed.includes(id) ? id : POSTER_TEMPLATES[0].id;
+  document.querySelectorAll('[data-poster-tpl]').forEach(card => {
+    const on = card.dataset.posterTpl === posterState.template;
+    card.classList.toggle('is-active', on);
+    card.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  renderPoster();
+  if (!silent) markPosterStale('已切换模板，请重新生成后再下载。');
+}
+
+function buildTemplateGallery() {
+  const host = $('promotionCoverTemplates');
+  if (!host) return;
+  host.innerHTML = POSTER_TEMPLATES.map(tpl => `
+    <div class="tpl-card${tpl.id === posterState.template ? ' is-active' : ''}" data-poster-tpl="${tpl.id}" role="radio" tabindex="0" aria-checked="${tpl.id === posterState.template ? 'true' : 'false'}">
+      <div class="tpl-thumb" data-thumb="${tpl.id}"></div>
+      <div class="tpl-meta"><span class="tpl-title">${posterEsc(tpl.name)}</span><span class="tpl-tag">${posterEsc(tpl.tag)}</span></div>
+    </div>`).join('');
+
+  host.querySelectorAll('[data-poster-tpl]').forEach(card => {
+    card.addEventListener('click', () => setPosterTemplate(card.dataset.posterTpl));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setPosterTemplate(card.dataset.posterTpl); }
+    });
+  });
+
+  // 填缩略图：用同一套渲染，只是缩小
+  requestAnimationFrame(() => {
+    host.querySelectorAll('[data-thumb]').forEach(thumb => {
+      const tpl = posterTemplateById(thumb.dataset.thumb);
+      const data = posterData();
+      // 缩略图用示例文案，避免没产品时一片空白
+      const sample = {
+        ...data,
+        main: data.main || '这一款先看这三件事',
+        emph: data.emph || '到店按实际版本核对',
+        sub: data.sub || '门店实拍 · 具体配置现场确认',
+        items: data.items.length ? data.items : ['大屏', '预算', '轻便']
+      };
+      try { thumb.innerHTML = tpl.render(sample); } catch (e) { thumb.innerHTML = ''; }
+      const root = thumb.querySelector('.poster-root');
+      if (root) {
+        root.style.width = POSTER_W + 'px';
+        root.style.height = POSTER_H + 'px';
+        const scale = (thumb.clientWidth || 150) / POSTER_W;
+        root.style.transform = `scale(${scale})`;
+      }
+    });
+  });
+}
+
+/* ===== 海报模板库 =====
+ * 每套模板：id / 名称 / 标签 / 渲染函数
+ * 渲染函数收到 {main, emph, sub, accent, ink, product, photo, items, badge}
+ * 返回 HTML 字符串。所有文字节点带 data-field，供 contenteditable 回写。
+ */
+const POSTER_W = 1080, POSTER_H = 1440;
+
+function posterEsc(text) {
+  return String(text == null ? '' : text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function posterPad(text) {
+  // contenteditable 里空节点会塌陷，用零宽占位保证还能点
+  const t = String(text == null ? '' : text).trim();
+  return t || '点这里改文字';
+}
+function posterInk(hex) {
+  const c = String(hex || '#0B1F3A').replace('#', '');
+  const rgb = [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16) / 255)
+    .map(v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+  const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  return lum > 0.179 ? 'dark' : 'light';
+}
+function posterMix(hex, target, ratio) {
+  const c = String(hex).replace('#', '');
+  const t = String(target).replace('#', '');
+  const out = [0, 2, 4].map(i => {
+    const a = parseInt(c.substr(i, 2), 16), b = parseInt(t.substr(i, 2), 16);
+    return Math.round(a + (b - a) * ratio).toString(16).padStart(2, '0');
+  });
+  return '#' + out.join('');
+}
+
+/* 把模板内容包成统一的数据对象 */
+    function coverListItems(main,emph,sub){
+      const split=x=>String(x||"").split(/[·|｜、,，]/).map(t=>t.trim()).filter(Boolean);
+      let items=split(emph).concat(split(sub)).filter(t=>Array.from(t).length>=2);
+      items=[...new Set(items)];
+      if(items.length<3){
+        const fit=(promotion.product?.fit||[]).filter(t=>Array.from(t).length>=2&&!items.includes(t));
+        items=items.concat(fit).slice(0,3);
+      }
+      return items.slice(0,3).map(x=>Array.from(x).length>26?Array.from(x).slice(0,25).join("")+"…":x);
+    }
+
+function posterData() {
+  const accent = $('promotionCoverColor').value || '#0B1F3A';
+  const product = promotion.product;
+  const items = coverListItems($('promotionCoverMain').value.trim(), $('promotionCoverEmph').value.trim(), $('promotionCoverSub').value.trim());
+  return {
+    accent,
+    mode: posterInk(accent),
+    main: $('promotionCoverMain').value.trim(),
+    emph: $('promotionCoverEmph').value.trim(),
+    sub: $('promotionCoverSub').value.trim(),
+    product,
+    photo: coverState.photoUrl || '',
+    items,
+    name: product ? (coverProductLabel(product) || product.name) : '',
+    category: product ? product.category : '',
+    audience: $('promotionAudience').value,
+    purpose: $('promotionPurpose').value
+  };
+}
+
+/* 供模板复用的碎片 */
+/* 主标题自适应：字数多就降字号，保证在内容宽内最多两行、不溢出被裁 */
+function postTitleFit(style, text) {
+  const n = Array.from(String(text || '')).length;
+  if (!n) return style;
+  const base = +(/(?:^|;)font-size:(\d+)px/.exec(style) || [])[1] || 100;
+  const perLine = Math.max(4, Math.ceil(n / 2));   // 目标是最多两行
+  const fit = Math.floor(896 * 0.98 / perLine);    // 1080 - 92*2 = 896 内容宽
+  const size = Math.max(58, Math.min(base, fit));
+  return style.replace(/font-size:\d+px/, 'font-size:' + size + 'px');
+}
+function postField(field, text, style) {
+  if (field === 'main') style = postTitleFit(style, text);
+  return `<div contenteditable="true" data-field="${field}" style="${style}">${posterEsc(posterPad(text))}</div>`;
+}
+function postPhoto(data, style, tone) {
+  if (data.photo) return `<img class="poster-photo" src="${posterEsc(data.photo)}" alt="" style="${style}">`;
+  // 没照片时不假装实拍；占位做成底纹，并按深浅底切换配色，避免白底白字看不见
+  const dark = tone === 'dark';
+  const ink = dark ? 'rgba(20,24,31,.50)' : 'rgba(255,255,255,.56)';
+  const ink2 = dark ? 'rgba(20,24,31,.30)' : 'rgba(255,255,255,.34)';
+  const bg = dark
+    ? 'linear-gradient(135deg,rgba(20,24,31,.055),rgba(20,24,31,.015))'
+    : 'linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.03))';
+  const stripe = dark ? 'rgba(20,24,31,.05)' : 'rgba(255,255,255,.055)';
+  return `<div style="${style};position:relative;overflow:hidden;background:${bg};border:1px dashed ${dark ? 'rgba(20,24,31,.16)' : 'rgba(255,255,255,.2)'}">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,${stripe} 0 2px,transparent 2px 16px)"></div>
+    <div style="position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center">
+      <div style="font-size:27px;letter-spacing:.14em;color:${ink}">暂无产品照片</div>
+      <div style="margin-top:16px;font-size:20px;letter-spacing:.05em;color:${ink2}">在上方上传后，这里会换成你的实拍图</div>
+    </div>
+  </div>`;
+}
+function postItems(data, style, dotStyle, textStyle) {
+  if (!data.items.length) {
+    return `<div style="${style};font-size:30px;color:rgba(255,255,255,.6)">想列要点？在上方「第二行亮点」用 · 分隔写三条</div>`;
+  }
+  return data.items.slice(0, 3).map((it, idx) => `
+    <div style="display:flex;align-items:center;gap:22px;${style}">
+      <div style="${dotStyle}">${idx + 1}</div>
+      <div contenteditable="${'true'}" data-field="item${idx}" style="${textStyle}">${posterEsc(it)}</div>
+    </div>`).join('');
+}
+
+const POSTER_TEMPLATES = [
+  /* 1. 深色大字：最稳，什么产品都能用 */
+  {
+    id: 'deep', name: '深色大字', tag: '通用 · 最稳',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#111827';
+      const soft = light ? 'rgba(255,255,255,.74)' : 'rgba(17,24,39,.62)';
+      const bg = `linear-gradient(158deg, ${d.accent} 0%, ${posterMix(d.accent, '#000000', 0.38)} 58%, ${posterMix(d.accent, '#000000', 0.22)} 100%)`;
+      return `<div class="poster-root" style="background:${bg};position:relative">
+        <div style="position:absolute;top:96px;left:92px;width:118px;height:13px;background:${light ? '#FF7A5C' : posterMix(d.accent, '#000', .55)}"></div>
+        <div style="position:absolute;top:150px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:120px;font-weight:800;color:${ink};line-height:1.14;letter-spacing:.01em`)}
+        </div>
+        <div style="position:absolute;top:620px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:54px;font-weight:600;color:${soft};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:330px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.07))"></div>
+        <div style="position:absolute;left:92px;right:92px;bottom:104px">
+          ${d.sub ? postField('sub', d.sub, `font-size:31px;color:${soft};line-height:1.5;letter-spacing:.02em`) : ''}
+        </div>
+        <div style="position:absolute;right:88px;bottom:96px;width:104px;height:104px;border-radius:50%;background:${light ? '#FF7A5C' : '#FFFFFF'};display:flex;align-items:center;justify-content:center;font-size:44px">✦</div>
+      </div>`;
+    }
+  },
+  /* 2. 浅色留白：干净、专业，适合数码 */
+  {
+    id: 'paper', name: '米白留白', tag: '干净 · 数码',
+    render: d => {
+      const ink = '#14181F';
+      return `<div class="poster-root" style="background:#F7F5F0;position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:16px;background:${d.accent}"></div>
+        <div style="position:absolute;top:112px;left:92px;font-size:26px;font-weight:700;letter-spacing:.22em;color:${d.accent}">${posterEsc((d.category || 'SELECT').toUpperCase())}</div>
+        <div style="position:absolute;top:176px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:112px;font-weight:800;color:${ink};line-height:1.16;letter-spacing:0`)}
+        </div>
+        <div style="position:absolute;top:640px;left:92px;right:92px;height:2px;background:rgba(20,24,31,.14)"></div>
+        <div style="position:absolute;top:690px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:50px;font-weight:600;color:${posterMix(d.accent, '#000', .1)};line-height:1.42`) : ''}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:150px">
+          ${d.sub ? postField('sub', d.sub, 'font-size:30px;color:rgba(20,24,31,.66);line-height:1.55') : ''}
+        </div>
+        <div style="position:absolute;left:92px;bottom:88px;width:88px;height:8px;background:${d.accent}"></div>
+        <div style="position:absolute;right:92px;bottom:82px;font-size:24px;color:rgba(20,24,31,.4);letter-spacing:.1em">1080×1440</div>
+      </div>`;
+    }
+  },
+  /* 3. 编号清单：要点型，学习/避坑最好用 */
+  {
+    id: 'checklist', name: '编号清单', tag: '要点 · 避坑',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#101623';
+      const soft = light ? 'rgba(255,255,255,.72)' : 'rgba(16,22,35,.6)';
+      return `<div class="poster-root" style="background:${d.accent};position:relative">
+        <div style="position:absolute;top:104px;left:92px;display:flex;align-items:center;gap:20px">
+          <div style="width:76px;height:76px;border-radius:50%;background:${light ? 'rgba(255,255,255,.16)' : 'rgba(16,22,35,.1)'};display:flex;align-items:center;justify-content:center;font-size:34px;color:${ink}">✓</div>
+          <div style="font-size:27px;font-weight:700;letter-spacing:.2em;color:${soft}">选购清单</div>
+        </div>
+        <div style="position:absolute;top:216px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:96px;font-weight:800;color:${ink};line-height:1.16`)}
+        </div>
+        <div style="position:absolute;top:470px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:38px;color:${soft};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;top:600px;left:92px;right:92px;display:flex;flex-direction:column;gap:36px">
+          ${postItems(d, '', `flex:0 0 auto;width:74px;height:74px;border-radius:50%;background:${light ? '#FFFFFF' : '#101623'};color:${d.accent};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800`, `flex:1;min-width:0;font-size:44px;font-weight:600;color:${ink};line-height:1.32`)}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:104px;font-size:29px;color:${soft};line-height:1.5">${d.sub ? postField('sub', d.sub, `font-size:29px;color:${soft}`) : ''}</div>
+      </div>`;
+    }
+  },
+  /* 4. 左右分栏：有照片时最像杂志 */
+  {
+    id: 'split', name: '左右分栏', tag: '杂志 · 有照片',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#14181F';
+      const soft = light ? 'rgba(255,255,255,.72)' : 'rgba(20,24,31,.58)';
+      return `<div class="poster-root" style="background:${d.accent};position:relative;display:flex">
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0">
+          <div style="position:absolute;top:0;left:0;width:1080px;height:760px">${postPhoto(d, 'width:100%;height:100%;object-fit:cover')}</div>
+          <div style="position:absolute;top:600px;left:0;right:0;height:200px;background:linear-gradient(180deg,rgba(0,0,0,0),${d.accent})"></div>
+        </div>
+        <div style="position:absolute;left:92px;right:92px;top:820px">
+          <div style="width:92px;height:11px;background:${light ? '#FF7A5C' : posterMix(d.accent, '#fff', .5)};margin-bottom:36px"></div>
+          ${postField('main', d.main, `font-size:98px;font-weight:800;color:${ink};line-height:1.16`)}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;top:1150px">
+          ${d.emph ? postField('emph', d.emph, `font-size:44px;font-weight:600;color:${soft};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:96px">
+          ${d.sub ? postField('sub', d.sub, `font-size:28px;color:${soft};line-height:1.5`) : ''}
+        </div>
+      </div>`;
+    }
+  },
+  /* 5. 上色带：信息层级最清楚 */
+  {
+    id: 'band', name: '顶部色带', tag: '层次 · 促销',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#111827';
+      return `<div class="poster-root" style="background:#FFFFFF;position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:430px;background:${d.accent}"></div>
+        <div style="position:absolute;top:78px;left:92px;right:92px">
+          ${d.sub ? postField('sub', d.sub, `font-size:27px;letter-spacing:.16em;color:${light ? 'rgba(255,255,255,.7)' : 'rgba(17,24,39,.62)'}`) : ''}
+        </div>
+        <div style="position:absolute;top:150px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:104px;font-weight:800;color:${ink};line-height:1.15`)}
+        </div>
+        <div style="position:absolute;top:500px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, 'font-size:52px;font-weight:600;color:#14181F;line-height:1.38') : ''}
+        </div>
+        <div style="position:absolute;top:790px;left:92px;right:92px;height:520px;border-radius:14px;overflow:hidden">${postPhoto(d, 'width:100%;height:100%;object-fit:cover', 'dark')}</div>
+        <div style="position:absolute;left:92px;bottom:92px;right:92px;display:flex;align-items:center;justify-content:space-between">
+          <div style="width:88px;height:8px;background:${d.accent}"></div>
+          <div style="font-size:25px;color:rgba(20,24,31,.42)">${posterEsc(d.name || '门店实拍')}</div>
+        </div>
+      </div>`;
+    }
+  },
+  /* 6. 大字压图：视觉冲击最强，适合封面首图 */
+  {
+    id: 'overlay', name: '大字压图', tag: '冲击 · 首图',
+    render: d => {
+      return `<div class="poster-root" style="position:relative;background:#101623">
+        <div style="position:absolute;inset:0">${postPhoto(d, 'width:100%;height:100%;object-fit:cover')}</div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,.18) 0%,rgba(8,12,20,.30) 42%,rgba(8,12,20,.86) 82%,rgba(8,12,20,.95) 100%)"></div>
+        <div style="position:absolute;top:96px;left:92px">
+          <div style="padding:12px 30px;border-radius:999px;background:${d.accent};font-size:26px;font-weight:700;letter-spacing:.1em;color:${d.mode === 'light' ? '#fff' : '#101623'}">${posterEsc(d.category || '到店看')}</div>
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:430px">
+          ${postField('main', d.main, 'font-size:116px;font-weight:800;color:#FFFFFF;line-height:1.12;text-shadow:0 6px 40px rgba(0,0,0,.5)')}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:290px">
+          ${d.emph ? postField('emph', d.emph, 'font-size:50px;font-weight:600;color:rgba(255,255,255,.9);line-height:1.36') : ''}
+        </div>
+        <div style="position:absolute;left:92px;right:200px;bottom:100px">
+          ${d.sub ? postField('sub', d.sub, 'font-size:28px;color:rgba(255,255,255,.66);line-height:1.5') : ''}
+        </div>
+        <div style="position:absolute;right:88px;bottom:96px;width:96px;height:96px;border-radius:50%;background:${d.accent};display:flex;align-items:center;justify-content:center;font-size:40px">→</div>
+      </div>`;
+    }
+  },
+  /* 7. 圆角卡片：柔和，适合小红书原生感 */
+  {
+    id: 'card', name: '圆角卡片', tag: '柔和 · 原生',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#14181F';
+      const soft = light ? 'rgba(255,255,255,.76)' : 'rgba(20,24,31,.6)';
+      return `<div class="poster-root" style="background:${posterMix(d.accent, '#ffffff', light ? .12 : .04)};position:relative;padding:76px;box-sizing:border-box">
+        <div style="position:absolute;inset:76px;border-radius:36px;background:${d.accent};box-shadow:0 40px 90px rgba(0,0,0,.22)"></div>
+        <div style="position:absolute;top:170px;left:150px;right:150px;text-align:center">
+          <div style="display:inline-block;padding:11px 28px;border-radius:999px;background:${light ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.16)'};font-size:25px;letter-spacing:.14em;color:${soft};margin-bottom:40px">${posterEsc(d.audience || '到店看')} · ${posterEsc(d.category || '精选')}</div>
+          ${postField('main', d.main, `font-size:100px;font-weight:800;color:${ink};line-height:1.18;text-align:center`)}
+        </div>
+        <div style="position:absolute;top:700px;left:150px;right:150px;text-align:center">
+          ${d.emph ? postField('emph', d.emph, `font-size:48px;font-weight:600;color:${soft};line-height:1.42;text-align:center`) : ''}
+        </div>
+        <div style="position:absolute;top:930px;left:150px;right:150px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+          ${d.items.slice(0, 3).map((it, i) => `<div contenteditable="${'true'}" data-field="item${i}" style="padding:14px 30px;border-radius:999px;background:${light ? 'rgba(0,0,0,.055)' : 'rgba(255,255,255,.14)'};font-size:32px;color:${ink}">${posterEsc(it)}</div>`).join('')}
+        </div>
+        <div style="position:absolute;left:150px;right:150px;bottom:180px;text-align:center">
+          ${d.sub ? postField('sub', d.sub, `font-size:28px;color:${soft};line-height:1.55;text-align:center`) : ''}
+        </div>
+      </div>`;
+    }
+  },
+  /* 8. 斜切活泼：年轻人群 */
+  {
+    id: 'slant', name: '斜切拼色', tag: '年轻 · 活泼',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#101623';
+      return `<div class="poster-root" style="background:${posterMix(d.accent, '#ffffff', .9)};position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:900px;background:${d.accent}"></div>
+        <div style="position:absolute;top:820px;left:-40px;right:-40px;height:220px;background:${posterMix(d.accent, '#ffffff', .9)};transform:rotate(-6deg)"></div>
+        <div style="position:absolute;top:110px;left:92px;font-size:25px;font-weight:700;letter-spacing:.24em;color:${light ? 'rgba(255,255,255,.7)' : 'rgba(16,22,35,.6)'}">${posterEsc((d.audience || '').toUpperCase())} / ${posterEsc(d.category || '')}</div>
+        <div style="position:absolute;top:200px;left:92px;right:140px">
+          ${postField('main', d.main, `font-size:114px;font-weight:800;color:${ink};line-height:1.14`)}
+        </div>
+        <div style="position:absolute;top:660px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:48px;font-weight:600;color:${light ? 'rgba(255,255,255,.8)' : 'rgba(16,22,35,.66)'};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;top:1000px;left:92px;right:92px;display:flex;flex-direction:column;gap:24px">
+          ${postItems(d, '', `flex:0 0 auto;width:56px;height:56px;border-radius:16px;background:${d.accent};color:${d.mode === 'light' ? '#fff' : '#101623'};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800`, 'flex:1;min-width:0;font-size:38px;font-weight:600;color:#101623;line-height:1.34')}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:96px">
+          ${d.sub ? postField('sub', d.sub, 'font-size:27px;color:rgba(16,22,35,.5);line-height:1.5') : ''}
+        </div>
+      </div>`;
+    }
+  },
+  /* 9. 极简黑：高级感 */
+  {
+    id: 'mono', name: '极简黑金', tag: '高级 · 质感',
+    render: d => {
+      return `<div class="poster-root" style="background:#0B0B0D;position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:5px;background:${d.accent}"></div>
+        <div style="position:absolute;top:112px;left:92px;right:92px;display:flex;align-items:center;gap:20px">
+          <div style="width:11px;height:11px;border-radius:50%;background:${d.accent}"></div>
+          <div style="font-size:24px;letter-spacing:.26em;color:rgba(255,255,255,.44)">${posterEsc((d.category || 'STORE').toUpperCase())}</div>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,.14)"></div>
+        </div>
+        <div style="position:absolute;top:200px;left:92px;right:92px">
+          ${postField('main', d.main, 'font-size:118px;font-weight:800;color:#FFFFFF;line-height:1.13;letter-spacing:-.01em')}
+        </div>
+        <div style="position:absolute;top:670px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:52px;font-weight:500;color:${posterMix(d.accent, '#ffffff', .62)};line-height:1.38`) : ''}
+        </div>
+        <div style="position:absolute;top:880px;left:92px;right:92px;height:1px;background:rgba(255,255,255,.14)"></div>
+        <div style="position:absolute;top:930px;left:92px;right:92px;display:flex;flex-direction:column;gap:26px">
+          ${d.items.length ? d.items.slice(0, 3).map((it, i) => `<div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:24px;color:rgba(255,255,255,.34);letter-spacing:.1em">0${i + 1}</span><div contenteditable="${'true'}" data-field="item${i}" style="flex:1;font-size:36px;color:rgba(255,255,255,.82);line-height:1.4">${posterEsc(it)}</div></div>`).join('') : `<div style="font-size:30px;color:rgba(255,255,255,.36)">在「第二行亮点」用 · 分隔写要点</div>`}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:96px">
+          ${d.sub ? postField('sub', d.sub, 'font-size:27px;color:rgba(255,255,255,.4);line-height:1.5') : ''}
+        </div>
+      </div>`;
+    }
+  },
+  /* 10. 上下照片：实拍为主 */
+  {
+    id: 'stack', name: '上下照片', tag: '实拍 · 上下图',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#101623';
+      return `<div class="poster-root" style="background:${d.accent};position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:800px;background:#101623">${postPhoto(d, 'width:100%;height:100%;object-fit:cover')}</div>
+        <div style="position:absolute;top:800px;left:0;right:0;bottom:0;background:${d.accent}"></div>
+        <div style="position:absolute;top:726px;left:0;right:0;height:90px;background:linear-gradient(180deg,rgba(0,0,0,0),${d.accent})"></div>
+        <div style="position:absolute;top:864px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:96px;font-weight:800;color:${ink};line-height:1.16`)}
+        </div>
+        <div style="position:absolute;top:1150px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:46px;font-weight:600;color:${light ? 'rgba(255,255,255,.78)' : 'rgba(16,22,35,.64)'};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:92px;display:flex;align-items:center;justify-content:space-between;gap:28px">
+          <div style="flex:1;min-width:0">${d.sub ? postField('sub', d.sub, `font-size:27px;color:${light ? 'rgba(255,255,255,.6)' : 'rgba(16,22,35,.48)'};line-height:1.5`) : ''}</div>
+          <div style="width:80px;height:8px;background:${light ? '#FF7A5C' : posterMix(d.accent, '#000', .5)};flex:0 0 auto"></div>
+        </div>
+      </div>`;
+    }
+  },
+  /* 11. 问句体：制造好奇 */
+  {
+    id: 'question', name: '问句投递', tag: '好奇 · 提问',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#111827';
+      const soft = light ? 'rgba(255,255,255,.68)' : 'rgba(17,24,39,.56)';
+      return `<div class="poster-root" style="background:${posterMix(d.accent, '#ffffff', light ? .04 : .1)};position:relative">
+        <div style="position:absolute;top:0;left:0;width:520px;height:520px;border-radius:50%;background:${d.accent};filter:blur(0px);opacity:.14;transform:translate(-180px,-180px)"></div>
+        <div style="position:absolute;bottom:0;right:0;width:620px;height:620px;border-radius:50%;background:${d.accent};opacity:.1;transform:translate(200px,220px)"></div>
+        <div style="position:absolute;top:130px;left:92px;font-size:150px;font-weight:800;color:${d.accent};opacity:.9;line-height:1">?</div>
+        <div style="position:absolute;top:320px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:104px;font-weight:800;color:${ink};line-height:1.2`)}
+        </div>
+        <div style="position:absolute;top:760px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:50px;font-weight:600;color:${soft};line-height:1.42`) : ''}
+        </div>
+        <div style="position:absolute;top:1000px;left:92px;right:92px;padding:42px 46px;border-radius:22px;background:${light ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.5)'};border:1px solid ${light ? 'rgba(255,255,255,.12)' : 'rgba(17,24,39,.08)'}">
+          ${d.sub ? postField('sub', d.sub, `font-size:30px;color:${soft};line-height:1.6`) : ''}
+        </div>
+        <div style="position:absolute;left:92px;bottom:96px;display:flex;align-items:center;gap:16px">
+          <div style="width:44px;height:44px;border-radius:50%;background:${d.accent};display:flex;align-items:center;justify-content:center;font-size:20px;color:${light ? '#fff' : '#111827'}">✓</div>
+          <div style="font-size:25px;color:${soft}">${posterEsc(d.name || '到店核对')}</div>
+        </div>
+      </div>`;
+    }
+  },
+  /* 12. 数据条：突出参数/对比 */
+  {
+    id: 'spec', name: '参数条', tag: '参数 · 对比',
+    render: d => {
+      const light = d.mode === 'light';
+      const ink = light ? '#FFFFFF' : '#0F172A';
+      const soft = light ? 'rgba(255,255,255,.66)' : 'rgba(15,23,42,.56)';
+      const specs = d.items.length ? d.items.slice(0, 3) : [];
+      return `<div class="poster-root" style="background:${d.accent};position:relative">
+        <div style="position:absolute;top:96px;left:92px;right:92px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:24px;letter-spacing:.2em;color:${soft}">${posterEsc((d.category || 'SPEC').toUpperCase())}</div>
+          <div style="padding:9px 24px;border-radius:999px;border:1px solid ${light ? 'rgba(255,255,255,.3)' : 'rgba(15,23,42,.18)'};font-size:22px;color:${soft}">${posterEsc(d.audience || '')}</div>
+        </div>
+        <div style="position:absolute;top:190px;left:92px;right:92px">
+          ${postField('main', d.main, `font-size:104px;font-weight:800;color:${ink};line-height:1.15`)}
+        </div>
+        <div style="position:absolute;top:640px;left:92px;right:92px">
+          ${d.emph ? postField('emph', d.emph, `font-size:46px;font-weight:600;color:${soft};line-height:1.4`) : ''}
+        </div>
+        <div style="position:absolute;top:820px;left:92px;right:92px;display:flex;flex-direction:column">
+          ${specs.map((it, i) => `<div style="display:flex;align-items:center;gap:24px;padding:34px 0;border-bottom:1px solid ${light ? 'rgba(255,255,255,.16)' : 'rgba(15,23,42,.12)'}">
+            <div style="font-size:23px;letter-spacing:.12em;color:${soft};width:64px;flex:0 0 auto">0${i + 1}</div>
+            <div contenteditable="${'true'}" data-field="item${i}" style="flex:1;min-width:0;font-size:40px;font-weight:600;color:${ink};line-height:1.3">${posterEsc(it)}</div>
+            <div style="width:9px;height:9px;border-radius:50%;background:${light ? '#FF7A5C' : posterMix(d.accent, '#000', .55)};flex:0 0 auto"></div>
+          </div>`).join('') || `<div style="font-size:30px;color:${soft}">在「第二行亮点」用 · 分隔写三条要点</div>`}
+        </div>
+        <div style="position:absolute;left:92px;right:92px;bottom:96px">
+          ${d.sub ? postField('sub', d.sub, `font-size:27px;color:${soft};line-height:1.5`) : ''}
+        </div>
+      </div>`;
+    }
+  }
+];
     function clearCoverBlob(){if(coverState.blobUrl){URL.revokeObjectURL(coverState.blobUrl);coverState.blobUrl='';}$('promotionCoverLinks').hidden=true;$('promotionCoverSaveLink').removeAttribute('href');$('promotionCoverOpenLink').removeAttribute('href');}
     function markCoverStale(message='封面设置已修改，请重新生成。'){
       coverState.revision++;coverState.generated=false;coverState.signature='';$('promotionCoverDownload').disabled=true;clearCoverBlob();
@@ -1236,34 +1959,35 @@
     }
     function coverProductLabel(product){return [...(product?.aliases||[]),product?.name||''].filter(Boolean).sort((a,b)=>Array.from(a).length-Array.from(b).length)[0]||'';}
     function setCoverDefaults(silent=false){
-      const product=promotion.product;if(!product){$('promotionCoverMain').value='';$('promotionCoverEmph').value='';$('promotionCoverSub').value='';updateCoverTitleHint();return;}
-      const audience=$('promotionAudience').value,label=coverProductLabel(product);
-      $('promotionCoverMain').value=`${label}怎么选`;
-      $('promotionCoverEmph').value=`${audience}先看这几项`;
-      $('promotionCoverSub').value=`${product.category} · 具体版本 · 真实需求`;
-      const angle=$('promotionAngle').value,purpose=$('promotionPurpose').value;
-      setCoverTemplate(coverState.photo?'photo':(purpose==='门店日常'||angle==='scene'?'list':'bigword'),true);
-      updateCoverTitleHint();markCoverStale('默认文案已按产品与推广人群更新，请生成封面。');
+      const product=promotion.product;
+      if(!product){$("promotionCoverMain").value="";$("promotionCoverEmph").value="";$("promotionCoverSub").value="";updateCoverTitleHint();renderPoster({reset:true});return;}
+      const audience=$("promotionAudience").value,label=coverProductLabel(product);
+      $("promotionCoverMain").value=`${label}怎么选`;
+      $("promotionCoverEmph").value=`${audience}先看这几项`;
+      $("promotionCoverSub").value=`${product.category} · 具体版本 · 真实需求`;
+      updateCoverTitleHint();
+      renderPoster({reset:true});
+      if(!silent)markPosterStale("默认文案已按产品与推广人群更新，请重新生成后再下载。");
     }
     function setCoverTemplate(value,silent=false){
-      const allowed=['bigword','list','photo'];const next=allowed.includes(value)?value:'bigword';
-      $('promotionCoverTemplate').value=next;
-      document.querySelectorAll('[data-cover-tpl]').forEach(button=>{const on=button.dataset.coverTpl===next;button.classList.toggle('is-active',on);button.setAttribute('aria-checked',on?'true':'false');});
-      if(!silent)markCoverStale('版式已切换，请重新生成封面。');
+      // 兼容旧调用点：旧值映射到新模板
+      const legacy={bigword:"deep",list:"checklist",photo:"split"};
+      setPosterTemplate(legacy[value]||value,silent);
     }
     function setCoverColor(value,silent=false){
-      const hex=/^#[0-9a-f]{6}$/i.test(String(value))?String(value).toLowerCase():'#0b1f3a';
-      $('promotionCoverColor').value=hex;
-      document.querySelectorAll('[data-color]').forEach(button=>{const on=button.dataset.color.toLowerCase()===hex;button.classList.toggle('is-active',on);button.setAttribute('aria-checked',on?'true':'false');});
-      if(!silent)markCoverStale('主色已修改，请重新生成封面。');
+      const hex=/^#[0-9a-f]{6}$/i.test(String(value))?String(value).toLowerCase():"#0b1f3a";
+      $("promotionCoverColor").value=hex;
+      document.querySelectorAll("[data-color]").forEach(button=>{const on=button.dataset.color.toLowerCase()===hex;button.classList.toggle("is-active",on);button.setAttribute("aria-checked",on?"true":"false");});
+      renderPoster();
+      if(!silent)markPosterStale("主色已修改，请重新生成后再下载。");
     }
-    function updateCoverTitleHint(){const count=Array.from($('promotionCoverMain').value.trim()).length;$('promotionCoverTitleHint').textContent=count>14?`当前 ${count} 字，超过 14 字建议；生成时会自动换行缩字，可将细节移到副标题。`:'建议主标题不超过 14 字，细节放到副标题。';}
-    function coverTemplateLabel(value){return {bigword:"大字标题",list:"清单预告",photo:"实拍照片"}[value]||"大字标题";}
-    function coverTemplateTip(value){return {bigword:"纯色底 + 超大字，适合一句结论；标题越短越有力。",list:"编号 1/2/3，适合「几条要点」预告；要点不要超过三条。",photo:"上图下字，适合真机实拍；照片要占满上半屏才好看。"}[value]||"";}
+    function updateCoverTitleHint(){const count=Array.from($("promotionCoverMain").value.trim()).length;$("promotionCoverTitleHint").textContent=count>14?`当前 ${count} 字，偏长；图上会自动换行，但 8–14 字最容易一眼读完。`:"建议主标题不超过 14 字，细节放到副标题。";}
+    function coverTemplateLabel(value){return posterTemplateById(posterState.template).name;}
+    function coverTemplateTip(value){const t=posterTemplateById(posterState.template);return `${t.name}：${t.tag}。`;}
     function buildProductCard(){
       const product=promotion.product;if(!product)return "";
       const main=$("promotionCoverMain").value.trim(),emph=$("promotionCoverEmph").value.trim(),sub=$("promotionCoverSub").value.trim();
-      const audience=$("promotionAudience").value,purpose=$("promotionPurpose").value,template=$("promotionCoverTemplate").value,accent=$("promotionCoverColor").value;
+      const audience=$("promotionAudience").value,purpose=$("promotionPurpose").value,template=coverTemplateLabel(),accent=$("promotionCoverColor").value;
       const blocks=[
         "可画产品信息卡 · 小红书封面（1080 × 1440）",
         "用法：在可画双击文字框，一次只粘一段，粘完把【】这行删掉。",
@@ -1295,10 +2019,10 @@
       return blocks.join("\n");
     }
     function buildCanvaDesignBrief(){
-      const product=promotion.product,main=$("promotionCoverMain").value.trim(),emph=$("promotionCoverEmph").value.trim(),sub=$("promotionCoverSub").value.trim(),template=coverTemplateLabel($("promotionCoverTemplate").value),accent=$("promotionCoverColor").value;
+      const product=promotion.product,main=$("promotionCoverMain").value.trim(),emph=$("promotionCoverEmph").value.trim(),sub=$("promotionCoverSub").value.trim(),template=coverTemplateLabel(),accent=$("promotionCoverColor").value;
       if(!product)return "";
       const platformDraft=promotion.current?.drafts?.xhs;
-      return ["可画设计简报（换模板/改版式时给设计看的那份）","平台：小红书封面","尺寸：1080 × 1440 px（3:4 竖版）","留白：左右各 72px、上下各 60px 内不要放正文，避免被裁",`产品：${product.name}`,`主标题：${main||"待填写"}`,`第二行亮点：${emph||"无"}`,`副标题：${sub||"无"}`,`版式倾向：${template}`,coverTemplateTip($("promotionCoverTemplate").value),`强调色：${accent}（整张图只用这一个彩色，别加第二个）`,`字数上限：主标题 ≤14 字、第二行 ≤12 字、副标题 ≤20 字`,`产品资料来源：${product.source}`,platformDraft?`小红书正文草稿（配套发布用，不进图）：\n${platformDraft.title}\n${platformDraft.body}`:"尚未生成小红书正文草稿","使用说明：可画不支持网页自动填充，请在可画里手动替换标题、亮点、副标题和产品照片；价格、库存、活动及门店信息需按已核实内容填写。"].join("\n");
+      return ["可画设计简报（换模板/改版式时给设计看的那份）","平台：小红书封面","尺寸：1080 × 1440 px（3:4 竖版）","留白：左右各 72px、上下各 60px 内不要放正文，避免被裁",`产品：${product.name}`,`主标题：${main||"待填写"}`,`第二行亮点：${emph||"无"}`,`副标题：${sub||"无"}`,`版式倾向：${template}`,coverTemplateTip(),`强调色：${accent}（整张图只用这一个彩色，别加第二个）`,`字数上限：主标题 ≤14 字、第二行 ≤12 字、副标题 ≤20 字`,`产品资料来源：${product.source}`,platformDraft?`小红书正文草稿（配套发布用，不进图）：\n${platformDraft.title}\n${platformDraft.body}`:"尚未生成小红书正文草稿","使用说明：可画不支持网页自动填充，请在可画里手动替换标题、亮点、副标题和产品照片；价格、库存、活动及门店信息需按已核实内容填写。"].join("\n");
     }
     function openCanvaTemplate(){
       const raw=$('promotionCanvaUrl').value.trim();
@@ -1307,124 +2031,43 @@
     }
     const COVER_BREAK_AFTER=/[，,、；;：:！!？?。\s）】」]/;
     const COVER_NO_LINE_START=/[，,、；;：:！!？?。）】」]/;
-    function wrapCanvasText(ctx,text,maxWidth,targetWidth){
-      const chars=Array.from(String(text||'').trim()),lines=[];let line='';
-      const limit=targetWidth&&targetWidth>0?Math.min(targetWidth,maxWidth):maxWidth;
-      for(let i=0;i<chars.length;i++){
-        const char=chars[i];
-        if(char==='\n'){if(line)lines.push(line);line='';continue;}
-        const next=line+char;
-        if(line&&ctx.measureText(next).width>limit){
-          // 标点不收行首：把上一行末字一起带下
-          if(COVER_NO_LINE_START.test(char)&&line.length>1){
-            const carried=line.slice(-1);line=line.slice(0,-1);if(line)lines.push(line);line=carried+char;continue;
-          }
-          // 优先在标点/空格后断行
-          let cut=-1;
-          for(let k=line.length-1;k>=Math.max(1,line.length-6);k--){
-            if(COVER_BREAK_AFTER.test(line[k-1]||'')){cut=k;break;}
-          }
-          if(cut>0&&cut<line.length){lines.push(line.slice(0,cut));line=line.slice(cut)+char;}
-          else{lines.push(line);line=char;}
-        }else line=next;
-      }
-      if(line)lines.push(line);return lines;
-    }
-    function fitCanvasText(ctx,text,{maxWidth,maxLines,startSize,minSize,weight=800}){
-      let size=startSize,lines=[];for(;size>=minSize;size-=2){ctx.font=`${weight} ${size}px "Microsoft YaHei","PingFang SC",sans-serif`;lines=wrapCanvasText(ctx,text,maxWidth);if(lines.length<=maxLines)break;}
-      if(lines.length>maxLines)throw new Error('文案过长，自动缩字后仍超出版面，请精简标题、强调句或副标题；不会裁掉文案。');
-      return {size,lines,weight,lineHeight:Math.round(size*1.18)};
-    }
-    function drawCanvasLines(ctx,layout,x,y,color){ctx.font=`${layout.weight||800} ${layout.size}px "Microsoft YaHei","PingFang SC",sans-serif`;ctx.fillStyle=color;ctx.textBaseline='top';layout.lines.forEach((line,index)=>ctx.fillText(line,x,y+index*layout.lineHeight));return y+layout.lines.length*layout.lineHeight;}
     function coverContrastColor(hex){const rgb=hex.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]>.179?'#171717':'#FFFFFF';}
-    function drawCoverPhoto(ctx,image,x,y,w,h){const scale=Math.max(w/image.width,h/image.height),sw=w/scale,sh=h/scale,sx=(image.width-sw)/2,sy=(image.height-sh)/2;ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(image,sx,sy,sw,sh,x,y,w,h);ctx.restore();}
-    function drawCoverBadge(ctx,text,x,y,bg,fg){ctx.font='700 32px "Microsoft YaHei","PingFang SC",sans-serif';const w=Math.ceil(ctx.measureText(text).width)+48;ctx.fillStyle=bg;ctx.fillRect(x,y,w,58);ctx.fillStyle=fg;ctx.textBaseline='middle';ctx.fillText(text,x+24,y+29);return w;}
-    function drawCover(){
-      const canvas=$('promotionCoverCanvas'),ctx=canvas.getContext('2d');if(!ctx)throw new Error('当前浏览器无法创建 Canvas 画布。');
-      const template=$('promotionCoverTemplate').value,accent=$('promotionCoverColor').value,main=$('promotionCoverMain').value.trim(),emph=$('promotionCoverEmph').value.trim(),sub=$('promotionCoverSub').value.trim(),photo=coverState.photo;
-      const W=1080,H=1440,PAD=88;
-      ctx.clearRect(0,0,W,H);ctx.textAlign='left';ctx.lineJoin='round';ctx.textBaseline='top';
-      const dark=coverContrastColor(accent)==='#171717';
-      const bg=accent,ink=dark?'#141414':'#FFFFFF',inkSoft=dark?'rgba(20,20,20,.66)':'rgba(255,255,255,.76)';
-      if(template==='photo'&&photo){
-        drawCoverPhoto(ctx,photo,0,0,W,880);
-        const grad=ctx.createLinearGradient(0,700,0,880);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.34)');
-        ctx.fillStyle=grad;ctx.fillRect(0,700,W,180);
-        ctx.fillStyle=bg;ctx.fillRect(0,880,W,H-880);
-        ctx.fillStyle=ink;ctx.fillRect(PAD,940,96,10);
-        const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:3,startSize:96,minSize:56});
-        let y=drawCanvasLines(ctx,title,PAD,982,ink)+22;
-        if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:2,startSize:50,minSize:32,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.8)':'rgba(255,255,255,.9)')+14;}
-        if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:2,startSize:32,minSize:24,weight:500});drawCanvasLines(ctx,l,PAD,y,inkSoft);}
-        canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，实拍照片版式，1080×1440`);
-        return;
-      }
-      ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-      if(template==='list'){
-        ctx.fillStyle=ink;ctx.fillRect(PAD,104,88,10);
-        ctx.font='600 30px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle=inkSoft;ctx.textBaseline='top';ctx.fillText('选购清单',PAD+108,92);
-        const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:2,startSize:88,minSize:52});
-        let y=drawCanvasLines(ctx,title,PAD,168,ink)+18;
-        if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:1,startSize:44,minSize:28,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.72)':'rgba(255,255,255,.78)')+16;}
-        ctx.strokeStyle=dark?'rgba(20,20,20,.16)':'rgba(255,255,255,.22)';ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(PAD,y+18);ctx.lineTo(W-PAD,y+18);ctx.stroke();
-        const items=coverListItems(main,emph,sub);
-        if(!items.length)ctx.fillText('先填「第二行亮点」写清楚要点，比如：大屏 · 轻 · 预算',PAD,y+96);
-        let ry=y+72;
-        items.slice(0,3).forEach((text,index)=>{
-          const box=76,radius=box/2;
-          ctx.fillStyle=dark?'rgba(20,20,20,.9)':'rgba(255,255,255,.94)';
-          ctx.beginPath();ctx.arc(PAD+radius,ry+radius,radius,0,Math.PI*2);ctx.fill();
-          ctx.font='700 34px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle=bg;ctx.textAlign='center';ctx.textBaseline='middle';
-          ctx.fillText(String(index+1),PAD+radius,ry+radius+2);
-          ctx.textAlign='left';ctx.textBaseline='top';
-          const l=fitCanvasText(ctx,text,{maxWidth:W-PAD*2-box-32,maxLines:2,startSize:42,minSize:30,weight:600});
-          drawCanvasLines(ctx,l,PAD+box+32,ry+8,ink);
-          ry+=Math.max(box+34,l.lines.length*l.lineHeight+28);
-        });
-        if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:1,startSize:30,minSize:24,weight:500});drawCanvasLines(ctx,l,PAD,H-140,l.lines.length?inkSoft:inkSoft);}
-        canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，清单版式，1080×1440`);
-        return;
-      }
-      ctx.fillStyle=ink;const barY=356;ctx.fillRect(PAD,barY,116,14);
-      const title=fitCanvasText(ctx,main,{maxWidth:W-PAD*2,maxLines:3,startSize:126,minSize:64});
-      let y=drawCanvasLines(ctx,title,PAD,barY+56,ink)+28;
-      if(emph){const l=fitCanvasText(ctx,emph,{maxWidth:W-PAD*2,maxLines:2,startSize:58,minSize:36,weight:600});y=drawCanvasLines(ctx,l,PAD,y,dark?'rgba(20,20,20,.78)':'rgba(255,255,255,.84)')+18;}
-      ctx.strokeStyle=dark?'rgba(20,20,20,.2)':'rgba(255,255,255,.26)';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(PAD,H-236);ctx.lineTo(W-PAD,H-236);ctx.stroke();
-      if(sub){const l=fitCanvasText(ctx,sub,{maxWidth:W-PAD*2,maxLines:2,startSize:34,minSize:26,weight:500});drawCanvasLines(ctx,l,PAD,H-196,inkSoft);}
-      canvas.setAttribute('aria-label',`${promotion.product?.name||'待确认产品'} 小红书封面预览，大字版式，1080×1440`);
-    }
-    function coverListItems(main,emph,sub){
-      const split=x=>String(x||'').split(/[·|｜、,，]/).map(t=>t.trim()).filter(Boolean);
-      let items=split(emph).concat(split(sub)).filter(t=>Array.from(t).length>=2);
-      items=[...new Set(items)];
-      if(items.length<3){
-        const fit=(promotion.product?.fit||[]).filter(t=>Array.from(t).length>=2&&!items.includes(t));
-        items=items.concat(fit).slice(0,3);
-      }
-      if(!items.length)return [];
-      return items.slice(0,3).map(x=>Array.from(x).length>26?Array.from(x).slice(0,25).join('')+'…':x);
-    }
-    function prepareCoverBlob(){
-      return new Promise((resolve,reject)=>{$('promotionCoverCanvas').toBlob(blob=>{if(!blob){reject(new Error('浏览器未能导出 PNG。'));return;}resolve(blob);},'image/png');});
-    }
-    async function generateCover(){
-      if($('promotionCoverTemplate').value==='photo'&&!coverState.photo){markCoverStale('已选“实拍照片”版式，但还没上传照片；请选择产品照片，或把版式切回“大字标题”。');$('promotionCoverPhoto').focus();return;}
-      markCoverStale('正在生成封面…');
-      const main=$('promotionCoverMain').value.trim();if(!promotion.product){markCoverStale('未确认已收录产品，不能生成封面。');return;}if(!main){markCoverStale('主标题必填，请填写后再生成封面。');$('promotionCoverMain').focus();return;}if(coverState.loading){markCoverStale('照片仍在读取，请等待完成后生成封面。');return;}
-      const revision=coverState.revision,signature=coverSignature();
-      try{drawCover();const blob=await prepareCoverBlob();if(revision!==coverState.revision||signature!==coverSignature())return;coverState.blobUrl=URL.createObjectURL(blob);for(const id of ['promotionCoverSaveLink','promotionCoverOpenLink'])$(id).href=coverState.blobUrl;$('promotionCoverLinks').hidden=false;coverState.generated=true;coverState.signature=signature;$('promotionCoverDownload').disabled=false;$('promotionCoverStatus').textContent=`已生成 1080×1440 PNG 预览（${coverTemplateLabel($('promotionCoverTemplate').value)}版式）。备用保存与打开原图链接会保留到内容再次修改。`;}
-      catch(error){if(revision===coverState.revision)markCoverStale(`生成失败：${error.message}`);}
+    function setCoverPhotoUrl(url){
+      if(coverState.photoUrl&&coverState.photoUrl!==url)URL.revokeObjectURL(coverState.photoUrl);
+      coverState.photoUrl=url||'';
     }
     async function loadCoverPhoto(file){
-      const token=++coverState.photoToken,previous=coverState.photo;if(!file){coverState.loading=false;if(previous?.close)previous.close();coverState.photo=null;$('promotionCoverPhotoStatus').textContent='未上传照片：使用纯色信息封面。';markCoverStale();return;}
-      if(file.size>20*1024*1024){coverState.loading=false;$('promotionCoverPhoto').value='';$('promotionCoverPhotoStatus').textContent=`“${file.name}”超过 20MB，未采用；${previous?'已恢复并保留上一张有效照片。':'继续使用纯色信息封面。'}`;markCoverStale('照片未更改，但封面需重新生成。');return;}
-      coverState.loading=true;markCoverStale('正在读取新照片，旧封面已过期。');$('promotionCoverPhotoStatus').textContent=`正在读取 ${file.name}…`;
-      let decoded=null,tempUrl='';try{
-        if('createImageBitmap' in window)decoded=await createImageBitmap(file);else{tempUrl=URL.createObjectURL(file);decoded=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('图片解码失败'));image.src=tempUrl;});}
-        if(token!==coverState.photoToken){if(decoded?.close)decoded.close();return;}if(previous?.close)previous.close();coverState.photo=decoded;$('promotionCoverPhotoStatus').textContent=`已读取 ${file.name}（${decoded.width}×${decoded.height}），仅在本页用于封面。`;markCoverStale('照片已变化，请重新生成封面。');
-      }catch(error){if(token!==coverState.photoToken)return;$('promotionCoverPhoto').value='';coverState.photo=previous;$('promotionCoverPhotoStatus').textContent=`${error.message||'图片解码失败'}，未采用；${previous?'已恢复并保留上一张有效照片。':'继续使用纯色信息封面。'}`;markCoverStale('照片读取失败，封面需重新生成。');}finally{if(tempUrl)URL.revokeObjectURL(tempUrl);if(token===coverState.photoToken)coverState.loading=false;}
+      const token=++coverState.photoToken;
+      if(!file){
+        coverState.loading=false;setCoverPhotoUrl('');
+        $('promotionCoverPhotoStatus').textContent='未上传照片：使用纯色信息封面。';
+        renderPoster();markCoverStale('已移除照片，请重新生成封面。');return;
+      }
+      if(file.size>20*1024*1024){
+        coverState.loading=false;$('promotionCoverPhoto').value='';
+        $('promotionCoverPhotoStatus').textContent=`「${file.name}」超过 20MB，未采用；继续使用当前封面。`;
+        markCoverStale('照片未更改，但封面需重新生成。');return;
+      }
+      coverState.loading=true;markCoverStale('正在读取新照片，旧封面已过期。');
+      $('promotionCoverPhotoStatus').textContent=`正在读取 ${file.name}…`;
+      const url=URL.createObjectURL(file);
+      const probe=new Image();
+      const loaded=await new Promise(resolve=>{
+        probe.onload=()=>resolve(true);
+        probe.onerror=()=>resolve(false);
+        probe.src=url;
+      });
+      if(token!==coverState.photoToken){URL.revokeObjectURL(url);return;}
+      if(!loaded){
+        URL.revokeObjectURL(url);coverState.loading=false;$('promotionCoverPhoto').value='';
+        $('promotionCoverPhotoStatus').textContent='图片解码失败，未采用；继续使用当前封面。';
+        markCoverStale('照片读取失败，封面需重新生成。');return;
+      }
+      setCoverPhotoUrl(url);
+      coverState.loading=false;
+      $('promotionCoverPhotoStatus').textContent=`已读取 ${file.name}（${probe.naturalWidth}×${probe.naturalHeight}），仅在本页用于封面。`;
+      renderPoster();
+      markCoverStale(`照片已应用到「${posterTemplateById(posterState.template).name}」，请重新生成封面后再下载。`);
     }
     function initializePromotion(){
       const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='请选择已收录产品（全分类）';
@@ -1441,13 +2084,12 @@
       $('promotionCoverClearPhoto').addEventListener('click',()=>{$('promotionCoverPhoto').value='';loadCoverPhoto(null);});
       $('promotionCopyDesignBrief').addEventListener('click',()=>{const brief=buildCanvaDesignBrief();copyText(brief,'可画设计简报已复制');$('promotionCanvaStatus').textContent=brief?'已复制可画设计简报。打开模板后手动替换文字和照片。':'请先查找并确认产品，再复制设计简报。';});
       $('promotionOpenCanva').addEventListener('click',openCanvaTemplate);
-      document.querySelectorAll('[data-cover-tpl]').forEach(button=>{button.addEventListener('click',()=>setCoverTemplate(button.dataset.coverTpl));});
       document.querySelectorAll('[data-color]').forEach(button=>{button.addEventListener('click',()=>setCoverColor(button.dataset.color));});
       $('promotionCoverColor').addEventListener('input',()=>setCoverColor($('promotionCoverColor').value,true));
       $('promotionCoverColor').addEventListener('change',()=>setCoverColor($('promotionCoverColor').value));
       $('promotionCopyProductCard').addEventListener('click',()=>{const card=buildProductCard();if(!card){$('promotionCanvaStatus').textContent='请先查找并确认产品，再复制产品信息卡。';return;}copyText(card,'产品信息卡已复制，去可画粘进去');$('promotionCanvaStatus').textContent='已复制产品信息卡。在可画双击文字框，一次粘一段（主标题、亮点、副标题、产品名），粘完删掉【】这行。';});
-      setCoverTemplate($('promotionCoverTemplate').value,true);setCoverColor($('promotionCoverColor').value,true);
-      $('promotionCoverGenerate').addEventListener('click',generateCover);
+      buildTemplateGallery();setCoverColor($('promotionCoverColor').value,true);
+      $('promotionCoverGenerate').addEventListener('click',generatePoster);
       $('promotionCoverDownload').addEventListener('click',()=>{if(!coverState.generated||coverState.signature!==coverSignature()){markCoverStale('封面已过期，请重新生成后下载。');return;}try{const a=$('promotionCoverSaveLink');if(!a.href||!coverState.blobUrl)throw new Error('PNG 下载链接不存在');a.click();$('promotionCoverStatus').textContent='已发起 PNG 下载。如浏览器未保存，请使用下方持久备用链接，或打开原图后右键/长按保存。';}catch(error){$('promotionCoverStatus').textContent=`自动下载不可用：${error.message}。请使用下方“保存 PNG 图片”或“打开原图”备用链接。`;}});
       $('promotionEditors').innerHTML=Object.entries(promotionPlatforms).map(([key,label])=>`<div class="promotion-editor" id="promotionEditor-${key}" role="tabpanel" aria-labelledby="promotionTab-${key}" ${key==='xhs'?'':'hidden'}><label for="promotionTitle-${key}">${label}标题 · 可编辑</label><input id="promotionTitle-${key}" placeholder="生成后可修改标题" />${key==='xhs'?'<div class="title-alt" id="promotionAltTitles" hidden><span class="title-alt-label">换个标题</span><div class="title-alt-list" id="promotionAltList"></div></div>':''}<label for="promotionBody-${key}">${label}正文 · 可编辑</label><textarea id="promotionBody-${key}" placeholder="本地草稿将在这里生成"></textarea><div class="action-row"><button class="secondary-btn" type="button" data-promotion-copy="${key}" disabled>复制${label}标题与正文</button></div></div>`).join('');
       document.querySelectorAll('[data-promotion-tab]').forEach(button=>{button.addEventListener('click',()=>selectPromotionTab(button.dataset.promotionTab));button.addEventListener('keydown',event=>{const keys=Object.keys(promotionPlatforms),index=keys.indexOf(promotion.tab);let target;if(event.key==='ArrowRight')target=keys[(index+1)%keys.length];if(event.key==='ArrowLeft')target=keys[(index+keys.length-1)%keys.length];if(event.key==='Home')target=keys[0];if(event.key==='End')target=keys[keys.length-1];if(target){event.preventDefault();selectPromotionTab(target);$('promotionTab-'+target).focus();}});});
