@@ -116,6 +116,21 @@ async function connect(){for(let i=0;i<40;i++){try{const pages=await requestJson
       widths.push(...await evalJs(`(()=>{motionPreference='off';applyMotion();return [...routes].map(page=>{navigate(page);return {width:${width},page,viewport:innerWidth,scroll:document.documentElement.scrollWidth,clipped:[...document.querySelectorAll('[data-page="'+page+'"] .quote-item,[data-page="'+page+'"] .discount-grid')].filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>({class:el.className,client:el.clientWidth,scroll:el.scrollWidth}))}})})()`));
     }
     console.log('responsive',JSON.stringify(widths));assert(widths.every(x=>x.scroll<=x.width+1&&!x.clipped.length));
+    // API 悬浮窗：任意宽度下示例地址必须完整显示，不能截成半个 completions
+    const apiNarrow=[];
+    for(const width of [360,390,430,768,1440]){
+      await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<821});
+      await evalJs(`document.getElementById('apiOpenBtn').click()`);
+      await new Promise(r=>setTimeout(r,150));
+      apiNarrow.push(await evalJs(`(()=>{const inp=document.getElementById('apiEndpoint');const ics=getComputedStyle(inp),pcs=getComputedStyle(inp,'::placeholder');
+        const cv=document.createElement('canvas').getContext('2d');cv.font=pcs.fontWeight+' '+pcs.fontSize+' '+ics.fontFamily;
+        const textW=cv.measureText(inp.placeholder).width,inner=inp.getBoundingClientRect().width-parseFloat(ics.paddingLeft)-parseFloat(ics.paddingRight);
+        const card=document.querySelector('.api-modal-card').getBoundingClientRect();
+        document.getElementById('apiCloseBtn').click();
+        return {width:${width},fits:textW<=inner,cardFits:card.left>=-0.5&&card.right<=innerWidth+0.5,noOverflow:document.documentElement.scrollWidth<=innerWidth+1};})()`));
+    }
+    console.log('apiNarrow',JSON.stringify(apiNarrow));
+    assert(apiNarrow.every(x=>x.fits&&x.cardFits&&x.noOverflow),'API 悬浮窗在窄屏下不得截断示例地址或溢出');
     const click=async selector=>{const point=await evalJs(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});el.scrollIntoView({block:'center',inline:'center'});const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});};
     const realNavigation=[];
     for(const width of [390,1440]){
