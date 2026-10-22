@@ -47,16 +47,28 @@ const child = spawn(edge, ['--headless=new', '--disable-gpu', '--no-first-run', 
 
   const out = {};
 
-  // 1. 进反馈与交接页，准备一份可归档的执行记录
+  // 1. 先前置一份客户画像：新版没画像时「反馈与交接」会被守卫挡住，这是设计如此
+  out.personaSetup = await evalJs(`(async()=>{
+    const $=id=>document.getElementById(id); const s=ms=>new Promise(r=>setTimeout(r,ms));
+    location.hash='#/persona'; await s(300);
+    $('scene').value='客户经常出差，需要轻薄、屏幕好、手机电脑协同，预算 7000 元左右';
+    $('runBtn').click(); await s(200);
+    $('savePersonaBtn').click(); await s(200);
+    return {ready:personaReady(),role:state.persona?.role||'',need:state.persona?.need||''};
+  })()`);
+
+  // 2. 进反馈与交接页，准备一份可归档的执行记录
   out.setup = await evalJs(`(async()=>{
     const $=id=>document.getElementById(id); const s=ms=>new Promise(r=>setTimeout(r,ms));
     location.hash='#/plan-feedback'; await s(600);
     $('handoffOwner').value='晚班 李四';
-    $('cardNeed').value='经常出差，重视轻薄与屏幕';
     return {
-      panels:[...document.querySelectorAll('[data-page="plan-feedback"] > .panel h3')].map(h=>h.textContent),
+      panels:[...document.querySelectorAll('[data-page="plan-feedback"] > .panel h3, [data-page="plan-feedback"] #feedbackBody > .panel h3')].map(h=>h.textContent),
+      guardHidden:$('feedbackGuard').hidden,
+      bodyShown:!$('feedbackBody').hidden,
       hasCard:!!$('cardPreview'),
-      cardRendered:!!$('cardPreview').firstElementChild
+      cardRendered:!!$('cardPreview').firstElementChild,
+      hasNeedInput:!!$('cardNeed')
     };
   })()`);
 
@@ -72,18 +84,35 @@ const child = spawn(edge, ['--headless=new', '--disable-gpu', '--no-first-run', 
   await wait(300);
   out.keyboardEdit = { focused: focusOk, value: await evalJs(`document.getElementById('planOutcome').value`) };
 
-  // 3. 真实点击「保存并归档」
+  // 3. 真实点击「保存并归档」，应追加一条工作留档而不是覆盖
   await evalJs(`document.getElementById('saveOutcomeBtn').click()`);
   await wait(400);
   out.archive = await evalJs(`(()=>({
-    status:document.getElementById('outcomeStatus').textContent.slice(0,50),
+    status:document.getElementById('outcomeStatus').textContent.slice(0,60),
     savedAt:document.getElementById('outcomeSavedAt').textContent,
-    archiveHasOwner:document.getElementById('handoffArchive').textContent.includes('晚班 李四'),
-    archiveHasNote:document.getElementById('handoffArchive').textContent.includes('价格还差约 800'),
-    persisted:!!localStorage.getItem('pc-agent-handoff')
+    count:state.workLogs.length,
+    logHasOwner:document.getElementById('workLog').textContent.includes('晚班 李四'),
+    logHasNote:document.getElementById('workLog').textContent.includes('价格还差约 800'),
+    logHasPersona:document.getElementById('workLog').textContent.includes('客户是谁'),
+    logCountLabel:document.getElementById('workLogCount').textContent,
+    persisted:!!localStorage.getItem('pc-agent-worklogs')
   }))()`);
 
-  // 4. 刷新后归档仍在（跨会话交接能力）
+  // 3.1 再存第二条：前一条必须还在（追加不覆盖是这页的核心要求）
+  await evalJs(`(()=>{
+    document.getElementById('planOutcome').value='第二位客户，先看 5000 出头的机型，下周再联系。';
+    document.getElementById('handoffOwner').value='白班 王五';
+    document.getElementById('saveOutcomeBtn').click();
+  })()`);
+  await wait(400);
+  out.appendSecond = await evalJs(`(()=>({
+    count:state.workLogs.length,
+    ownerInStorage:JSON.parse(localStorage.getItem('pc-agent-worklogs')||'[]').map(r=>r.owner),
+    firstStillThere:document.getElementById('workLog').textContent.includes('晚班 李四'),
+    secondThere:document.getElementById('workLog').textContent.includes('白班 王五')
+  }))()`);
+
+  // 4. 刷新后留档仍在（跨会话交接能力），且是两条
   await send('Page.reload'); await wait(1600);
   out.afterReload = await evalJs(`(async()=>{
     const s=ms=>new Promise(r=>setTimeout(r,ms));
@@ -91,7 +120,8 @@ const child = spawn(edge, ['--headless=new', '--disable-gpu', '--no-first-run', 
     return {
       note:document.getElementById('planOutcome').value.slice(0,20),
       owner:document.getElementById('handoffOwner').value,
-      archive:document.getElementById('handoffArchive').textContent.slice(0,40),
+      count:state.workLogs.length,
+      logText:document.getElementById('workLog').textContent.slice(0,60),
       savedAt:document.getElementById('outcomeSavedAt').textContent
     };
   })()`);
@@ -144,20 +174,48 @@ const child = spawn(edge, ['--headless=new', '--disable-gpu', '--no-first-run', 
     return {closedByDefault:closed, total:all, compat:document.querySelectorAll('.scenario-item').length, active:document.querySelector('.scenario-chip.is-active').dataset.scenario};
   })()`);
 
+  // 9. 组合折扣行：不到 2 件必须隐藏，到 2 件才出现
+  out.discountVisibility = await evalJs(`(async()=>{
+    const s=ms=>new Promise(r=>setTimeout(r,ms));
+    location.hash='#/quote'; await s(400);
+    state.quoteItems=[];state.discount={type:'none',value:0,approved:false,approvalNote:'',until:'',gift:''};renderQuoteItems();
+    const empty=document.getElementById('discountBlock').hidden;
+    state.quoteItems=[createQuoteItem(knowledgeBase.products[0])];renderQuoteItems();
+    const one=document.getElementById('discountBlock').hidden;
+    state.quoteItems=[createQuoteItem(knowledgeBase.products[0]),createQuoteItem(knowledgeBase.products[1])];renderQuoteItems();
+    const two=document.getElementById('discountBlock').hidden;
+    state.quoteItems=[createQuoteItem(knowledgeBase.products[0])];renderQuoteItems();
+    const backToOne=document.getElementById('discountBlock').hidden;
+    return {empty,one,two,backToOne};
+  })()`);
+
   out.runtimeErrors = errs;
   console.log(JSON.stringify(out, null, 2));
 
   const fail = [];
-  if (out.keyboardEdit.focused !== true) fail.push('执行记录无法聚焦');
+  if (!out.personaSetup.ready) fail.push('客户画像未能通过左侧输入栏生成');
+  if (!out.setup.guardHidden || !out.setup.bodyShown) fail.push('有画像时守卫没让开');
+  if (out.setup.hasNeedInput) fail.push('客户需求摘要输入框应已删除');
+  if (!out.keyboardEdit.focused) fail.push('执行记录无法聚焦');
   if (!out.keyboardEdit.value.includes('价格还差约 800')) fail.push('键盘输入未写入：' + out.keyboardEdit.value.slice(0, 30));
-  if (!out.archive.persisted || !out.archive.archiveHasOwner) fail.push('归档未生效');
-  if (!out.afterReload.note.includes('价格还差约')) fail.push('刷新后记录丢失：' + out.afterReload.note);
+  if (!out.archive.persisted || !out.archive.logHasOwner) fail.push('留档未生效');
+  if (!out.archive.logHasNote) fail.push('留档里没有执行记录原话');
+  if (!out.archive.logHasPersona) fail.push('留档里缺少人群画像段');
+  if (out.archive.count !== 1) fail.push('第一条留档数量异常：' + out.archive.count);
+  if (out.appendSecond.count !== 2) fail.push('第二次保存没有追加成第二条：' + out.appendSecond.count);
+  if (!out.appendSecond.firstStillThere) fail.push('第二次保存把前一条覆盖掉了');
+  if (!out.appendSecond.secondThere) fail.push('第二条留档没出现在列表里');
+  if (out.afterReload.count !== 2) fail.push('刷新后留档丢失：' + out.afterReload.count);
   if (!out.upload.previewShown || !out.upload.imgLoaded) fail.push('真实上传未生效');
   if (!out.download.files.length) fail.push('下载未产生文件');
   if (!out.download.svgHasProduct) fail.push('下载的 SVG 内容异常');
   if (out.storage.blobishKeys.length) fail.push('图片被写入 localStorage');
   if (!out.scenario.closedByDefault) fail.push('题库默认未折叠');
   if (out.scenario.compat >= out.scenario.total) fail.push('题库分类筛选无效');
+  if (out.scenario.total < 30) fail.push('情境题库条数偏少：' + out.scenario.total);
+  if (!out.discountVisibility.empty || !out.discountVisibility.one) fail.push('不到 2 件时组合折扣行应隐藏');
+  if (out.discountVisibility.two) fail.push('加到 2 件时组合折扣行没出现');
+  if (!out.discountVisibility.backToOne) fail.push('退回单件后组合折扣行没重新隐藏');
   if (errs.length) fail.push('有运行时异常：' + errs[0].slice(0, 80));
   ws.close(); child.kill();
   if (fail.length) { console.error('\nFAIL:\n  ' + fail.join('\n  ')); process.exit(1); }

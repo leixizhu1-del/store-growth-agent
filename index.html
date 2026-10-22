@@ -91,6 +91,19 @@
     .data-note { margin-top:23px; border-top:1px solid var(--line); padding-top:16px; color:var(--muted); font-size:11px; line-height:1.75; }
     .main { padding:32px 36px 48px; min-width:0; }
     .page-main { padding:32px clamp(18px,4vw,58px) 50px; }
+    /* 首页：去掉左侧输入栏后整块居中，不再贴左 */
+    /* 注意：下面 .page-head, .hero 那句是 display:flex，同优先级会盖掉这里的 block，
+       所以首页这几条用 .hero.hero-centered 提高一级，别改成单类名 */
+    .home-centered { display:block; }
+    .home-main { max-width:1120px; margin:0 auto; padding:clamp(36px,6vw,76px) clamp(20px,4vw,56px) 60px; }
+    .hero.hero-centered { display:block; text-align:center; margin-bottom:38px; }
+    .hero.hero-centered .hero-copy { max-width:720px; margin:0 auto; }
+    .hero.hero-centered h2 { margin:9px 0 12px; }
+    .hero.hero-centered p { margin:0 auto; max-width:620px; font-size:14px; }
+    .hero.hero-centered .hero-meta { justify-content:center; margin-top:20px; }
+    .home-entry-grid { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+    .persona-main { padding-top:22px; }
+    .persona-sidebar .sidebar-note { margin:16px 0 0; color:var(--muted); font-size:11.5px; line-height:1.85; }
     .page-head, .hero { display:flex; justify-content:space-between; gap:22px; align-items:flex-end; margin-bottom:24px; }
     .page-head h2, .hero h2 { font-size:clamp(26px,3.2vw,38px); margin:7px 0 8px; letter-spacing:0; }
     .page-head p, .hero p { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
@@ -132,6 +145,10 @@
     .reference-pane.collapsed { display:none; }
     .reference-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
     .reference-head h4 { margin:0; font-size:13px; }
+    .reference-lead { margin:0 0 12px; font-size:11.5px; line-height:1.85; color:var(--muted); }
+    .reference-regen { width:100%; margin-top:12px; }
+    .reference-regen:disabled { opacity:.55; cursor:not-allowed; }
+    .reference-hint { margin:8px 0 0; font-size:11px; line-height:1.7; color:var(--muted); }
     .reference-toggle { white-space:nowrap; }
     .upload-zone { min-height:120px; border:1px dashed rgba(49,103,227,.35); background:rgba(245,249,255,.76); display:flex; align-items:center; justify-content:center; text-align:center; padding:15px; border-radius:7px; }
     .upload-zone input { display:none; }
@@ -150,8 +167,9 @@
     .answer-section b { display:block; margin-bottom:4px; }
     /* Q / A 两处使用完全相同的标题排版，形成左右与上下对称 */
     .qa-head { margin-bottom:10px; }
-    .qa-question-label,.answer-title { display:flex; align-items:baseline; gap:6px; margin:0; font-family:inherit; font-size:15px; font-weight:650; line-height:1.5; letter-spacing:.2px; }
-    .qa-question-label { color:var(--ink); }
+    /* 全局 label 是 space-between，会把「Q：」和「客户疑问」顶到两头。这里显式覆盖，让 Q 和 A 都是左对齐、同字号同字重 */
+    .qa-question-label,.answer-title { display:flex; justify-content:flex-start; align-items:baseline; gap:6px; margin:0; font-family:inherit; font-size:15px; font-weight:650; line-height:1.5; letter-spacing:.2px; }
+    .qa-question-label { color:var(--accent); }
     .answer-title { color:var(--accent); }
     .qa-question-label span,.answer-title span { flex:0 0 auto; color:var(--accent); font-size:20px; font-weight:800; line-height:1; }
     .qa-question-label b,.answer-title b { font-weight:650; }
@@ -187,6 +205,8 @@
     .confirm-line input { width:16px; height:16px; margin:0; }
     .discount-grid { display:grid; grid-template-columns:150px 140px repeat(3,minmax(150px,1fr)); gap:10px; margin-top:12px; align-items:end; }
     .discount-grid .field { margin:0; }
+    .discount-block { margin-top:14px; padding:14px 16px; border:1px solid var(--line); border-radius:8px; background:var(--accent-soft); }
+    .discount-hint { font-size:12px; line-height:1.8; color:var(--muted); }
     .validation { min-height:18px; margin-top:8px; color:var(--danger); font-size:11px; }
     .total-strip { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin-top:12px; padding:13px; background:var(--accent-soft); border:1px solid var(--line); border-radius:7px; }
     .total-strip strong { font-size:18px; color:var(--accent); }
@@ -220,6 +240,31 @@
     .card-preview { min-height:300px; display:grid; place-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:7px; overflow:auto; padding:12px; }
     .card-preview img { width:100%; max-width:760px; height:auto; display:block; }
     .card-controls p { color:var(--muted); font-size:12px; line-height:1.7; }
+    /* ---------- 反馈与交接：介绍卡居中单列 ---------- */
+    .intro-card-body { display:flex; flex-direction:column; align-items:center; }
+    .intro-card-body .card-preview { width:100%; max-width:820px; }
+    .intro-card-actions { justify-content:center; width:100%; max-width:820px; }
+    .intro-card-body .export-results { width:100%; max-width:820px; }
+    .intro-card-note { margin:14px 0 0; width:100%; max-width:820px; color:var(--muted); font-size:11.5px; line-height:1.85; }
+    /* ---------- 反馈与交接：工作留档列表 ---------- */
+    .worklog-list { display:grid; gap:12px; }
+    .worklog-empty { padding:18px 16px; border:1px dashed var(--line); border-radius:7px; color:var(--muted); font-size:12.5px; line-height:1.85; }
+    .worklog-item { border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.72); overflow:hidden; }
+    .worklog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:13px 15px; background:var(--accent-soft); border-bottom:1px solid var(--line); }
+    .worklog-head-main { min-width:0; }
+    .worklog-time { display:block; font-size:11px; color:var(--muted); letter-spacing:.02em; }
+    .worklog-title { display:block; margin-top:4px; font-size:14px; font-weight:650; color:var(--ink); line-height:1.6; overflow-wrap:anywhere; }
+    .worklog-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
+    .worklog-tag { font-size:10.5px; color:var(--muted); background:#fff; border:1px solid var(--line); border-radius:4px; padding:2px 7px; }
+    .worklog-del { flex:0 0 auto; border:1px solid var(--line); background:#fff; color:var(--muted); border-radius:6px; padding:6px 10px; font-size:11px; }
+    .worklog-del:hover { border-color:var(--danger); color:var(--danger); }
+    .worklog-body { padding:13px 15px; white-space:pre-line; font-size:12.5px; line-height:1.92; color:var(--ink); overflow-wrap:anywhere; }
+    /* ---------- 客户画像未完成提示 ---------- */
+    .persona-guard { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; margin:0 0 20px; padding:18px 20px; border:1px solid rgba(49,103,227,.28); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; background:var(--accent-soft); }
+    .persona-guard-text { min-width:220px; flex:1; }
+    .persona-guard-text b { display:block; font-size:14px; color:var(--ink); margin-bottom:6px; }
+    .persona-guard-text p { margin:0; font-size:12.5px; line-height:1.85; color:var(--muted); }
+    .persona-guard .secondary-btn { flex:0 0 auto; text-decoration:none; display:inline-flex; align-items:center; }
     .price,.entry-card .number,.page-head h2,.hero h2 { font-weight:400; font-variant-numeric:tabular-nums; }
     .nav a:hover,.quick,.faq-chip,.persona-summary,.answer,.plan-option.active,.tag,.quote-note { background:var(--accent-soft); color:var(--ink); border-color:var(--line); }
     .price-card,.content-box { background:linear-gradient(125deg,var(--paper-2),var(--glass)); border-color:var(--line); }
@@ -617,8 +662,21 @@
     </header>
 
     <div class="shell">
-      <section class="route-page home-layout" data-page="home">
-        <aside class="sidebar">
+      <section class="route-page home-layout home-centered" data-page="home">
+        <main class="main home-main">
+          <section class="hero hero-centered"><div class="hero-copy"><div class="eyebrow">工作台概览</div><h2>Hi，我是你的门店增长智能体！</h2><p>先识别需求，再完成咨询与报价，在行动计划中跟进并制作介绍卡，最后生成门店推广素材。</p></div><div class="hero-meta"><div class="meta-chip">目标：<strong id="goalLabel">推动到店体验</strong></div><div class="meta-chip">渠道：<strong id="platformLabel">微信私聊</strong></div></div></section>
+          <div class="overview-grid entry-grid home-entry-grid">
+            <a class="entry-card" href="#/persona"><span class="number">01</span><h3>客户画像</h3><p>在左侧写一句客户原话，一键生成画像初稿；改完保存，后续各页都跟着变。</p></a>
+            <a class="entry-card" href="#/consult"><span class="number">02</span><h3>咨询中心</h3><p>按兼容、价格、屏幕、便携、续航、售后和竞品生成口语回答。</p></a>
+            <a class="entry-card" href="#/quote"><span class="number">03</span><h3>产品报价</h3><p>基于知识库真实字段展示产品事实，价格与销售版本留待门店核实。</p></a>
+            <a class="entry-card" href="#/plan"><span class="number">04</span><h3>行动计划</h3><p>进入跟进时间表与反馈交接两条执行路线，并在反馈交接页制作产品介绍卡。</p></a>
+            <a class="entry-card" href="#/promotion"><span class="number">05</span><h3>门店推广</h3><p>用真实现场观察，按人群生成小红书、微信公众号、朋友圈三平台草稿与拍摄清单。</p></a>
+          </div>
+        </main>
+      </section>
+
+      <section class="route-page home-layout persona-layout" data-page="persona" hidden>
+        <aside class="sidebar persona-sidebar">
           <div class="eyebrow">PC SALES AGENT</div>
           <h2>输入客户场景</h2>
           <div class="field">
@@ -629,30 +687,20 @@
           <div class="field"><label for="platform">主要沟通渠道</label><select id="platform"><option>微信私聊</option><option>电话沟通</option><option>门店现场</option><option>小红书私信</option></select></div>
           <div class="field"><label for="goal">本次目标</label><select id="goal"><option>推动到店体验</option><option>促成报价确认</option><option>处理竞品异议</option><option>推动成交</option></select></div>
           <button class="primary" id="runBtn">生成客户方案</button>
+          <p class="sidebar-note">点一下按钮，右侧会生成一版画像初稿。改完记得点「保存并应用画像」，后面的报价、介绍卡和交接记录才会用这一版。</p>
         </aside>
-        <main class="main">
-          <section class="hero"><div><div class="eyebrow">工作台概览</div><h2>Hi，我是你的门店增长智能体！</h2><p>先识别需求，再完成咨询与报价，在行动计划中跟进并制作介绍卡，最后生成门店推广素材。</p></div><div class="hero-meta"><div class="meta-chip">目标：<strong id="goalLabel">推动到店体验</strong></div><div class="meta-chip">渠道：<strong id="platformLabel">微信私聊</strong></div></div></section>
-          <div class="overview-grid entry-grid">
-            <a class="entry-card" href="#/persona"><span class="number">01</span><h3>客户画像</h3><p>编辑客户角色、需求、预算和系统路线，保存后联动后续结果。</p></a>
-            <a class="entry-card" href="#/consult"><span class="number">02</span><h3>咨询中心</h3><p>按兼容、价格、屏幕、便携、续航、售后和竞品生成口语回答。</p></a>
-            <a class="entry-card" href="#/quote"><span class="number">03</span><h3>产品报价</h3><p>基于知识库真实字段展示产品事实，价格与销售版本留待门店核实。</p></a>
-            <a class="entry-card" href="#/plan"><span class="number">04</span><h3>行动计划</h3><p>进入跟进时间表与反馈交接两条执行路线，并在反馈交接页制作产品介绍卡。</p></a>
-            <a class="entry-card" href="#/promotion"><span class="number">05</span><h3>门店推广</h3><p>用真实现场观察，按人群生成小红书、微信公众号、朋友圈三平台草稿与拍摄清单。</p></a>
-          </div>
+        <main class="main persona-main">
+          <a class="back-link" href="#/home">← 返回首页</a>
+          <div class="page-head"><div><div class="eyebrow">01 / CUSTOMER PERSONA</div><h2>客户画像</h2><p>修改并保存后，咨询回答、产品建议和行动计划都会使用当前画像。</p></div></div>
+          <section class="panel"><div class="panel-head"><h3>画像编辑</h3><span id="personaStatus">已根据客户原话生成 · 可编辑</span></div><div class="panel-body"><div class="persona-edit-grid" id="persona"></div><div class="persona-controls"><span>系统只生成初稿。请以客户明确表达的信息为准，避免把推测当成事实。</span><button class="persona-save" id="savePersonaBtn">保存并应用画像</button></div><div class="persona-summary" id="personaSummary"></div></div></section>
         </main>
-      </section>
-
-      <section class="route-page page-main" data-page="persona" hidden>
-        <a class="back-link" href="#/home">← 返回首页</a>
-        <div class="page-head"><div><div class="eyebrow">01 / CUSTOMER PERSONA</div><h2>客户画像</h2><p>修改并保存后，咨询回答、产品建议和行动计划都会使用当前画像。</p></div></div>
-        <section class="panel"><div class="panel-head"><h3>画像编辑</h3><span id="personaStatus">已根据客户原话生成 · 可编辑</span></div><div class="panel-body"><div class="persona-edit-grid" id="persona"></div><div class="persona-controls"><span>系统只生成初稿。请以客户明确表达的信息为准，避免把推测当成事实。</span><button class="persona-save" id="savePersonaBtn">保存并应用画像</button></div><div class="persona-summary" id="personaSummary"></div></div></section>
       </section>
 
       <section class="route-page page-main" data-page="consult" hidden>
         <a class="back-link" href="#/home">← 返回首页</a>
         <div class="page-head"><div><div class="eyebrow">02 / CONSULTATION CENTER</div><h2>咨询中心</h2><p>输出客户可直接听懂的回答，同时给销售保留核实事项。</p></div><button class="outline-btn" id="apiSettingsToggle" type="button" aria-expanded="false" aria-controls="apiSettingsPanel">显示模型 API 设置</button></div>
         <section class="panel" id="apiSettingsPanel" hidden><div class="panel-head"><h3>模型 API 设置</h3><span id="apiBadge">本地资料回答模式</span></div><div class="panel-body"><details id="apiSettings"><summary>配置自己的模型服务（OpenAI 兼容接口）</summary><p>启用后，点击“生成回答”会将问题、已匹配资料、当前产品及已确认报价发送到你填写的服务。请使用可信服务和临时限额密钥；服务商可能按用量收费。密钥只存当前页面内存，刷新即清除。</p><div class="field"><label for="apiEndpoint">完整 Chat Completions 地址</label><input id="apiEndpoint" type="url" placeholder="https://你的服务域名/v1/chat/completions" autocomplete="off" /></div><div class="field"><label for="apiModel">模型名称</label><input id="apiModel" placeholder="填写服务商提供的模型 ID" autocomplete="off" /></div><div class="field"><label for="apiKey">API Key</label><input id="apiKey" type="password" placeholder="输入自己的临时限额密钥" autocomplete="off" /></div><label><input id="apiConsent" type="checkbox" /> 我同意将上述业务资料发送到所填服务，并了解用量费用。</label><div class="action-row"><button class="secondary-btn" id="enableApiBtn">启用并测试接口</button><button class="outline-btn" id="clearApiBtn">清除配置，使用本地回答</button><button class="outline-btn" id="stopApiBtn" disabled>停止生成</button></div><p id="apiStatus" role="status">需要 HTTPS 和浏览器跨域支持；连接失败时不会伪装成模型回答。公开网页请由每位使用者输入自己的密钥，不要嵌入共享密钥。</p></details></div></section>
-        <section class="panel"><div class="panel-head"><h3>资料与问题咨询</h3><span>TXT / MD / CSV 可本地读取；PDF、Word 与图片仍不解析</span></div><div class="panel-body"><div class="consult-grid"><div><div class="qa-head"><label class="qa-question-label" for="question"><span>Q：</span><b>客户疑问</b></label></div><div class="question-box"><textarea id="question" placeholder="输入具体型号和多个问题，例如：MateBook 14 酷睿 Ultra 的屏幕、CPU 是什么，能否用 Office、PS 和 CAD？"></textarea><button class="small-btn" id="askBtn">生成回答</button></div><div class="faq-list" aria-label="常见问题"><button class="faq-chip" data-question="MateBook 14（鸿蒙版）的屏幕、CPU 和系统分别是什么？Office 和 PS 能用吗？">型号多问</button><button class="faq-chip" data-question="鸿蒙版能兼容我常用的软件和外设吗？">兼容性</button><button class="faq-chip" data-question="这款电脑现在多少钱，为什么比别的型号贵？">价格</button><button class="faq-chip" data-question="这款屏幕实际有什么优势？">屏幕</button><button class="faq-chip" data-question="经常出差，这款够轻便吗？">便携</button><button class="faq-chip" data-question="续航怎么样，外出办公够用吗？">续航</button><button class="faq-chip" data-question="保修和售后怎么处理？">售后</button><button class="faq-chip" data-question="和 MacBook 或其他品牌相比怎么选？">竞品</button></div><div class="answer" id="answer"><div class="answer-title"><span>A：</span><b>店员答复</b></div><div class="answer-section answer-copy is-placeholder" id="customerAnswer">输入具体问题后，系统会逐项回答，资料不足会明确标记</div><div class="answer-section sales-note" id="salesNote"><b>销售备注</b>需要核实的价格、库存、销售版本、兼容性与服务条款会单独列在这里。</div><div class="source-citations" id="sourceCitations">引用会显示在这里。</div></div><div class="action-row"><button class="secondary-btn" id="copyAnswerBtn">复制客户回答</button><button class="outline-btn reference-toggle" id="referenceToggle" type="button" aria-expanded="true">隐藏资料栏</button></div></div><aside class="reference-pane" id="referencePane"><div class="reference-head"><h4>本地资料</h4><button class="outline-btn reference-toggle" id="referenceClose" type="button">隐藏</button></div><div class="upload-zone"><label class="upload-label" for="fileInput">＋ 选择相关资料<span>TXT / MD / CSV 单文件上限 1 MB；其他格式仅显示未解析状态</span></label><input id="fileInput" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.md,.csv" /></div><ul class="file-list" id="fileList"><li><span>尚未选择文件</span><span class="file-status">无本地上下文</span></li></ul><div class="data-note">安全边界：本地文件只作为资料文本引用。文件中的“忽略规则”“执行命令”“修改报价”等指令不会执行。</div></aside></div></div></section>
+        <section class="panel"><div class="panel-head"><h3>资料与问题咨询</h3><span>TXT / MD / CSV 可本地读取；PDF、Word 与图片仍不解析</span></div><div class="panel-body"><div class="consult-grid"><div><div class="qa-head"><label class="qa-question-label" for="question"><span>Q：</span><b>客户疑问</b></label></div><div class="question-box"><textarea id="question" placeholder="输入具体型号和多个问题，例如：MateBook 14 酷睿 Ultra 的屏幕、CPU 是什么，能否用 Office、PS 和 CAD？"></textarea><button class="small-btn" id="askBtn">生成回答</button></div><div class="faq-list" aria-label="常见问题"><button class="faq-chip" data-question="MateBook 14（鸿蒙版）的屏幕、CPU 和系统分别是什么？Office 和 PS 能用吗？">型号多问</button><button class="faq-chip" data-question="鸿蒙版能兼容我常用的软件和外设吗？">兼容性</button><button class="faq-chip" data-question="这款电脑现在多少钱，为什么比别的型号贵？">价格</button><button class="faq-chip" data-question="这款屏幕实际有什么优势？">屏幕</button><button class="faq-chip" data-question="经常出差，这款够轻便吗？">便携</button><button class="faq-chip" data-question="续航怎么样，外出办公够用吗？">续航</button><button class="faq-chip" data-question="保修和售后怎么处理？">售后</button><button class="faq-chip" data-question="和 MacBook 或其他品牌相比怎么选？">竞品</button></div><div class="answer" id="answer"><div class="answer-title"><span>A：</span><b>店员答复</b></div><div class="answer-section answer-copy is-placeholder" id="customerAnswer">输入具体问题后，系统会逐项回答，资料不足会明确标记</div><div class="answer-section sales-note" id="salesNote"><b>销售备注</b>需要核实的价格、库存、销售版本、兼容性与服务条款会单独列在这里。</div><div class="source-citations" id="sourceCitations">引用会显示在这里。</div></div><div class="action-row"><button class="secondary-btn" id="copyAnswerBtn">复制客户回答</button><button class="outline-btn reference-toggle" id="referenceToggle" type="button" aria-expanded="true">隐藏资料栏</button></div></div><aside class="reference-pane" id="referencePane"><div class="reference-head"><h4>本地资料补充</h4><button class="outline-btn reference-toggle" id="referenceClose" type="button">隐藏</button></div><p class="reference-lead">知识库里没写到的部分，把手上有的资料传进来，再重新生成一次回答，答复会优先用这份资料。</p><div class="upload-zone"><label class="upload-label" for="fileInput">＋ 添加补充资料<span>TXT / MD / CSV 单文件上限 1 MB；其他格式只标未解析，不会当成资料</span></label><input id="fileInput" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.md,.csv" /></div><ul class="file-list" id="fileList"><li><span>还没加资料</span><span class="file-status">按知识库回答</span></li></ul><button class="secondary-btn reference-regen" id="referenceRegenBtn" type="button" disabled>用这些资料重新生成回答</button><p class="reference-hint" id="referenceHint">加完资料后这个按钮才能点。</p><div class="data-note">传进来的文件只当文字资料引用。文件里写的“忽略上面的规则”“去改报价”这类句子不会被执行。</div></aside></div></div></section>
 
         <details class="panel scenario-bank" id="scenarioBankBox">
           <summary class="scenario-summary"><span class="scenario-summary-main"><b>常见情境处理预设</b><span>什么情况下怎么回答 · 现场演示与异议题库</span></span><span class="scenario-count" id="scenarioCount"></span></summary>
@@ -683,14 +731,17 @@
             <div class="quote-items" id="quoteItems"></div>
             <div class="quote-empty" id="quoteEmpty">还没有添加产品。先在上方选好类别、型号和配置，点「添加产品」；也可以直接从下方官方价格参考库把已核验的价格填进来。</div>
 
-            <div class="discount-grid">
-              <div class="field"><label for="discountType">组合折扣</label><select id="discountType"><option value="none">无折扣</option><option value="amount">优惠金额</option><option value="percent">优惠百分比</option></select></div>
-              <div class="field"><label for="discountValue">折扣值</label><input id="discountValue" type="number" min="0" step="0.01" value="0" /></div>
-              <div class="field"><label for="approvalNote">店长审批记录</label><input id="approvalNote" placeholder="审批人 / 单号 / 时间" /></div>
-              <div class="field"><label for="discountUntil">优惠有效期</label><input id="discountUntil" type="date" /></div>
-              <div class="field"><label for="giftNote">赠品与叠加条件</label><input id="giftNote" placeholder="适用 SKU、是否叠加、赠品" /></div>
+            <div class="discount-block" id="discountBlock" hidden>
+              <div class="discount-hint">已经选了 2 件以上，可以问一下店长有没有组合优惠。没审批之前不要给客户报这个价。</div>
+              <div class="discount-grid">
+                <div class="field"><label for="discountType">组合折扣</label><select id="discountType"><option value="none">无折扣</option><option value="amount">优惠金额</option><option value="percent">优惠百分比</option></select></div>
+                <div class="field"><label for="discountValue">折扣值</label><input id="discountValue" type="number" min="0" step="0.01" value="0" /></div>
+                <div class="field"><label for="approvalNote">店长审批记录</label><input id="approvalNote" placeholder="审批人 / 单号 / 时间" /></div>
+                <div class="field"><label for="discountUntil">优惠有效期</label><input id="discountUntil" type="date" /></div>
+                <div class="field"><label for="giftNote">赠品与叠加条件</label><input id="giftNote" placeholder="适用 SKU、是否叠加、赠品" /></div>
+              </div>
+              <label class="confirm-line"><input id="managerApproved" type="checkbox" />店长已批准该组合优惠（没勾选就只显示待审批，不当作已生效的价格）</label>
             </div>
-            <label class="confirm-line"><input id="managerApproved" type="checkbox" />店长已批准该组合优惠（未勾选时仅显示待审批，不作为已生效价）</label>
             <div class="validation" id="quoteValidation" role="status"></div>
 
             <div class="total-strip quote-total" id="quoteTotals"></div>
@@ -737,36 +788,41 @@
 
       <section class="route-page page-main" data-page="plan-feedback" hidden>
         <a class="back-link" href="#/plan">← 返回行动计划</a>
-        <div class="page-head"><div><div class="eyebrow">04 / FEEDBACK &amp; HANDOFF</div><h2>反馈与交接</h2><p>先制作产品组合介绍卡发给客户，再记录本次执行结果与客户反馈，存档留给下一位同事接着跟进。</p></div></div>
+        <div class="page-head"><div><div class="eyebrow">04 / FEEDBACK &amp; HANDOFF</div><h2>反馈与交接</h2><p>先做一张能发给客户的介绍卡，再把这次的结果记下来归档，交给下一位同事接手。</p></div></div>
 
-        <section class="panel">
-          <div class="panel-head"><h3>产品组合介绍卡</h3><span>介绍图为信息卡，不是产品实物照片</span></div>
-          <div class="panel-body">
-            <div class="card-workspace">
+        <div class="persona-guard" id="feedbackGuard" hidden>
+          <div class="persona-guard-text"><b>请先完成客户画像</b><p>这一页的记录要写清「客户是谁、要什么」，现在还没有画像可用。先到客户画像页写一句客户原话，生成并存好画像，再回来记录。</p></div>
+          <a class="secondary-btn" href="#/persona">去完成客户画像</a>
+        </div>
+
+        <div id="feedbackBody">
+          <section class="panel">
+            <div class="panel-head"><h3>产品组合介绍卡</h3><span>介绍图为信息卡，不是产品实物照片</span></div>
+            <div class="panel-body intro-card-body">
               <div class="card-preview" id="cardPreview"></div>
-              <div class="card-controls">
-                <div class="field"><label for="cardNeed">客户需求摘要</label><textarea id="cardNeed" placeholder="默认使用当前客户画像，可在此补充"></textarea></div>
-                <p>卡片包含知识库产品摘要、组合条目、未知价格和待审批信息。SVG 与 PNG 均由本页本地生成，不加载外部图片或字体。</p>
-                <div class="action-row"><button class="secondary-btn" id="refreshCardBtn">刷新预览</button><button class="outline-btn" id="downloadSvgBtn">下载 SVG</button><button class="outline-btn" id="downloadPngBtn">下载 PNG</button></div>
-                <div class="export-results" id="exportResults"><div id="exportStatus" role="status" aria-live="polite">点击下载后，文件链接和图片结果会保留在这里。</div><p>若宿主拦截自动下载，可点“保存文件”重试，或“打开图片”后另存；下方图片也可右键保存。</p><div id="exportLinks"></div></div>
-              </div>
+              <div class="action-row intro-card-actions"><button class="secondary-btn" id="refreshCardBtn">刷新预览</button><button class="outline-btn" id="downloadSvgBtn">下载 SVG</button><button class="outline-btn" id="downloadPngBtn">下载 PNG</button></div>
+              <div class="export-results" id="exportResults"><div id="exportStatus" role="status" aria-live="polite">点击下载后，文件链接和图片结果会保留在这里。</div><p>若宿主拦截自动下载，可点“保存文件”重试，或“打开图片”后另存；下方图片也可右键保存。</p><div id="exportLinks"></div></div>
+              <p class="intro-card-note">卡片里放的是知识库产品摘要、组合条目、还没确认的价格和待审批信息。SVG 与 PNG 都在本页本地生成，不加载外部图片或字体，断网也能下载。</p>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section class="panel">
-          <div class="panel-head"><h3>本次执行路线</h3><span id="outcomeSavedAt">执行记录与客户反馈</span></div>
-          <div class="panel-body">
-            <div class="field"><label for="planOutcome">执行记录与客户反馈</label><textarea id="planOutcome" placeholder="记录客户真实回应、卡在哪一步、尚未解决的顾虑，以及下次联系时间。"></textarea></div>
-            <div class="field"><label for="handoffOwner">跟进人 / 交接给谁 <span class="hint">可选，便于下一位同事接手</span></label><input id="handoffOwner" maxlength="60" placeholder="例：晚班 李四；或留空" autocomplete="off" /></div>
-            <div class="action-row"><button class="secondary-btn" id="saveOutcomeBtn">保存并归档</button><button class="outline-btn" id="copyHandoffBtn">复制交接摘要</button><button class="outline-btn" id="clearOutcomeBtn">清空本次记录</button></div>
-            <p id="outcomeStatus" role="status">执行记录只保存在当前浏览器，刷新或重新打开仍在；请勿填写手机号等敏感信息。</p>
-            <details class="sales-details" id="handoffArchiveBox">
-              <summary>存档内容预览 · 下一位同事看到的完整交接</summary>
-              <div class="content-box handoff-archive" id="handoffArchive">还没有归档。填好上面的记录后点「保存并归档」，这里会生成一份可直接交接的摘要。</div>
-            </details>
-          </div>
-        </section>
+          <section class="panel">
+            <div class="panel-head"><h3>执行记录与客户反馈</h3><span id="outcomeSavedAt">还没归档</span></div>
+            <div class="panel-body">
+              <div class="field"><label for="planOutcome">执行记录与客户反馈补充 <span class="hint">客户原话、卡在哪一步、下次什么时候联系</span></label><textarea id="planOutcome" placeholder="例：客户认可轻薄，觉得价格还差 800，想让家人看一眼，约周六下午再到店试机。"></textarea></div>
+              <div class="field"><label for="handoffOwner">跟进人 / 交接给谁 <span class="hint">可选，写上便于下一位同事接手</span></label><input id="handoffOwner" maxlength="60" placeholder="例：晚班 李四；或留空" autocomplete="off" /></div>
+              <div class="action-row"><button class="secondary-btn" id="saveOutcomeBtn">保存并归档</button><button class="outline-btn" id="copyHandoffBtn">复制这条留档</button><button class="outline-btn" id="clearOutcomeBtn">清空输入框</button></div>
+              <p id="outcomeStatus" role="status">填好上面的内容再点「保存并归档」，会在下方生成一条带时间的留档，关掉网页之前一直都在。记录只存在这台电脑的浏览器里，别写手机号这类信息。</p>
+            </div>
+          </section>
+
+          <section class="panel" id="workLogPanel">
+            <div class="panel-head"><h3>工作留档</h3><span id="workLogCount">还没有留档</span></div>
+            <div class="panel-body">
+              <div class="worklog-list" id="workLog"></div>
+            </div>
+          </section>
+        </div>
       </section>
 
       <section class="route-page page-main" data-page="promotion" id="promotionPage" hidden>
@@ -924,7 +980,7 @@
     const escapeXML = (value) => String(value ?? '').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
     const safeText = (value) => knowledgeBase.forbidden.reduce((text,word)=>text.replaceAll(word,'需要按具体信息核实'),String(value ?? ''));
     const routes = new Set(['home','persona','consult','quote','plan','plan-schedule','plan-feedback','promotion']);
-    const emptyState = {result:null,plan:'fast',files:[],fileContexts:[],persona:null,customerMessage:'',customerAnswer:'',quoteItems:[],discount:{type:'none',value:0,approved:false,approvalNote:'',until:'',gift:''},referenceOpen:true};
+    const emptyState = {result:null,plan:'fast',files:[],fileContexts:[],persona:null,customerMessage:'',customerAnswer:'',quoteItems:[],discount:{type:'none',value:0,approved:false,approvalNote:'',until:'',gift:''},referenceOpen:true,workLogs:[]};
     const state = Object.assign({},emptyState);
     const storage = {
       get(key,fallback){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch{return fallback;}},
@@ -938,7 +994,7 @@
     function showToast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>$('toast').classList.remove('show'),1800);}
     function persist(){storage.set('pc-agent-data',{persona:state.persona,quoteItems:state.quoteItems,discount:state.discount});}
     function normalizeRoute(target){const requested=String(target||'').replace(/^#?\/?/,'');return routes.has(requested)?requested:'home';}
-    function navigate(target,{historyMode='push'}={}){const current=normalizeRoute(target),navRoute=current.startsWith('plan-')?'plan':current;document.querySelectorAll('[data-page]').forEach((page)=>{page.hidden=page.dataset.page!==current;});document.querySelectorAll('[data-route]').forEach((link)=>{const active=link.dataset.route===navRoute;link.classList.toggle('active',active);active?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});const hash=`#/${current}`;try{if(location.hash!==hash){historyMode==='replace'?history.replaceState(null,'',hash):history.pushState(null,'',hash);}}catch{}window.scrollTo({top:0,left:0,behavior:'instant'});}
+    function navigate(target,{historyMode='push'}={}){const current=normalizeRoute(target),navRoute=current.startsWith('plan-')?'plan':current;document.querySelectorAll('[data-page]').forEach((page)=>{page.hidden=page.dataset.page!==current;});document.querySelectorAll('[data-route]').forEach((link)=>{const active=link.dataset.route===navRoute;link.classList.toggle('active',active);active?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});const hash=`#/${current}`;try{if(location.hash!==hash){historyMode==='replace'?history.replaceState(null,'',hash):history.pushState(null,'',hash);}}catch{}if(typeof refreshPersonaGuard==='function')refreshPersonaGuard();window.scrollTo({top:0,left:0,behavior:'instant'});}
     function route(){navigate(location.hash,{historyMode:'replace'});}
     const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     function applyMotion(){const enabled=motionPreference==='on'&&!reducedMotion.matches;document.documentElement.dataset.motion=enabled?'on':'off';$('motionToggle').setAttribute('aria-pressed',String(enabled));$('motionToggle').textContent=reducedMotion.matches?'动效：系统已减弱':`动效：${enabled?'开启':'关闭'}`;$('motionToggle').disabled=reducedMotion.matches;}
@@ -973,7 +1029,17 @@
       return state.fileContexts.map((file)=>{const hits=file.text.split(/\r?\n/).map((line,index)=>({line:line.trim(),number:index+1})).filter(({line})=>line&&terms.some((term)=>line.toLowerCase().includes(term))).slice(0,3);return hits.length?{name:file.name,hits}:null;}).filter(Boolean);
     }
     function setCustomerAnswer(text,placeholder=false){const el=$('customerAnswer');if(!el)return;el.textContent=text;el.classList.toggle('is-placeholder',!!placeholder);}
-    function answerQuestion(){if(modelSession.config){void answerWithApi();return;}const q=$('question').value.trim();if(!q){state.customerAnswer='';setCustomerAnswer('请先输入客户问题，或点击上方常见问题。',true);return;}const ctx=retrieveKnowledge(q,null),product=ctx.product;const sections=[];const notes=[];if(/屏幕|显示|亮度|刷新|色彩|分辨率/.test(q))sections.push(`屏幕：${product.screen}。这是当前知识库登记事实，具体配置仍需核对销售 SKU。`);if(/cpu|处理器|芯片|性能/i.test(q))sections.push(`处理器：${product.cpu}。现有资料没有提供针对您具体软件的实测性能结论。`);if(/系统|鸿蒙|harmonyos|windows|linux/i.test(q))sections.push(`系统：${product.system}。同一系列可能有不同销售版本，下单前需确认 SKU。`);if(/office|word|excel|ppt|powerpoint|photoshop|(?:^|[^a-z])(?:ps|pr)(?:$|[^a-z])|cad|autocad|游戏|网游|单机|steam|剪辑|premiere|达芬奇|剪映|软件|兼容|外设|插件/i.test(q)){sections.push(softwareAnswer(product,q));notes.push('软件类结论必须按名称、版本、插件、外设、目标 SKU 和完整工作流验证。');}if(/价格|贵|预算|多少钱|活动|优惠/.test(q)){sections.push(answerPrice(product,ctx.explicit));notes.push('页面不联网自动抓价；打开商城或手工录入不代表实时获取。');}if(/重量|轻薄|出差|便携|携带/.test(q)){const travelProduct=product.weight?product:knowledgeBase.products.find((item)=>item.name==='HUAWEI MateBook 14（鸿蒙版）');sections.push(product.weight?`便携：${product.name} 资料记录重量约 ${product.weight}。实际携带感受会受配置和充电器影响，建议到店把电脑与常用配件一起拿一拿；若您告诉我每天通勤还是频繁出差，我也可以按使用方式帮您比较。`:`便携：您问得很实际，天天背着走，重量和充电器大小都会影响感受。现在这款 ${product.name} 的资料里没有可核实重量，我不想随口报数字。知识库里另一款 HUAWEI MateBook 14（鸿蒙版）记录约 ${travelProduct.weight}，但不是您当前问的型号，不能当作它的重量。您方便说下具体型号，或来店里把电脑和充电器一起试拿吗？`);if(!product.weight)notes.push('未找到当前咨询型号的重量字段；勿将其他型号约 1.32/1.33 kg 移用为当前型号参数。');}if(/续航|电池|充电/.test(q))sections.push('续航/电池：当前知识库没有该型号可引用的电池容量或续航时长。需要查目标 SKU 官方资料，并说明亮度、软件、会议和外设等测试条件。');for(const [pattern,label] of [[/内存|ram/i,'内存'],[/硬盘|存储|ssd/i,'硬盘/存储'],[/接口|usb|雷电|hdmi/i,'接口']]){if(pattern.test(q))sections.push(`${label}：当前结构化知识库没有 ${product.name} 的完整${label}规格，不能凭系列名称推断；请核对目标 SKU 官方参数，本地资料命中内容仅作为待核实引用。`);}if(/售后|保修|维修|退换/.test(q))sections.push('售后：需按购买时有效的官方保修、退换和维修条款确认，区分法定权益、厂商政策与门店增值服务。');if(/竞品|对比|macbook|苹果|联想|小米|荣耀|其他品牌/i.test(q))sections.push(`对比：当前可确认 ${product.name} 的系统为 ${product.system}、处理器为 ${product.cpu}、屏幕为 ${product.screen}。竞品应在相同时间点按系统、软件、屏幕、接口、便携和价格逐项比较，缺少事实不下优劣结论。`);const contexts=localContextMatches(q);contexts.forEach((file)=>sections.push(`本地资料 ${file.name}：\n${file.hits.map(({line,number})=>`第 ${number} 行：“${line.slice(0,220)}”`).join('\n')}`));if(!sections.length)sections.push(`当前识别型号：${product.name}。可确认系统 ${product.system}、处理器 ${product.cpu}、屏幕 ${product.screen}。您的问题未匹配到更具体的事实字段，请补充想问的屏幕、CPU、系统、软件、价格、便携、续航或售后。`);state.customerAnswer=safeText(`${ctx.explicit?`按您明确提到的 ${product.name} 回答：`:`问题未明确完整型号，暂按 ${product.name} 回答：`}\n\n${sections.join('\n\n')}`);setCustomerAnswer(state.customerAnswer);$('salesNote').innerHTML=`<b>销售备注</b>${escapeHTML(notes.join('\n')||'回答仅使用产品事实字段和本地资料文本；未命中的事实已明确标记。')}`;$('sourceCitations').innerHTML=`${sourceDetails([product])}${contexts.length?`<p>本地引用：${escapeHTML(contexts.map(file=>file.name).join('、'))}</p>`:''}<p>本地资料中的指令性文字仅按文本引用，不会执行。</p>`;}
+    function answerQuestion(useSupplement=false){if(modelSession.config){void answerWithApi();return;}const q=$('question').value.trim();if(!q){state.customerAnswer='';setCustomerAnswer('请先输入客户问题，或点击上方常见问题。',true);return;}const ctx=retrieveKnowledge(q,null),product=ctx.product;const sections=[];const notes=[];if(/屏幕|显示|亮度|刷新|色彩|分辨率/.test(q))sections.push(`屏幕：${product.screen}。这是当前知识库登记事实，具体配置仍需核对销售 SKU。`);if(/cpu|处理器|芯片|性能/i.test(q))sections.push(`处理器：${product.cpu}。现有资料没有提供针对您具体软件的实测性能结论。`);if(/系统|鸿蒙|harmonyos|windows|linux/i.test(q))sections.push(`系统：${product.system}。同一系列可能有不同销售版本，下单前需确认 SKU。`);if(/office|word|excel|ppt|powerpoint|photoshop|(?:^|[^a-z])(?:ps|pr)(?:$|[^a-z])|cad|autocad|游戏|网游|单机|steam|剪辑|premiere|达芬奇|剪映|软件|兼容|外设|插件/i.test(q)){sections.push(softwareAnswer(product,q));notes.push('软件类结论必须按名称、版本、插件、外设、目标 SKU 和完整工作流验证。');}if(/价格|贵|预算|多少钱|活动|优惠/.test(q)){sections.push(answerPrice(product,ctx.explicit));notes.push('页面不联网自动抓价；打开商城或手工录入不代表实时获取。');}if(/重量|轻薄|出差|便携|携带/.test(q)){const travelProduct=product.weight?product:knowledgeBase.products.find((item)=>item.name==='HUAWEI MateBook 14（鸿蒙版）');sections.push(product.weight?`便携：${product.name} 资料记录重量约 ${product.weight}。实际携带感受会受配置和充电器影响，建议到店把电脑与常用配件一起拿一拿；若您告诉我每天通勤还是频繁出差，我也可以按使用方式帮您比较。`:`便携：您问得很实际，天天背着走，重量和充电器大小都会影响感受。现在这款 ${product.name} 的资料里没有可核实重量，我不想随口报数字。知识库里另一款 HUAWEI MateBook 14（鸿蒙版）记录约 ${travelProduct.weight}，但不是您当前问的型号，不能当作它的重量。您方便说下具体型号，或来店里把电脑和充电器一起试拿吗？`);if(!product.weight)notes.push('未找到当前咨询型号的重量字段；勿将其他型号约 1.32/1.33 kg 移用为当前型号参数。');}if(/续航|电池|充电/.test(q))sections.push('续航/电池：当前知识库没有该型号可引用的电池容量或续航时长。需要查目标 SKU 官方资料，并说明亮度、软件、会议和外设等测试条件。');for(const [pattern,label] of [[/内存|ram/i,'内存'],[/硬盘|存储|ssd/i,'硬盘/存储'],[/接口|usb|雷电|hdmi/i,'接口']]){if(pattern.test(q))sections.push(`${label}：当前结构化知识库没有 ${product.name} 的完整${label}规格，不能凭系列名称推断；请核对目标 SKU 官方参数，本地资料命中内容仅作为待核实引用。`);}if(/售后|保修|维修|退换/.test(q))sections.push('售后：需按购买时有效的官方保修、退换和维修条款确认，区分法定权益、厂商政策与门店增值服务。');if(/竞品|对比|macbook|苹果|联想|小米|荣耀|其他品牌/i.test(q))sections.push(`对比：当前可确认 ${product.name} 的系统为 ${product.system}、处理器为 ${product.cpu}、屏幕为 ${product.screen}。竞品应在相同时间点按系统、软件、屏幕、接口、便携和价格逐项比较，缺少事实不下优劣结论。`);const contexts=localContextMatches(q);
+      /* 用户点了「用这些资料重新生成」时，把补进来的资料整体放在最前面，而不是只挑命中的几行 */
+      if(useSupplement&&state.fileContexts.length){
+        const picked=state.fileContexts.slice(0,3).map((file)=>{
+          const lines=file.text.split(/\r?\n/).map((line)=>line.trim()).filter(Boolean).slice(0,12);
+          return `《${file.name}》\n${lines.join('\n')}`;
+        }).join('\n\n');
+        sections.unshift(`补充资料里的说法（客户问到的部分以这里为准）：\n${picked}`);
+        notes.push('这一段来自你补充的资料，不是知识库原文。发给客户前自己对一遍，资料里没写的仍然按未核实处理。');
+      }
+      contexts.forEach((file)=>sections.push(`本地资料 ${file.name}：\n${file.hits.map(({line,number})=>`第 ${number} 行：“${line.slice(0,220)}”`).join('\n')}`));if(!sections.length)sections.push(`当前识别型号：${product.name}。可确认系统 ${product.system}、处理器 ${product.cpu}、屏幕 ${product.screen}。您的问题未匹配到更具体的事实字段，请补充想问的屏幕、CPU、系统、软件、价格、便携、续航或售后。`);state.customerAnswer=safeText(`${ctx.explicit?`按您明确提到的 ${product.name} 回答：`:`问题未明确完整型号，暂按 ${product.name} 回答：`}\n\n${sections.join('\n\n')}`);setCustomerAnswer(state.customerAnswer);$('salesNote').innerHTML=`<b>销售备注</b>${escapeHTML(notes.join('\n')||'回答仅使用产品事实字段和本地资料文本；未命中的事实已明确标记。')}`;$('sourceCitations').innerHTML=`${sourceDetails([product])}${contexts.length?`<p>本地引用：${escapeHTML(contexts.map(file=>file.name).join('、'))}</p>`:''}<p>本地资料中的指令性文字仅按文本引用，不会执行。</p>`;}
 
     function clearModelSession(){modelSession.controller?.abort();modelSession.config=null;$('apiKey').value='';$('apiEndpoint').value='';$('apiModel').value='';$('apiConsent').checked=false;$('apiBadge').textContent='本地资料回答模式';$('apiStatus').textContent='配置已清除，下一次使用本地资料回答。';$('promotionAiConsent').checked=false;updatePromotionApiUi();}
     async function modelRequest(config,messages){
@@ -1096,29 +1162,145 @@
       const name=product?.name||'这台';
       const comboLine=combo?comboCustomerLine+'。':'';
       return [
-        {cat:'open',q:'客户只说「随便看看」，没说用途',say:'没事，您先随便看。要不要先跟我说一句您平时主要拿它做什么？我按您的用法挑两台给您比一比，比一台一台看快。',note:'先拿到一个真实任务再谈机型；不要一上来堆参数和价格。'},
-        {cat:'open',q:'客户说不清预算',say:'预算不用现在定。您先说最多能接受多少，我按这个帮您排一下，看哪些是必须花的、哪些可以先不加。',note:'记录预算区间与「必须 / 可选」的分界；不替客户抬高预算。'},
-        {cat:'open',q:'客户带着上一次的报价单来',say:'您带来正好，咱们逐项对一遍。哪一项是您还没确认的，我现场帮您核。',note:'核对 SKU、配置、数量、优惠条件与有效期；旧报价的优惠可能已过期。'},
-        {cat:'demo',q:'客户愿意上手试（3 分钟演示）',say:`来，您自己操作，我在旁边看着。先打开您最常看的那份文档或照片，字的大小、颜色、切换窗口，您自己调。`,note:`1) 先问一个真实任务并记录软件与文件类型；2) 让客户亲手操作，不代劳；3) 参数与实际观感分开讲；4) 未验证的软件先查支持情况，不假装演示成功。`},
-        {cat:'demo',q:'客户不愿意试，只想听介绍',say:'那我按您刚说的用法讲三句：能不能干这件事、要花多少、还有什么没确认。您听着不对随时打断我。',note:'只讲已核实事实；说不出的一律记进待核实，不临场编。'},
-        {cat:'demo',q:'演示中卡住 / 软件打不开',say:'这个我记下来，我先确认版本和授权，核实完给您准话，不猜。',note:'当场记录软件名、版本、报错原文；不要用「应该可以」糊过去。'},
-        {cat:'price',q:'客户问「现在多少钱」',say:'具体成交价我核对完配置和活动再报给您，避免报错了让您空跑一趟。您先告诉我配置和数量，我按明细回您。',note:'未确认不给金额；A 档页面价可以报，但必须带款式 + 口径 + 日期 + 链接。'},
-        {cat:'price',q:'客户说「能再便宜点吗」',say:comboLine||'我帮您看看有没有能叠加的活动，能减多少我核实了再告诉您，不敢先答应。',note:'先核适用 SKU、能否叠加、期限、赠品与店长审批；未批不承诺金额。'},
-        {cat:'price',q:'客户说「网上/别家更便宜」',say:'您把那边的链接或截图发我，我按同配置、同保修、同赠品逐项对，差在哪我直接说。',note:'同时间、同配置对比；口径不同的价格不算差价比。资料不足不下优劣结论。'},
-        {cat:'price',q:'客户预算差一截',say:'差的部分咱们分两种看：必须满足的先保住，能省的配置我给你列出来，您自己挑。',note:'给降配方案时同步说明性能变化；不做「先卖贵的再降」的话术。'},
-        {cat:'compat',q:'Office / PS / CAD 能不能用',say:'您用的是哪个版本？有没有常用插件？方便的话带个文件来，咱们从打开、编辑到保存都试一遍，试清楚再定。',note:'按具体系统、配置、软件版本、授权、插件和外设验证；不按品牌一概而论。'},
-        {cat:'compat',q:'鸿蒙版能不能装 Windows 软件',say:'这要看具体软件。您把要用的几个名字发我，我一个个查支持情况，不能用的我会明确告诉您。',note:'逐条核实；未查到就说未查到，不说「大部分都能用」。'},
-        {cat:'compat',q:'打印机 / 扩展坞 / 手写笔能否连',say:'您用的型号是哪一款？我这边查一下兼容清单，确认了再让您买配件，免得白买。',note:'核对接口、驱动与外设型号；不确定的写进待确认清单。'},
-        {cat:'feel',q:'屏幕实际看着怎么样',say:'您带一份常看的文档或照片，直接打开看，字舒不舒服、颜色喜不喜欢，您自己感受比我讲有用。',note:'参数引用知识库字段；观感描述限于当场可验证的内容。'},
-        {cat:'feel',q:'经常出差，够轻吗',say:'您平时背包里还装什么？重量咱们连充电器一起拿着走两步，比看数字直观。',note:'仅引用已有重量字段；缺字段先核实，不估。'},
-        {cat:'feel',q:'续航能用多久',say:'您一般在外面连续用几个小时、做什么？我按具体配置和测试条件查一下再回您，不按宣传口径说。',note:'续航受配置与使用方式影响；资料不足先核实，不给整数承诺。'},
-        {cat:'rival',q:'和 MacBook / 其他品牌怎么选',say:'您把正在看的那款发我，咱们按您要用的软件、屏幕和预算一起比，看差别是不是您真需要的。',note:'同类配置逐项核对；不做贬低对手的表述，不虚构测试数据。'},
-        {cat:'rival',q:'客户已经决定买别家了',say:'理解。您要是后面遇到软件或配件的问题，也可以来问我，不一定非得在我这买。',note:'不纠缠、不贬低；留一个低压力联系方式，征得同意再跟进。'},
-        {cat:'service',q:'保修和售后怎么处理',say:'保修按官方政策走，具体年限和范围我按您选的型号查给您，出问题走官方服务网点。',note:'只引用官方条款原文；不承诺「包换」「上门」等未确认服务。'},
-        {cat:'service',q:'客户担心坏了没人管',say:'咱们这边有服务网点，真出问题您直接找我，我帮您对接。具体流程我写在明细里给您。',note:'给可执行的对接方式；不夸大服务响应时效。'},
-        {cat:'close',q:'客户说「我再想想」',say:'行，您主要还在犹豫哪一点？是价格、配置，还是没试清楚？我针对那一点再帮您弄清楚。',note:'问出真实卡点；不逼单，约定具体回访时间。'},
-        {cat:'close',q:'客户要回去和家人商量',say:'可以。我把配置、价格和还没确认的地方整理成一页发您，您直接转给家人看更方便。',note:'用介绍卡承载信息；价格未确认的明确标注待核。'},
-        {cat:'close',q:'客户当场决定买',say:'好，我再和您对一遍配置、颜色和赠品，确认没错了再下单。',note:'下单前复核 SKU、库存、优惠条件与有效期；口头承诺一律落进单据。'}
+        /* 开场与需求 */
+        {cat:'open',
+         q:'客户站在展台前，只说“随便看看”，眼睛在几台机器上扫来扫去',
+         say:'您先看，不着急。要不我看一眼您现在用的是哪台？知道您平时怎么用，我就能帮您把范围收窄到两台，省得一台台比。',
+         note:'这一句的目的只有一个：拿到一个真实使用场景。客户说了“办公”“给家里孩子用”“要做设计”，后面才有得聊。这时候别急着报参数，也别问预算。'},
+        {cat:'open',
+         q:'客户说不出预算，回答“看情况”“先看看多少钱”',
+         say:'预算不用现在就定死。您先说个大致的心理价位，比如五千上下还是七千上下，我按这个给您排一下。哪部分钱是必须花的、哪部分可以先不加，我一条条跟您讲清楚。',
+         note:'拿到的是一个区间，不是一个精确数字。记下来客户说的原话，比如“七八千能接受，超过一万就不考虑”，后面报配置时按这个卡。客户不肯说，就先从使用场景推：要跑什么软件，一天用多久。'},
+        {cat:'open',
+         q:'客户从包里掏出一张别家或上次的报价单，说“你按这个价给我”',
+         say:'您带来正好，咱们一条条对。先看型号和配置对不对得上，再看这个价格是当天的活动价还是口头说的。有两项我得现场帮您核一下，核完告诉您差在哪。',
+         note:'重点核对 SKU、配置、数量、优惠的适用条件和有效期。旧报价上的活动很可能已经结束，也可能本来就绑了以旧换新或搭配购。对不上的地方直接说对不上，别硬凑。'},
+        {cat:'open',
+         q:'客户是替别人来问的，说“我帮孩子看看”“我帮我爱人挑”',
+         say:'那咱们按他的用法来。他平时主要拿电脑做什么？学什么专业或者做什么工作？有没有指定一定要用的软件？这些您知道多少说多少，不知道的地方我标出来，回头您问一句就行。',
+         note:'替人买最容易出偏差：实际使用者不在场，需求全是转述。把“已确认”和“待确认”分开记。最后建议让实际使用者本人来看一眼，或者视频里让他自己上手试一下。'},
+
+        /* 现场演示 */
+        {cat:'demo',
+         q:'客户愿意上手，但不知道该试什么（3 分钟演示）',
+         say:'来，您自己来操作，我在旁边看着就行。先打开您平时最常看的那样东西，文档、表格、照片都行。字号大小、颜色、切窗口顺不顺手，您自己调，比我讲十句有用。',
+         note:'四步：问出一个真实任务；让客户自己动手，别替他点；参数和实际观感分开说；当场试不出来的部分记进待核实，别顺口说“应该没问题”。'},
+        {cat:'demo',
+         q:'客户摆手说“不用试了，你就给我讲讲”',
+         say:'行，那我按您刚说的用法讲三句：这件事它能不能干、大概要花多少钱、还有哪几项我没法当场给您准话。您听着有不对的地方随时打断我。',
+         note:'客户不想动手时，讲的东西必须是自己能确认的。宁可少讲一条，也不要为了把话说满而编一个数字。讲完主动问一句“这样讲清楚了吗，还有哪块想细问”。'},
+        {cat:'demo',
+         q:'演示到一半卡住了，软件打不开或者报错',
+         say:'这个我记一下。您这个是哪个版本？我确认完给您准话，现在不敢乱猜。',
+         note:'当场记下软件全名、版本号、报错原文（能截图就截图）。回头查厂商的兼容说明或问技术支持。别用“可能是网络问题”“重启一下就好了”糊过去，客户会记得这个细节。'},
+        {cat:'demo',
+         q:'客户带来的文件打不开，或者打开后排版乱了',
+         say:'您这个文件是什么软件做的、什么版本？我看看是不是版本差异。要是这边打不开，我记下来帮您问一下，别让您买了才发现用不了。',
+         note:'排版错乱、字体缺失、宏不生效都属于真实工作流问题，比参数差异更影响客户。记清文件格式和来源软件版本。这种情况反而容易建立信任，别遮掩。'},
+
+        /* 价格与优惠 */
+        {cat:'price',
+         q:'客户第一句就问“这个多少钱”',
+         say:'成交价我得按您要的配置和当下的活动核一遍再报，报错了让您白跑一趟不好。您先告诉我大概什么配置、要几台，我照着明细回您。',
+         note:'报价三件套：款式、口径、时间。A 档的页面价可以直接说，但要说清是哪个配置、哪天看的、链接在哪。B 档必须保留“预估”“起”“搭配购”这类限定词，不能把“5499 起”说成“5499”。C 档只能答“要官方询价”或“这款已经下架了”。'},
+        {cat:'price',
+         q:'客户说“能再便宜点吗”“给个底价”',
+         say:comboLine||'我帮您看看现在有没有能叠加的活动。能减多少我核实完告诉您，先不敢答应，答应了做不到更麻烦。',
+         note:'先查适用 SKU、能不能叠加、活动的起止日期、有没有赠品、要不要店长批。审批没走完之前，一分钱都不要承诺。客户追问到底价，就说“我按最低能给的去申请，申请下来第一时间告诉您”。'},
+        {cat:'price',
+         q:'客户掏出手机说“网上比你这便宜三百”',
+         say:'您把链接发我，我按同配置、同保修、同赠品一项项对。真便宜我认，要是有差别我直接跟您说差在哪。',
+         note:'必须同一时间、同一配置、同一售后条件才谈得上比价。常见差异：线上专供款、配置不同、赠品不含、保修渠道不同、以旧换新抵扣算进了价格。这几项对不上，就不是真实的差价比。'},
+        {cat:'price',
+         q:'客户预算差一截，比如看中了但差一千多',
+         say:'差的部分咱们分两块看。必须满足的先保住，剩下的配置我给你列出来，减哪一项会影响什么，您自己挑。',
+         note:'降配方案要同步说明会损失什么，比如内存少一档会影响同时开几个程序，屏幕降一档会影响色彩。别用“先推荐贵的、再慢慢降”的套路，客户回头发现自己被绕了一圈，信任就没了。'},
+        {cat:'price',
+         q:'客户问“为什么这个比那个贵这么多，看着差不多”',
+         say:'看着差不多，差在几个地方。我给您指出来：屏幕、处理器、内存、还有外壳用料。您关心的那几项我重点讲，不关心的就不用为它多花钱。',
+         note:'把价差拆到具体配置上，让客户自己判断值不值。别贬低便宜的那款，也别硬说贵的处处好。客户如果只写文档、看视频，贵的那些差异他确实用不上，说实话反而更容易成交。'},
+
+        /* 兼容与软件 */
+        {cat:'compat',
+         q:'客户问“Office、PS、CAD 能不能用”',
+         say:'您用的是哪个版本？有没有装插件？方便的话带个文件来，咱们从打开、编辑到保存完整走一遍。试通了再定，试不通我提前告诉您。',
+         note:'按系统、配置、软件版本、授权方式、插件、外设逐项验证。网页版和本地版不是一回事。带宏的 Excel、行业插件、字体库这几类最容易出问题，一定要用客户的真实文件测。'},
+        {cat:'compat',
+         q:'客户问“鸿蒙版能不能装我平时用的 Windows 软件”',
+         say:'这个得看具体是哪个软件。您把要用的几个名字发给我，我一个一个查，能用的说能用，不能用的我明确告诉您，不糊弄。',
+         note:'逐条查，别用“大部分都能用”这种话搪塞。查不到就说查不到，并说明去哪问（厂商官网、官方客服）。客户如果说“我就用微信和浏览器”，那风险就小很多，可以照实说。'},
+        {cat:'compat',
+         q:'客户问“我的打印机、扩展坞、手写笔能不能接”',
+         say:'您用的是哪一款？型号发我一下，我查一下兼容清单。确认了您再买配件，免得多花一份钱。',
+         note:'核对接口类型、驱动支持、外设型号。老打印机和专用行业设备是最容易出问题的。查不到的写进待确认清单，约好什么时候回复客户，别拖着。'},
+        {cat:'compat',
+         q:'客户说“我同事买了别的牌子，说这个软件跑不动”',
+         say:'您同事用的是哪个型号、什么配置？同样一个软件，配置差一档结果可能完全不同。您把您要跑的软件告诉我，我按这个配置帮您看。',
+         note:'别人家的结论不能直接搬过来。先问清对方的具体配置和软件版本，再判断有没有可比性。真跑不动的情况，如实说这台也不一定行，别为了成交硬扛。'},
+
+        /* 屏幕 · 便携 · 续航 */
+        {cat:'feel',
+         q:'客户问“屏幕看着怎么样，参数我看不懂”',
+         say:'参数先放一边。您带一份平时常看的文档或照片，直接打开看。字清不清楚、颜色喜不喜欢、看久了眼睛累不累，您自己感受。',
+         note:'亮度、刷新率、色域这些可以引用知识库字段，但要说清是在什么条件下测的。客户说“看着有点暗”，先确认是不是亮度没调、是不是在强光下看，别急着解释参数。'},
+        {cat:'feel',
+         q:'客户问“经常出差，这个够轻吗”',
+         say:'您平时包里还装什么？充电器、鼠标、水杯这些一起算进去才准。咱们把电脑和充电器一起拎起来走两步，比看数字直观。',
+         note:'只引用已核实的重量字段。缺数据就说缺，别拿别的型号的数字顶上。另外提醒一句：轻一点往往意味着接口少或者电池小，这个取舍让客户自己权衡。'},
+        {cat:'feel',
+         q:'客户问“续航能用多久，能撑一天吗”',
+         say:'您一般在外面连续用几个小时？主要做什么，写文档还是开视频会？我按具体配置查一下再回您，不敢按宣传上那个数字说。',
+         note:'续航和亮度、软件、外设、网络状态都有关。资料里没有实测数据的，就说没有。可以给个方向性判断，比如“视频会比文档耗电”，但不要给整数承诺。'},
+        {cat:'feel',
+         q:'客户说“我眼睛不好，屏幕小了我看不清”',
+         say:'那咱们优先看大屏的。您过来坐这儿，我把字号调到您现在用的这个大小，您看看舒不舒服。屏幕尺寸和分辨率都会影响字的大小。',
+         note:'视力需求是硬需求，别拿“分辨率高所以看得清”来带过。让客户按自己习惯的字号实际看。可以顺带提护眼模式和外接显示器，但别说成能解决视力问题。'},
+
+        /* 竞品比较 */
+        {cat:'rival',
+         q:'客户问“和 MacBook 比怎么选”',
+         say:'您把正在看的那台发我，咱们按您要用的软件、屏幕和预算一起摆开比。差别是不是您真需要的，比完您自己判断。',
+         note:'同配置、同价位逐项比，别只挑自己赢的那几项。不能说对手的坏话，也不能编测试数据。客户本来就倾向对手，可以问他最看重哪一点，从那里切。'},
+        {cat:'rival',
+         q:'客户说“我已经决定买别家了”',
+         say:'理解，那您按自己看中的来。以后软件或者配件上有什么问题，也可以来问我，不一定非得在我这买。',
+         note:'不纠缠、不贬低、不加压。留一个低压力的联系方式，最好具体一点，比如“我微信就在这，您加一下，有问题随时问”。这种客户回头率比想象中高。'},
+        {cat:'rival',
+         q:'客户拿一个配置明显更低的便宜机型来比价',
+         say:'这两台不是一个档位的。您要是按那个配置买，省下的钱在哪、少掉的东西在哪，我给您列一下。您看看哪个更符合您的用法。',
+         note:'不否定客户的选择，把差异摆出来就行。如果客户的需求确实匹配那台便宜的，如实说也合适，别硬往上推。这一单赚得少，但客户下次还会来找你。'},
+
+        /* 售后与保修 */
+        {cat:'service',
+         q:'客户问“保修几年，坏了怎么办”',
+         say:'保修按官方政策走。您选的这个型号具体是几年、包含哪些、不包含哪些，我查准确了写给您。真出问题走官方服务网点。',
+         note:'只引用官方条款的原文，不做加法。上门、包换、加急这些没确认的服务一个字都不要提。客户问“能不能延保”，查清楚再说，别口头答应。'},
+        {cat:'service',
+         q:'客户说“我怕买了以后坏了没人管”',
+         say:'这个担心正常。咱们这边有服务网点，真出问题您直接找我，我帮您对接。具体怎么走、要带什么，我写在明细里给您。',
+         note:'给的是可执行的路径：网点在哪、电话多少、需要带什么、大概多久。不夸大响应速度，不说“当天就能修好”这种没把握的话。'},
+        {cat:'service',
+         q:'客户问“七天无理由能退吗”“拆封了还能退吗”',
+         say:'这个得看购买渠道的具体规则，线上和门店不一样，拆封和未拆封也不一样。我帮您把规则确认清楚再回您，不凭印象说。',
+         note:'退换规则涉及法定权益、平台规则、门店政策三层，不能说错。查完把关键条款写进单据或聊天记录，口头说的不算数。'},
+
+        /* 成交与推进 */
+        {cat:'close',
+         q:'客户说“我再想想”',
+         say:'行。您主要还在犹豫哪一点？是价格、配置，还是有一块没试清楚？您说哪一点，我针对那一块再帮您弄明白。',
+         note:'“再想想”背后通常有一个具体卡点。问出来，能当场解决的当场解决，解决不了的记下来约时间回复。不要逼单，也不要一听到这句话就开始降价。'},
+        {cat:'close',
+         q:'客户说“我回去和家人商量一下”',
+         say:'可以。我把配置、价格和还没确认的几项整理成一页发您，您直接转给家人看，比您复述方便。',
+         note:'用介绍卡承载信息，客户转述时不会漏掉关键项。价格没确认的地方明确标“待核”，别让家人看到一个虚高的总价。可以问一句“家里人主要关心哪方面”，提前准备。'},
+        {cat:'close',
+         q:'客户当场决定买',
+         say:'好，我再跟您对一遍：配置、颜色、数量和赠品，确认没错了再下单。',
+         note:'下单前最后一遍核对 SKU、库存、优惠条件和有效期。所有口头承诺都要落到单据上。赠品有没有货、什么时候给，也要写清楚，这是后面最容易起纠纷的地方。'},
+        {cat:'close',
+         q:'客户说“今天不定，过段时间有活动再买”',
+         say:'也行。不过活动什么时候有、力度多大，我这边也没法保证。您要的那款我先帮您留着库存信息，有确切消息我告诉您。',
+         note:'不编造“马上就要涨价”这类话术。如实说明活动的不确定性，留一个合理的回访时间。客户如果确实不急，就按不急处理，别天天催。'}
       ];
     }
     function renderScenarioBank(){
@@ -1144,7 +1326,7 @@
 
     function wrapText(text,max=22){return String(text??'').replace(/\r/g,'').split('\n').flatMap((paragraph)=>{const lines=[];let line='',units=0;for(const char of paragraph){const width=/[\u0020-\u007e]/.test(char)?0.55:1;if(units+width>max&&line){lines.push(line);line='';units=0;}line+=char;units+=width;}lines.push(line);return lines;});}
     function activeProducts(){const products=state.quoteItems.filter((item)=>!item.custom).map((item)=>knowledgeBase.products.find((product)=>product.name===item.name)).filter(Boolean);return [...new Set(products.length?products:[state.result?.product||knowledgeBase.products[2]])];}
-    function cardData(){const totals=calculateQuote();return{title:'PC 产品组合建议',need:$('cardNeed')?.value.trim()||state.persona?.need||'客户需求待补充',products:activeProducts(),items:state.quoteItems.map((item)=>({name:item.name,sku:item.sku,qty:item.qty,price:validPrice(item)?money(Number(item.price)*Number(item.qty)):'未知 / 未确认'})),totals,status:state.discount.type!=='none'?(totals.error?'折扣无效：'+totals.error:totals.expired?'组合优惠已过期，需重新审批':totals.applied?`人工登记已审批优惠 ${money(totals.discount)}；${totals.unknownCount?'已知部分合计':'清单合计'} ${money(totals.total)}；有效期至 ${state.discount.until}\n审批：${state.discount.approvalNote}；SKU/叠加/赠品：${state.discount.gift}`:`组合优惠待店长审批，不是已生效价。拟优惠 ${money(totals.pendingDiscount)}\n适用 SKU、能否叠加、期限、赠品须核实。`):'未设置组合优惠'};}
+    function cardData(){const totals=calculateQuote();return{title:'PC 产品组合建议',need:state.persona?.need||'客户需求待补充',products:activeProducts(),items:state.quoteItems.map((item)=>({name:item.name,sku:item.sku,qty:item.qty,price:validPrice(item)?money(Number(item.price)*Number(item.qty)):'未知 / 未确认'})),totals,status:state.discount.type!=='none'?(totals.error?'折扣无效：'+totals.error:totals.expired?'组合优惠已过期，需重新审批':totals.applied?`人工登记已审批优惠 ${money(totals.discount)}；${totals.unknownCount?'已知部分合计':'清单合计'} ${money(totals.total)}；有效期至 ${state.discount.until}\n审批：${state.discount.approvalNote}；SKU/叠加/赠品：${state.discount.gift}`:`组合优惠待店长审批，不是已生效价。拟优惠 ${money(totals.pendingDiscount)}\n适用 SKU、能否叠加、期限、赠品须核实。`):'未设置组合优惠'};}
     function buildIntroductionSvg(){
       const data=cardData(),colors=getComputedStyle(document.documentElement),accent=colors.getPropertyValue('--accent').trim()||'#3167e3',paper=colors.getPropertyValue('--paper').trim()||'#f4f7ff';
       const font='"Microsoft YaHei", "PingFang SC", Arial, sans-serif',measure=document.createElement('canvas').getContext('2d'),blocks=[];let y=58;
@@ -1207,7 +1389,14 @@
       }finally{if(url)URL.revokeObjectURL(url);button.disabled=false;button.textContent='下载 PNG';}
     }
 
-    async function handleFiles(files){state.files=Array.from(files);state.fileContexts=[];const results=[];for(const file of state.files){const ext=file.name.split('.').pop().toLowerCase();if(['txt','md','csv'].includes(ext)){if(file.size>1024*1024){results.push({name:file.name,status:'超过 1 MB，未读取'});continue;}try{const text=(await file.text()).slice(0,200000).replace(/\u0000/g,'');state.fileContexts.push({name:file.name,text});results.push({name:file.name,status:`已读取 ${text.length} 字符`});}catch{results.push({name:file.name,status:'读取失败'});}}else results.push({name:file.name,status:'格式未解析'});}$('fileList').innerHTML=results.length?results.map((item)=>`<li><span>${escapeHTML(item.name)}</span><span class="file-status">${escapeHTML(item.status)}</span></li>`).join(''):'<li><span>尚未选择文件</span><span class="file-status">无本地上下文</span></li>';showToast(`已读取 ${state.fileContexts.length} 个文本资料`);}
+    async function handleFiles(files){state.files=Array.from(files);state.fileContexts=[];const results=[];for(const file of state.files){const ext=file.name.split('.').pop().toLowerCase();if(['txt','md','csv'].includes(ext)){if(file.size>1024*1024){results.push({name:file.name,status:'超过 1 MB，未读取'});continue;}try{const text=(await file.text()).slice(0,200000).replace(/\u0000/g,'');state.fileContexts.push({name:file.name,text});results.push({name:file.name,status:`已读取 ${text.length} 字符`});}catch{results.push({name:file.name,status:'读取失败'});}}else results.push({name:file.name,status:'格式未解析'});}$('fileList').innerHTML=results.length?results.map((item)=>`<li><span>${escapeHTML(item.name)}</span><span class="file-status">${escapeHTML(item.status)}</span></li>`).join(''):'<li><span>尚未选择文件</span><span class="file-status">无本地上下文</span></li>';refreshReferenceRegen();showToast(state.fileContexts.length?`读到 ${state.fileContexts.length} 份资料，可以重新生成回答`:'没有读到可用的文字资料');}
+    /* 资料补充之后才让用户重新生成，避免什么都没传就点一个空按钮 */
+    function refreshReferenceRegen(){
+      const btn=$('referenceRegenBtn'),hint=$('referenceHint');
+      const n=state.fileContexts.length;
+      if(btn)btn.disabled=!n;
+      if(hint)hint.textContent=n?`已读到 ${n} 份资料。点上面的按钮，会用这些资料重新回答一次上面的问题。`:'加完资料后这个按钮才能点。';
+    }
     function setReference(open){state.referenceOpen=open;document.querySelector('.consult-grid').style.gridTemplateColumns=open?'':'minmax(0,1fr)';$('referencePane').classList.toggle('collapsed',!open);$('referencePane').classList.toggle('mobile-collapsed',!open);$('referenceToggle').textContent=open?'隐藏资料栏':'恢复资料栏';$('referenceToggle').setAttribute('aria-expanded',String(open));}
     /* 复制文本：file:// 下 navigator.clipboard 常被禁用，需回退到 execCommand，否则按钮等于失效。 */
     async function copyText(text,message){
@@ -1228,66 +1417,140 @@
       showToast('浏览器未授权复制，请手动选择内容');
       return false;
     }
-    function savePersona(){readPersonaForm();const text=$('scene').value.trim(),insight=classify(text),product=selectProduct(text);renderPersona(text,insight,false);renderQuote(text,insight,product);renderFollow(insight);renderContent(text,insight,product,$('platform').value);if($('question').value.trim())answerQuestion();$('personaStatus').textContent='已保存并应用到咨询、报价、计划与介绍卡';persist();showToast('画像已保存并联动更新');}
+    function savePersona(){readPersonaForm();const text=$('scene').value.trim(),insight=classify(text),product=selectProduct(text);renderPersona(text,insight,false);renderQuote(text,insight,product);renderFollow(insight);renderContent(text,insight,product,$('platform').value);if($('question').value.trim())answerQuestion();$('personaStatus').textContent='已保存并应用到咨询、报价、计划与介绍卡';persist();refreshPersonaGuard();showToast('画像已保存并联动更新');}
     function generate({preservePersona=false}={}){const text=$('scene').value.trim()||'客户想了解华为 MateBook 产品方案，但尚未提供具体需求。',insight=classify(text);if(!preservePersona||!state.persona)state.persona=inferProfile(text,insight);const product=selectProduct(text);renderPersona(text,insight,false);renderQuote(text,insight,product);renderFollow(insight);renderContent(text,insight,product,$('platform').value);$('goalLabel').textContent=$('goal').value;$('platformLabel').textContent=$('platform').value;persist();showToast('新场景方案已更新');}
+    /* 启动时如果本地已经有画像就直接用；没有就不生成，让用户先自己去画像页点一次 */
+    function bootGenerate(){
+      if(personaReady()){
+        generate({preservePersona:true});
+        return;
+      }
+      /* 没画像：只把产品、题库这类不依赖画像的部分渲染出来，画像相关留空 */
+      renderScenarioBank();
+      renderCard();
+      $('persona').innerHTML='';
+      $('personaSummary').textContent='还没有画像。在左侧写一句客户原话，点「生成客户方案」，这里会出来一版初稿。';
+      $('goalLabel').textContent=$('goal').value;
+      $('platformLabel').textContent=$('platform').value;
+    }
     function refreshAll(){if(!state.result)return;readQuoteForm();renderSelectedProductDetails();renderFollow(state.result.insight);renderContent(state.result.text,state.result.insight,state.result.product,$('platform').value);$('goalLabel').textContent=$('goal').value;$('platformLabel').textContent=$('platform').value;}
 
     window.addEventListener('hashchange',route);window.addEventListener('popstate',route);reducedMotion.addEventListener('change',applyMotion);document.querySelectorAll('a[href^="#"]').forEach((link)=>link.addEventListener('click',(event)=>{event.preventDefault();navigate(link.getAttribute('href'));}));
     $('motionToggle').addEventListener('click',()=>{motionPreference=motionPreference==='on'?'off':'on';storage.set('pc-agent-motion',motionPreference);applyMotion();});
     $('themeSelect').addEventListener('change',()=>{themePreference=$('themeSelect').value;storage.set('pc-agent-theme',themePreference);applyTheme();renderCard();});
-    $('runBtn').addEventListener('click',()=>{generate();navigate('persona');});$('savePersonaBtn').addEventListener('click',savePersona);document.querySelectorAll('.quick').forEach((button)=>button.addEventListener('click',()=>{$('scene').value=button.dataset.text;generate();}));$('platform').addEventListener('change',refreshAll);$('goal').addEventListener('change',refreshAll);
+    $('runBtn').addEventListener('click',()=>{generate();navigate('persona');refreshPersonaGuard();$('personaStatus').textContent='刚按左侧的客户原话生成了一版初稿 · 可直接改';});$('savePersonaBtn').addEventListener('click',savePersona);document.querySelectorAll('.quick').forEach((button)=>button.addEventListener('click',()=>{$('scene').value=button.dataset.text;generate();navigate('persona');refreshPersonaGuard();$('personaStatus').textContent='刚按左侧的客户原话生成了一版初稿 · 可直接改';}));$('platform').addEventListener('change',refreshAll);$('goal').addEventListener('change',refreshAll);
     $('askBtn').addEventListener('click',answerQuestion);$('question').addEventListener('keydown',(event)=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')answerQuestion();});document.querySelectorAll('.faq-chip').forEach((button)=>button.addEventListener('click',()=>{$('question').value=button.dataset.question;answerQuestion();}));$('fileInput').addEventListener('change',(event)=>handleFiles(event.target.files));$('referenceToggle').addEventListener('click',()=>setReference(!state.referenceOpen));$('referenceClose').addEventListener('click',()=>setReference(false));
+    if($('referenceRegenBtn'))$('referenceRegenBtn').addEventListener('click',()=>{
+      if(!state.fileContexts.length){showToast('先加一份资料');return;}
+      if(!$('question').value.trim()){$('question').focus();showToast('先把客户问题写上，再重新生成');return;}
+      answerQuestion(true);
+    });
     $('addProductBtn').addEventListener('click',()=>{readQuoteForm();const product=pickerProduct();state.quoteItems.push(createQuoteItem(product));state.discount.approved=false;state.result.product=product;renderQuote(state.result.text,state.result.insight,product);refreshAll();});$('addCustomBtn').addEventListener('click',()=>{readQuoteForm();state.quoteItems.push(createQuoteItem(null,true));state.discount.approved=false;renderQuoteItems();refreshAll();});$('quoteItems').addEventListener('click',(event)=>{const button=event.target.closest('.remove-item');if(!button)return;state.quoteItems=state.quoteItems.filter((item)=>item.id!==button.closest('.quote-item').dataset.id);state.discount.approved=false;if(state.quoteItems.length)renderQuote(state.result.text,state.result.insight,state.result.product);else renderQuoteItems();refreshAll();});$('quoteItems').addEventListener('change',()=>{readQuoteForm();updateQuoteSummary();refreshAll();});['discountType','discountValue','managerApproved','approvalNote','discountUntil','giftNote'].forEach((id)=>$(id).addEventListener('change',()=>{readQuoteForm();updateQuoteSummary();refreshAll();}));
     $('quoteBtn').addEventListener('click',()=>{readQuoteForm();$('quoteMessage').textContent=quoteMessage();$('quoteMessage').hidden=false;showToast('人工报价说明已生成');});$('copyQuoteBtn').addEventListener('click',()=>{readQuoteForm();copyText(quoteMessage(),'报价说明已复制');});$('copyKeywordBtn').addEventListener('click',()=>copyText(state.result?.product?.name||'华为 MateBook','商城搜索关键词已复制'));$('copyAnswerBtn').addEventListener('click',()=>copyText(state.customerAnswer,'客户回答已复制'));$('copyBtn').addEventListener('click',()=>copyText(state.customerMessage,'客户话术已复制'));
     document.querySelectorAll('.plan-option').forEach((button)=>button.addEventListener('click',()=>{document.querySelectorAll('.plan-option').forEach((item)=>item.classList.remove('active'));button.classList.add('active');state.plan=button.dataset.plan;renderFollow(state.result?.insight||classify($('scene').value));if(state.result)renderContent(state.result.text,state.result.insight,state.result.product,$('platform').value);}));
-    $('refreshCardBtn').addEventListener('click',renderCard);$('cardNeed').addEventListener('input',renderCard);$('downloadSvgBtn').addEventListener('click',downloadSvg);$('downloadPngBtn').addEventListener('click',downloadPng);
+    $('refreshCardBtn').addEventListener('click',renderCard);$('downloadSvgBtn').addEventListener('click',downloadSvg);$('downloadPngBtn').addEventListener('click',downloadPng);
     $('apiSettingsToggle').addEventListener('click',()=>{const open=$('apiSettingsPanel').hidden;$('apiSettingsPanel').hidden=!open;$('apiSettingsToggle').setAttribute('aria-expanded',String(open));$('apiSettingsToggle').textContent=open?'隐藏模型 API 设置':'显示模型 API 设置';});
     $('enableApiBtn').addEventListener('click',enableModelApi);$('clearApiBtn').addEventListener('click',clearModelSession);$('stopApiBtn').addEventListener('click',()=>modelSession.controller?.abort());window.addEventListener('pagehide',clearModelSession);
-    function handoffSummary(){
+    /* ---------- 反馈与交接：每次保存追加一条工作留档，前面的一条不动 ---------- */
+    function personaReady(){return Boolean(state.persona&&String(state.persona.need||'').trim()&&String(state.persona.role||'').trim());}
+    function personaBrief(){
+      const p=state.persona||{};
+      const bits=[p.role,p.need,p.price,p.system].filter((x)=>x&&String(x).trim());
+      return bits.length?bits.join('；'):'画像还没填完整';
+    }
+    function workLogEntry(){
       const product=activeProducts()[0];
       const totals=calculateQuote();
-      const priceLine=totals.known?`已确认录价小计 ${money(totals.subtotal)}${totals.unknownCount?`（另有 ${totals.unknownCount} 项未确认，不是完整总价）`:''}`:'暂无已确认价格，仍在核价';
-      const discountLine=state.discount.type==='none'?'未设置组合优惠':(totals.applied?`已批组合优惠 ${money(totals.discount)}，有效期至 ${state.discount.until}；审批：${state.discount.approvalNote}`:'组合优惠待店长审批（未生效）');
-      const items=state.quoteItems.map(item=>`· ${item.name}${item.sku?` / ${item.sku}`:''} ×${item.qty} · ${validPrice(item)?money(Number(item.price)*Number(item.qty)):'价格未确认'}`).join('\n')||'· 尚未添加产品';
-      return [
-        `归档时间：${new Date().toLocaleString('zh-CN',{hour12:false})}`,
-        `交接人：${$('handoffOwner')?.value.trim()||'未填写'}`,
-        `客户需求：${state.persona?.need||'待确认'}`,
-        `当前方案：${product?.name||'尚未选定机型'}`,
-        `产品与配件：`,items,
-        `价格状态：${priceLine}`,
-        `优惠状态：${discountLine}`,
-        `执行记录与下次动作：${$('planOutcome').value.trim()||'尚未记录'}`,
-        `待核实事项：库存、销售版本、软件兼容性、售后条款以门店核实为准。`
-      ].join('\n');
+      const priceLine=totals.known?`已确认录价小计 ${money(totals.subtotal)}${totals.unknownCount?`，另有 ${totals.unknownCount} 项还没确认，不是完整总价`:''}`:'还没有已确认的价格，仍在核价';
+      const discountLine=state.discount.type==='none'?'没有设置组合优惠':(totals.applied?`已批组合优惠 ${money(totals.discount)}，有效期到 ${state.discount.until}；审批：${state.discount.approvalNote}`:'组合优惠还等店长审批，现在不算生效价');
+      const items=state.quoteItems.map(item=>`· ${item.name}${item.sku?` / ${item.sku}`:''} ×${item.qty}，${validPrice(item)?money(Number(item.price)*Number(item.qty)):'价格还没确认'}`).join('\n')||'· 还没加产品';
+      const stamp=new Date().toLocaleString('zh-CN',{hour12:false});
+      return {
+        id:'WL'+Date.now()+Math.floor(Math.random()*1000),
+        at:stamp,
+        owner:($('handoffOwner')?.value||'').trim()||'未填写',
+        title:`${state.persona?.role||'客户'} · ${product?.name||'还没定机型'}`,
+        tags:[state.persona?.role||'画像未填',product?.name||'未选机型',state.plan==='combo'?'组合购':'标准推进'].filter(Boolean),
+        text:[
+          `留档时间：${stamp}`,
+          `跟进人：${($('handoffOwner')?.value||'').trim()||'未填写'}`,
+          `客户是谁：${personaBrief()}`,
+          `客户要什么：${state.persona?.need||'待确认'}`,
+          `当前方案：${product?.name||'还没定机型'}`,
+          `产品与配件：`,items,
+          `价格状态：${priceLine}`,
+          `优惠状态：${discountLine}`,
+          `这次聊到哪：${$('planOutcome').value.trim()||'还没写'}`,
+          `还要核实：库存、销售版本、软件能不能跑、售后条款，都以门店核实为准。`
+        ].join('\n')
+      };
     }
-    function renderHandoff(){
-      const box=$('handoffArchive');
-      if(box)box.textContent=state.handoff||'还没有归档。填好上面的记录后点「保存并归档」，这里会生成一份可直接交接的摘要。';
+    function loadWorkLogs(){
+      const saved=storage.get('pc-agent-worklogs',null);
+      if(Array.isArray(saved))return saved.filter((row)=>row&&typeof row==='object'&&row.id&&row.text);
+      /* 兼容旧版单条归档：有就转成一条留档，不丢用户已经保存的内容 */
+      const legacy=storage.get('pc-agent-handoff','');
+      if(legacy){
+        const m=legacy.match(/^归档时间：(.*)$/m);
+        return [{id:'WLlegacy',at:m?m[1].trim():'',owner:'',title:'早期归档',tags:['早期归档'],text:legacy}];
+      }
+      return [];
+    }
+    function saveWorkLogs(){return storage.set('pc-agent-worklogs',state.workLogs);}
+    function renderWorkLog(){
+      const list=$('workLog');
+      if(!list)return;
+      const rows=state.workLogs||[];
+      const count=$('workLogCount');
+      if(count)count.textContent=rows.length?`${rows.length} 条留档 · 关掉网页前一直在`:'还没有留档';
+      list.innerHTML=rows.length?rows.map((row,index)=>`<article class="worklog-item" data-worklog="${escapeHTML(row.id)}"><div class="worklog-head"><div class="worklog-head-main"><span class="worklog-time">${escapeHTML(row.at||'时间未记录')}</span><span class="worklog-title">${escapeHTML(row.title||'工作留档')}</span><span class="worklog-tags">${(row.tags||[]).map((tag)=>`<span class="worklog-tag">${escapeHTML(tag)}</span>`).join('')}</span></div><button type="button" class="worklog-del" data-del="${escapeHTML(row.id)}" aria-label="删除这条留档">删除</button></div><div class="worklog-body">${escapeHTML(row.text)}</div></article>`).join(''):'<div class="worklog-empty">这里会按时间倒序列出每一份工作留档。上面填好内容点「保存并归档」，就多一条，之前的一条不会被覆盖。</div>';
       const saved=$('outcomeSavedAt');
-      if(saved)saved.textContent=state.handoffAt?`上次归档 ${state.handoffAt}`:'执行记录与客户反馈';
+      if(saved)saved.textContent=rows.length?`最近一次 ${rows[0].at}`:'还没归档';
+      refreshPersonaGuard();
     }
     function saveHandoff(){
-      state.handoff=handoffSummary();
-      state.handoffAt=new Date().toLocaleString('zh-CN',{hour12:false});
-      const ok=storage.set('pc-agent-outcome',$('planOutcome').value)&&storage.set('pc-agent-handoff',state.handoff)&&storage.set('pc-agent-handoff-owner',$('handoffOwner')?.value||'');
-      $('outcomeStatus').textContent=ok?`已归档，保存在当前浏览器（${state.handoffAt}）。刷新或下次打开仍在，可复制摘要发给下一位同事。`:'浏览器未允许保存，请复制交接摘要留存。';
-      renderHandoff();
-      if(ok)showToast('执行记录已归档');
+      if(!personaReady()){refreshPersonaGuard(true);showToast('先完成客户画像再归档');return;}
+      const note=$('planOutcome').value.trim();
+      if(!note){$('outcomeStatus').textContent='先把这次的执行记录和客户反馈写一句，再点保存。';showToast('执行记录还是空的');return;}
+      const row=workLogEntry();
+      state.workLogs=[row,...(state.workLogs||[])];
+      const ok=saveWorkLogs()&&storage.set('pc-agent-outcome',$('planOutcome').value)&&storage.set('pc-agent-handoff-owner',$('handoffOwner')?.value||'');
+      $('outcomeStatus').textContent=ok?`已存成第 ${state.workLogs.length} 条留档（${row.at}）。下面能看到它，之前存的都还在；换下一位客户时重新生成画像再存一条就行。`:'这台浏览器不让保存，先把内容复制出来留个底。';
+      $('planOutcome').value='';
+      renderWorkLog();
+      if(ok)showToast('已存成一条工作留档');
     }
+    function deleteWorkLog(id){
+      state.workLogs=(state.workLogs||[]).filter((row)=>row.id!==id);
+      saveWorkLogs();renderWorkLog();showToast('这条留档已删除');
+    }
+    function refreshPersonaGuard(scroll=false){
+      const ready=personaReady();
+      const guard=$('feedbackGuard'),body=$('feedbackBody');
+      if(guard)guard.hidden=ready;
+      if(body)body.hidden=!ready;
+      if(!ready&&scroll)window.scrollTo({top:0,behavior:'smooth'});
+    }
+    state.workLogs=loadWorkLogs();
     $('planOutcome').value=storage.get('pc-agent-outcome','');
     if($('handoffOwner'))$('handoffOwner').value=storage.get('pc-agent-handoff-owner','');
-    state.handoff=storage.get('pc-agent-handoff','');
-    if(state.handoff){const m=state.handoff.match(/^归档时间：(.*)$/m);state.handoffAt=m?m[1].trim():'';}
-    renderHandoff();
+    renderWorkLog();
     $('saveOutcomeBtn').addEventListener('click',saveHandoff);
-    $('copyHandoffBtn').addEventListener('click',()=>copyText(handoffSummary(),'交接摘要已复制'));
+    $('copyHandoffBtn').addEventListener('click',()=>{
+      const text=($('planOutcome').value.trim())?workLogEntry().text:((state.workLogs||[])[0]?.text||'');
+      if(!text){showToast('还没有可复制的内容');return;}
+      copyText(text,'留档内容已复制');
+    });
+    if($('workLog'))$('workLog').addEventListener('click',(event)=>{
+      const button=event.target.closest('[data-del]');
+      if(!button)return;
+      if(window.confirm('删掉这条留档？删了之后找不回来。'))deleteWorkLog(button.dataset.del);
+    });
     if($('clearOutcomeBtn'))$('clearOutcomeBtn').addEventListener('click',()=>{
       $('planOutcome').value='';if($('handoffOwner'))$('handoffOwner').value='';
-      state.handoff='';state.handoffAt='';
-      storage.set('pc-agent-outcome','');storage.set('pc-agent-handoff','');storage.set('pc-agent-handoff-owner','');
-      $('outcomeStatus').textContent='已清空本次记录与归档。';
-      renderHandoff();showToast('已清空本次记录');
+      storage.set('pc-agent-outcome','');storage.set('pc-agent-handoff-owner','');
+      $('outcomeStatus').textContent='输入框已清空，下面已存的留档没动。';
+      showToast('只清空了输入框');
     });
 
     /* ---------- 价格参考库：三档分档决定能不能报 ---------- */
@@ -1437,12 +1700,24 @@
       }
       return item;
     }
+    /* 组合折扣只在加了 2 件及以上才出现；不到 2 件就隐藏，避免还没选东西就先看到折扣行 */
+    function refreshDiscountVisibility(){
+      const block=$('discountBlock');
+      if(!block)return;
+      const enough=state.quoteItems.length>=2;
+      block.hidden=!enough;
+      if(!enough&&state.discount.type!=='none'){
+        /* 退回单件时折扣不成立，一并清掉，避免用一件商品套组合价 */
+        state.discount={type:'none',value:0,approved:false,approvalNote:'',until:'',gift:''};
+      }
+    }
     function renderQuoteHead(){
+      refreshDiscountVisibility();
       const selected=state.quoteItems.filter((item)=>!item.custom);
       const empty=$('quoteEmpty');
       if(empty)empty.hidden=state.quoteItems.length>0;
       const meta=$('quoteHeadMeta');
-      if(meta)meta.textContent=state.quoteItems.length?`${state.quoteItems.length} 项 · ${selected.length} 款产品${state.discount.type!=='none'?' · 含组合折扣':''}`:'尚未选择产品';
+      if(meta)meta.textContent=state.quoteItems.length?`${state.quoteItems.length} 项 · ${selected.length} 款产品${state.quoteItems.length>=2?' · 可问组合优惠':''}`:'尚未选择产品';
     }
 
     function renderSelectedProductDetails(){renderQuoteHead();}
@@ -2378,7 +2653,7 @@
       updateCoverTitleHint();selectPromotionTab('xhs');updatePromotionFacts();updatePromotionReview();updatePromotionApiUi();
     }
     initializePromotion();
-    applyTheme();applyMotion();generate({preservePersona:true});renderPriceRef();renderScenarioBank();route();setReference(window.innerWidth>820);
+    applyTheme();applyMotion();bootGenerate();renderPriceRef();renderScenarioBank();route();setReference(window.innerWidth>820);
   </script>
 </body>
 </html>
