@@ -732,6 +732,9 @@
     .api-lead { margin:0 0 18px; font-size:12px; line-height:1.7; color:var(--muted); }
     .api-modal-body .field { margin-bottom:15px; }
     .api-modal-body label { display:block; font-size:12.5px; font-weight:700; margin-bottom:7px; }
+    /* 示例地址比真实输入值长，窄屏下缩一点字号，别被截成半个 com */
+    .api-modal-body .field input::placeholder { font-size:12px; letter-spacing:0; }
+    @media (max-width:430px) { .api-modal-body { padding:16px 15px 18px; } .api-modal-body .field input::placeholder { font-size:10.5px; } }
 
     /* 思考模式开关：整行都是点击区，不再出现左宽右窄的怪比例 */
     .api-option { margin:2px 0 16px; padding:13px 15px; border:1px solid var(--line); border-radius:10px; background:rgba(0,0,0,.012); }
