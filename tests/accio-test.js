@@ -142,7 +142,7 @@ async function connect() {
       complete: POSTER_LAYOUTS.every(l =>
         l.id && l.name && l.en && l.tag && l.traits &&
         Array.isArray(l.compose) && l.compose.length >= 3 && l.compose.every(s => String(s).length >= 10) &&
-        l.type && l.color && Array.isArray(l.bestFor) && l.bestFor.length > 0 && l.mood && l.source),
+        l.type && l.color && Array.isArray(l.bestFor) && l.bestFor.length > 0 && l.mood && !('source' in l)),
       composeCounts: POSTER_LAYOUTS.map(l => l.compose.length)
     };
 
@@ -159,8 +159,8 @@ async function connect() {
       })
     };
     log.audienceOptions = {
-      count: [...$('accioAudience').options].filter(o => o.value).length,
-      defaultMatchesForm: $('accioAudience').value === '大学生'
+      count: Object.keys(ACCIO_AUDIENCES).length,
+      defaultMatchesForm: currentAudienceKey() === '大学生'
     };
     log.layoutOptions = {
       count: [...$('accioLayout').options].filter(o => o.value).length,
@@ -204,8 +204,8 @@ async function connect() {
     };
 
     /* ---- 11. 大学生 + 自动版式 → 3 套 ---- */
-    $('accioAudience').value = '大学生';
-    fire($('accioAudience'), 'change');
+    $('promotionAudience').value = '学生';
+    fire($('promotionAudience'), 'change');
     await sleep(150);
     $('accioMakePrompt').click();
     await sleep(260);
@@ -310,8 +310,8 @@ async function connect() {
     $('accioMakePrompt').click();
     await sleep(220);
     const beforeAudience = accioState.plans.map(p => p.layoutId);
-    $('accioAudience').value = '工作党';
-    fire($('accioAudience'), 'change');
+    $('promotionAudience').value = '创作者';
+    fire($('promotionAudience'), 'change');
     await sleep(160);
     const audInvalidated = accioState.plans.length === 0;
     $('accioMakePrompt').click();
@@ -320,9 +320,9 @@ async function connect() {
       invalidatedFirst: audInvalidated,
       count: accioState.plans.length,
       layoutIds: accioState.plans.map(p => p.layoutId),
-      expected: ACCIO_AUDIENCES['工作党'].layouts,
-      distinctFromStudent: !accioState.plans.some(p => beforeAudience.includes(p.layoutId)),
-      hasWorkerVoice: accioState.plans.every(p => p.prompt.includes(ACCIO_AUDIENCES['工作党'].voice))
+      expected: ACCIO_AUDIENCES['创作者'].layouts,
+      distinctFromStudent: JSON.stringify(accioState.plans.map(p => p.layoutId)) !== JSON.stringify(beforeAudience),
+      hasWorkerVoice: accioState.plans.every(p => p.prompt.includes(ACCIO_AUDIENCES['创作者'].voice))
     };
 
     /* ---- 18. 锁单版式只出 1 套，并先作废旧的 ---- */

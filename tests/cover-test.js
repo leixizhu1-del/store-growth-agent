@@ -120,7 +120,7 @@ async function connect() {
     /* 4. 版式库：选项齐全且不重复 */
     const layoutOpts = [...$('accioLayout').options].map(o => o.value).filter(Boolean);
     log.layoutOptions = layoutOpts.length;
-    log.audienceOptions = [...$('accioAudience').options].filter(o => o.value).length;
+    log.audienceOptions = Object.keys(ACCIO_AUDIENCES).length;
     log.layoutCatalogRendered = document.querySelectorAll('#accioLayoutCatalog > *').length > 0;
 
     /* 5. 不填主标题：仍可出方案，但必须提示「建议填一条」 */
