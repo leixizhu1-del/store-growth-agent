@@ -1,6 +1,7 @@
-/* Accio 多套方案专项测试
- * 覆盖：版式库字段完整性、人群画像、按人群一次给多套、每套提示词互不相同、
- *       深链往返与长度上限、方案失效机制、卡片交互、原有封面模板不受影响
+/* 门店推广 · 封面方案专项测试
+ * 覆盖：版块顺序（素材表单在前、文案面板默认收起）、版式库字段完整性、
+ *       人群画像、按人群一次给多套、提示词含主标题/亮点/主色/照片、
+ *       深链往返与长度上限、方案失效机制、卡片交互、已删功能确实消失。
  * 用法：node tests/accio-test.js        （加 DUMP=1 打印原始数据）
  */
 const { spawn } = require('child_process');
@@ -78,14 +79,66 @@ async function connect() {
 
     const fire = (el, type) => el.dispatchEvent(new Event(type, { bubbles: true }));
 
-    /* ---- 1. 版式库结构完整性 ---- */
+    /* ---- 1. 版块顺序与主次：素材表单在最上面且占满宽度 ---- */
+    const page = $('promotionPage');
+    const blocks = [...page.children].filter(el => el.matches('.panel, .promotion-footnote'));
+    log.layout = {
+      order: blocks.map(el => el.className.split(' ').filter(c => c).slice(0, 2).join('.')),
+      materialFirst: blocks[0]?.classList.contains('promotion-material'),
+      draftHiddenInitially: $('promotionDraftPanel').hidden,
+      materialWidth: Math.round(blocks[0].getBoundingClientRect().width),
+      pageWidth: Math.round(page.getBoundingClientRect().width),
+      contentWidth: Math.round(page.clientWidth - (parseFloat(getComputedStyle(page).paddingLeft) + parseFloat(getComputedStyle(page).paddingRight))),
+      footLast: blocks[blocks.length - 1]?.classList.contains('promotion-footnote')
+    };
+
+    /* ---- 2. 底部提示框必须是浅灰，不是主面板样式 ---- */
+    const foot = document.querySelector('.promotion-footnote');
+    const footStyle = getComputedStyle(foot);
+    log.footnote = {
+      bg: footStyle.backgroundColor,
+      isNeutral: /^rgba?\\(0, 0, 0/.test(footStyle.backgroundColor),
+      radius: footStyle.borderRadius,
+      smallerThanPanel: parseFloat(getComputedStyle(document.querySelector('.promotion-footnote h3')).fontSize) <
+                        parseFloat(getComputedStyle(document.querySelector('.promotion-material h3')).fontSize)
+    };
+
+    /* ---- 3. 该删掉的东西必须真的没了 ---- */
+    log.removed = {
+      localTemplates: !$('promotionCoverTemplates'),
+      posterStage: !$('promotionPosterStage'),
+      generateCoverBtn: !$('promotionCoverGenerate'),
+      modelSelect: !$('accioModel'),
+      pendingBox: !$('promotionPending'),
+      applyBtn: !$('promotionApply'),
+      canvaBlock: !document.querySelector('.canva-handoff'),
+      canvaUrl: !$('promotionCanvaUrl'),
+      coverSubField: !$('promotionCoverSub')
+    };
+
+    /* ---- 4. 加号已去掉 ---- */
+    log.plusSign = {
+      beforeContent: getComputedStyle(document.querySelector('#promotionPage .promo-more > summary'), '::before').content,
+      afterContent: getComputedStyle(document.querySelector('#promotionPage .promo-more > summary'), '::after').content
+    };
+
+    /* ---- 5. 只留四项封面输入 ---- */
+    log.coverInputs = {
+      main: !!$('promotionCoverMain'),
+      emph: !!$('promotionCoverEmph'),
+      color: !!$('promotionCoverColor'),
+      photo: !!$('promotionCoverPhoto'),
+      swatchCount: document.querySelectorAll('[data-color]').length,
+      onlyOnePrimaryButton: [...document.querySelectorAll('#promotionCover .action-row button.primary')].map(b => b.textContent.trim())
+    };
+
+    /* ---- 6. 版式库结构完整性 ---- */
     log.layouts = {
       count: POSTER_LAYOUTS.length,
       ids: POSTER_LAYOUTS.map(l => l.id),
       names: POSTER_LAYOUTS.map(l => l.name),
       namesUnique: new Set(POSTER_LAYOUTS.map(l => l.name)).size === POSTER_LAYOUTS.length,
       idsUnique: new Set(POSTER_LAYOUTS.map(l => l.id)).size === POSTER_LAYOUTS.length,
-      // 每套都必须有可执行的构图条目，而不是「科技感」这类形容词
       complete: POSTER_LAYOUTS.every(l =>
         l.id && l.name && l.en && l.tag && l.traits &&
         Array.isArray(l.compose) && l.compose.length >= 3 && l.compose.every(s => String(s).length >= 10) &&
@@ -93,7 +146,7 @@ async function connect() {
       composeCounts: POSTER_LAYOUTS.map(l => l.compose.length)
     };
 
-    /* ---- 2. 人群库结构完整性，且推荐版式必须存在 ---- */
+    /* ---- 7. 人群库完整，推荐版式必须存在 ---- */
     const audKeys = Object.keys(ACCIO_AUDIENCES);
     const layoutIds = new Set(POSTER_LAYOUTS.map(l => l.id));
     log.audiences = {
@@ -105,18 +158,9 @@ async function connect() {
           Array.isArray(a.layouts) && a.layouts.length >= 3 && a.layouts.every(id => layoutIds.has(id));
       })
     };
-
-    /* ---- 3. 下拉填充 ---- */
-    const opts = [...$('accioModel').querySelectorAll('option')].filter(o => o.value);
-    log.modelOptions = {
-      count: opts.length,
-      kbCount: knowledgeBase.products.length,
-      groupCount: $('accioModel').querySelectorAll('optgroup').length,
-      blankOption: [...$('accioModel').options].some(o => o.value === '')
-    };
     log.audienceOptions = {
       count: [...$('accioAudience').options].filter(o => o.value).length,
-      labels: [...$('accioAudience').options].filter(o => o.value).map(o => o.textContent)
+      defaultMatchesForm: $('accioAudience').value === '大学生'
     };
     log.layoutOptions = {
       count: [...$('accioLayout').options].filter(o => o.value).length,
@@ -124,29 +168,47 @@ async function connect() {
     };
     log.catalogItems = $('accioLayoutCatalog').querySelectorAll('.accio-catalog-item').length;
 
-    /* ---- 4. 未选型号点生成：必须被拦下，不能凭空编造 ---- */
-    $('accioModel').value = '';
+    /* ---- 8. 没选产品就点生成：必须拦下，不能凭空编 ---- */
     $('accioMakePrompt').click();
     await sleep(120);
-    log.guardEmptyModel = {
-      status: $('accioStatus').textContent.slice(0, 40),
+    log.guardNoProduct = {
       planCount: accioState.plans.length,
-      cardsHidden: $('accioPlans').hidden
+      cardsHidden: $('accioPlans').hidden,
+      status: $('accioStatus').textContent.slice(0, 40)
     };
 
-    /* ---- 5. 选型号 + 大学生 + 自动版式 ---- */
-    const target = opts.find(o => /MateBook D 16 SE/.test(o.value)) || opts[0];
-    $('accioModel').value = target.value;
-    fire($('accioModel'), 'change');
-    await sleep(600);
-    log.afterModelSelect = { promotionProduct: promotion.product?.name || null };
+    /* ---- 9. 选产品 → 自动带出主标题和亮点 ---- */
+    const q = $('promotionProductQuery');
+    q.value = 'MateBook D 16';
+    fire(q, 'input');
+    await sleep(520);
+    const cands = [...$('promotionProductCandidates').querySelectorAll('button')];
+    if (cands.length) cands[0].click();
+    await sleep(420);
+    const productName = promotion.product?.name || '';
+    log.afterProduct = {
+      name: productName,
+      main: $('promotionCoverMain').value,
+      emph: $('promotionCoverEmph').value
+    };
 
+    /* ---- 10. 生成文案：面板从隐藏变为显示 ---- */
+    $('promotionGenerate').click();
+    await sleep(520);
+    log.draftPanel = {
+      hidden: $('promotionDraftPanel').hidden,
+      xhsTitle: $('promotionTitle-xhs').value.slice(0, 60),
+      bodyLength: $('promotionBody-xhs').value.length,
+      origin: $('promotionOrigin').textContent,
+      allThreeEditable: ['xhs','wechat','moments'].every(k => !!$('promotionTitle-' + k) && !!$('promotionBody-' + k))
+    };
+
+    /* ---- 11. 大学生 + 自动版式 → 3 套 ---- */
     $('accioAudience').value = '大学生';
     fire($('accioAudience'), 'change');
-    $('accioHighlight').value = '';
+    await sleep(150);
     $('accioMakePrompt').click();
-    await sleep(220);
-
+    await sleep(260);
     const planStudent = accioState.plans.map(p => ({ index: p.index, id: p.layoutId, name: p.layoutName, prompt: p.prompt }));
     log.studentPlans = {
       count: planStudent.length,
@@ -161,18 +223,39 @@ async function connect() {
     const txt = planStudent.map(p => p.prompt);
     log.studentPromptContent = {
       hasSetup: txt.every(t => t.includes('1080×1440') && t.includes('小红书')),
-      hasProduct: txt.every(t => t.includes(target.value)),
+      hasProduct: txt.every(t => t.includes(productName)),
       hasAudience: txt.every(t => t.includes(aud.label)),
       hasVoice: txt.every(t => t.includes(aud.voice)),
       hasAvoid: txt.every(t => t.includes(aud.avoid)),
       hasLayoutName: planStudent.every(p => p.prompt.includes(p.name)),
+      hasMain: txt.every(t => t.includes($('promotionCoverMain').value)),
+      hasEmph: txt.every(t => t.includes($('promotionCoverEmph').value)),
+      hasColor: txt.every(t => /主色指定为/.test(t)),
       forbidFake: txt.every(t => /不出现价格、折扣、库存/.test(t) && /不加英文标语/.test(t)),
       noPlaceholder: txt.every(t => !/undefined|NaN|\\[object Object\\]/.test(t)),
-      autoHighlight: /重点覆盖|主打方向/.test(txt[0])
+      mainLocked: txt.every(t => /必须原样出现/.test(t))
     };
 
-    /* ---- 6. 深链：每套都要能还原，且长度在安全线内 ---- */
-    log.deepLinks = planStudent.map(p => {
+    /* ---- 12. 主色换成柔黑，提示词里的色名要跟着变 ---- */
+    const darkSwatch = [...document.querySelectorAll('[data-color]')].find(b => b.dataset.color.toLowerCase() === '#262626');
+    if (darkSwatch) darkSwatch.click();
+    await sleep(150);
+    $('accioMakePrompt').click();
+    await sleep(260);
+    log.darkColor = {
+      invalidatedThenRebuilt: accioState.plans.length > 0,
+      nameInPrompt: accioState.plans.every(p => /主色指定为柔黑/.test(p.prompt)),
+      hexInPrompt: accioState.plans.every(p => /#262626/i.test(p.prompt))
+    };
+    // 换回浅金，后面断言不受影响
+    const goldSwatch = [...document.querySelectorAll('[data-color]')].find(b => b.dataset.color.toLowerCase() === '#e8dcc4');
+    if (goldSwatch) goldSwatch.click();
+    await sleep(120);
+
+    /* ---- 13. 深链：每套都能往返还原，长度在安全线内 ---- */
+    $('accioMakePrompt').click();
+    await sleep(260);
+    log.deepLinks = accioState.plans.map(p => {
       const url = accioDeepLink(p.prompt);
       let host = '', path = '', questionOk = false, typeOk = false;
       try {
@@ -185,116 +268,111 @@ async function connect() {
       return { index: p.index, length: url.length, host, path, questionOk, typeOk, underLimit: url.length <= 8000 };
     });
 
-    /* ---- 7. 卡片渲染与计数文案 ---- */
+    /* ---- 14. 卡片：按钮文案必须是「跳转图片生成网站」 ---- */
     log.cards = {
       visible: !$('accioPlans').hidden,
-      barVisible: !$('accioPlansBar').hidden,
       count: $('accioPlans').querySelectorAll('.accio-plan').length,
       countText: $('accioPlansCount').textContent,
-      openButtons: $('accioPlans').querySelectorAll('[data-plan-open]').length,
+      openLabel: $('accioPlans').querySelector('[data-plan-open]')?.textContent.trim(),
+      noStaleOpenBtn: !$('accioOpen'),
       copyButtons: $('accioPlans').querySelectorAll('[data-plan-copy]').length,
-      editButtons: $('accioPlans').querySelectorAll('[data-plan-edit]').length,
-      firstActive: $('accioPlans').querySelector('.accio-plan')?.classList.contains('is-active'),
-      openEnabled: !$('accioOpen').disabled
+      editButtons: $('accioPlans').querySelectorAll('[data-plan-edit]').length
     };
 
-    /* ---- 8. 点「编辑提示词」应切到那一套并打开编辑框 ---- */
-    const thirdEdit = $('accioPlans').querySelectorAll('[data-plan-edit]')[2];
-    if (thirdEdit) thirdEdit.click();
+    /* ---- 15. 编辑提示词后，编辑框应打开 ---- */
+    const editBtn = $('accioPlans').querySelectorAll('[data-plan-edit]')[1];
+    if (editBtn) editBtn.click();
     await sleep(160);
     log.editSwitch = {
       activeIndex: accioState.activeIndex,
-      promptMatchesThird: $('accioPrompt').value === planStudent[2].prompt,
       boxOpen: !$('accioPromptBox').hidden && $('accioPromptBox').open,
-      statusHasIndex: $('accioStatus').textContent.includes('第 3 套')
+      editedPromptLength: $('accioPrompt').value.length
     };
 
-    /* ---- 9. 换人群：旧方案必须全部作废 ---- */
-    $('accioAudience').value = '工作党';
-    fire($('accioAudience'), 'change');
-    await sleep(150);
-    log.invalidateOnAudience = {
+    /* ---- 16. 改主标题 → 旧方案作废 ---- */
+    const beforeEdit = accioState.plans.length;
+    const mainEl = $('promotionCoverMain');
+    mainEl.value = '改个标题看看';
+    fire(mainEl, 'input');
+    await sleep(220);
+    log.invalidateOnMain = {
+      plansBefore: beforeEdit,
       plansCleared: accioState.plans.length === 0,
       cardsHidden: $('accioPlans').hidden,
-      barHidden: $('accioPlansBar').hidden,
       promptCleared: $('accioPrompt').value === '',
-      openDisabled: $('accioOpen').disabled,
-      statusHint: $('accioStatus').textContent.slice(0, 30)
+      status: $('accioStatus').textContent.slice(0, 30)
     };
+    mainEl.value = productName.replace(/（.*$/, '') + '怎么选';
+    fire(mainEl, 'input');
+    await sleep(150);
 
-    /* ---- 10. 工作党 → 该人群自己的三套版式 ---- */
+    /* ---- 17. 换人群 → 旧方案作废，新人群用自己的版式 ---- */
     $('accioMakePrompt').click();
     await sleep(220);
+    const beforeAudience = accioState.plans.map(p => p.layoutId);
+    $('accioAudience').value = '工作党';
+    fire($('accioAudience'), 'change');
+    await sleep(160);
+    const audInvalidated = accioState.plans.length === 0;
+    $('accioMakePrompt').click();
+    await sleep(240);
     log.workerPlans = {
+      invalidatedFirst: audInvalidated,
       count: accioState.plans.length,
       layoutIds: accioState.plans.map(p => p.layoutId),
       expected: ACCIO_AUDIENCES['工作党'].layouts,
-      distinctFromStudent: !accioState.plans.some(p => planStudent.some(s => s.id === p.layoutId)),
-      promptHasWorkerVoice: accioState.plans.every(p => p.prompt.includes(ACCIO_AUDIENCES['工作党'].voice))
+      distinctFromStudent: !accioState.plans.some(p => beforeAudience.includes(p.layoutId)),
+      hasWorkerVoice: accioState.plans.every(p => p.prompt.includes(ACCIO_AUDIENCES['工作党'].voice))
     };
 
-    /* ---- 11. 锁定单版式：只出一套 ---- */
-    $('accioLayout').value = 'industrial';
+    /* ---- 18. 锁单版式只出 1 套，并先作废旧的 ---- */
+    $('accioLayout').value = 'giant';
     fire($('accioLayout'), 'change');
-    await sleep(120);
-    const lockInvalidated = accioState.plans.length === 0;
+    await sleep(140);
+    const layoutInvalidated = accioState.plans.length === 0;
     $('accioMakePrompt').click();
-    await sleep(200);
+    await sleep(240);
     log.singleLayout = {
-      invalidatedFirst: lockInvalidated,
+      invalidatedFirst: layoutInvalidated,
       count: accioState.plans.length,
       layoutId: accioState.plans[0]?.layoutId,
-      hint: $('accioLayoutHint').textContent.slice(0, 20)
+      hint: $('accioLayoutHint').textContent.slice(0, 24)
     };
 
-    /* ---- 12. 提示词过长时必须降级复制 ---- */
-    accioState.activeIndex = 1;
+    /* ---- 19. 超长提示词必须降级为复制 ---- */
     const longPrompt = '长'.repeat(3000);
     $('accioPrompt').value = longPrompt;
     fire($('accioPrompt'), 'input');
-    const longUrl = accioDeepLink(longPrompt).length;
-    openAccioPlan(1);
-    await sleep(150);
-    log.tooLongFallback = {
-      urlLength: longUrl,
-      status: $('accioStatus').textContent.slice(0, 40),
-      degraded: $('accioStatus').textContent.includes('太长')
+    openAccioPlan(accioState.plans[0]?.index || 1);
+    await sleep(160);
+    log.tooLong = {
+      urlLength: accioDeepLink(longPrompt).length,
+      degraded: $('accioStatus').textContent.includes('太长'),
+      status: $('accioStatus').textContent.slice(0, 40)
     };
 
-    /* ---- 13. 提示词正文改空后「打开」必须禁用 ---- */
-    $('accioPrompt').value = '';
-    fire($('accioPrompt'), 'input');
-    await sleep(120);
-    const emptyDisabled = $('accioOpen').disabled;
-    $('accioPrompt').value = '测试内容';
-    fire($('accioPrompt'), 'input');
-    await sleep(120);
-    log.promptToggle = { emptyDisabled, filledEnabled: !$('accioOpen').disabled };
-
-    /* ---- 14. 换型号：方案和卡片一起清空 ---- */
+    /* ---- 20. 换产品 → 方案清空 ---- */
     $('accioLayout').value = '';
     fire($('accioLayout'), 'change');
+    await sleep(120);
     $('accioMakePrompt').click();
+    await sleep(240);
+    const beforeProductSwitch = accioState.plans.length;
+    const other = knowledgeBase.products.find(p => p.name !== promotion.product?.name);
+    setPromotionProduct(other, '测试切换产品');
     await sleep(200);
-    const beforeSwitch = accioState.plans.length;
-    const other = opts.find(o => !/MateBook D 16 SE/.test(o.value));
-    $('accioModel').value = other.value;
-    fire($('accioModel'), 'change');
-    await sleep(500);
-    log.staleOnModel = {
-      plansBefore: beforeSwitch,
+    log.staleOnProduct = {
+      plansBefore: beforeProductSwitch,
       plansCleared: accioState.plans.length === 0,
       cardsHidden: $('accioPlans').hidden,
-      promptCleared: $('accioPrompt').value === '',
-      openDisabled: $('accioOpen').disabled
+      promptCleared: $('accioPrompt').value === ''
     };
 
-    /* ---- 15. 原有本地封面模板必须完好 ---- */
-    log.templatesIntact = {
-      count: document.querySelectorAll('[data-poster-tpl]').length,
-      hasStage: !!document.querySelector('#promotionPosterStage .poster-root'),
-      canvaBlock: !!document.querySelector('.canva-handoff'),
-      copyCardBtn: !!$('promotionCopyProductCard')
+    /* ---- 21. 检查清单仍在页面底部，未被塞进主面板 ---- */
+    log.footnoteContent = {
+      shots: !!$('promotionShots'),
+      checkboxes: document.querySelectorAll('[data-promotion-check]').length,
+      insideOwnBlock: !!document.querySelector('.promotion-footnote #promotionShots')
     };
 
     return log;
@@ -309,7 +387,7 @@ async function connect() {
     await sleep(400);
     const box = document.getElementById('accioHandoff').getBoundingClientRect();
     const doc = document.documentElement;
-    const overflow = [...document.querySelectorAll('#accioHandoff *')].filter(el => {
+    const overflow = [...document.querySelectorAll('#promotionPage *')].filter(el => {
       const r = el.getBoundingClientRect();
       return r.width > 0 && (r.right > doc.clientWidth + 1 || r.left < -1);
     }).map(el => el.tagName + '.' + String(el.className || '').split(' ')[0] + ':' + Math.round(el.getBoundingClientRect().right));
@@ -320,6 +398,31 @@ async function connect() {
   const checks = [];
   const ok = (name, pass, detail) => checks.push({ name, pass: !!pass, detail });
 
+  /* 版块顺序与主次 */
+  ok('素材表单在最前面', out.layout.materialFirst, JSON.stringify(out.layout.order));
+  ok('素材表单占满整行', out.layout.materialWidth >= out.layout.contentWidth - 2, `${out.layout.materialWidth}/${out.layout.contentWidth}`);
+  ok('文案面板初始隐藏', out.layout.draftHiddenInitially, out.layout.draftHiddenInitially);
+  ok('拍摄清单在页面最底部', out.layout.footLast, JSON.stringify(out.layout.order));
+
+  /* 底部提示框 */
+  ok('底部提示框是浅灰中性色', out.footnote.isNeutral, out.footnote.bg);
+  ok('提示框标题字号小于主面板', out.footnote.smallerThanPanel, out.footnote.smallerThanPanel);
+
+  /* 已删除功能 */
+  ok('本地 12 套模板已删除', out.removed.localTemplates && out.removed.posterStage && out.removed.generateCoverBtn, JSON.stringify(out.removed));
+  ok('推广型号下拉已删除', out.removed.modelSelect, out.removed.modelSelect);
+  ok('候选稿区块已删除', out.removed.pendingBox && out.removed.applyBtn, JSON.stringify(out.removed));
+  ok('可画交接已删除', out.removed.canvaBlock && out.removed.canvaUrl, JSON.stringify(out.removed));
+  ok('副标题字段已删除', out.removed.coverSubField, out.removed.coverSubField);
+
+  /* 加号 */
+  ok('折叠标题不再有加号', out.plusSign.beforeContent === 'none', out.plusSign.beforeContent);
+
+  /* 封面输入精简为四项 */
+  ok('封面只留主标题/亮点/主色/照片', out.coverInputs.main && out.coverInputs.emph && out.coverInputs.color && out.coverInputs.photo, JSON.stringify(out.coverInputs));
+  ok('主色保留 8 个浅色选项', out.coverInputs.swatchCount === 8, `count=${out.coverInputs.swatchCount}`);
+  ok('封面只剩「生成方案」一个主按钮', JSON.stringify(out.coverInputs.onlyOnePrimaryButton) === JSON.stringify(['生成方案']), JSON.stringify(out.coverInputs.onlyOnePrimaryButton));
+
   /* 版式库 */
   ok('版式库共 8 套', out.layouts.count === 8, `count=${out.layouts.count}`);
   ok('版式 id 与名称唯一', out.layouts.idsUnique && out.layouts.namesUnique, JSON.stringify(out.layouts.names));
@@ -329,18 +432,21 @@ async function connect() {
   /* 人群库 */
   ok('人群库共 6 类', out.audiences.count === 6, JSON.stringify(out.audiences.keys));
   ok('人群字段完整且版式有效', out.audiences.complete, out.audiences.complete);
-  ok('人群下拉填充', out.audienceOptions.count === out.audiences.count, `${out.audienceOptions.count} 项`);
-
-  /* 下拉 */
-  ok('型号下拉填满知识库', out.modelOptions.count === out.modelOptions.kbCount, `${out.modelOptions.count}/${out.modelOptions.kbCount}`);
-  ok('型号按分类分组', out.modelOptions.groupCount >= 1, `groups=${out.modelOptions.groupCount}`);
+  ok('人群下拉填充且默认跟随表单', out.audienceOptions.count === out.audiences.count && out.audienceOptions.defaultMatchesForm, JSON.stringify(out.audienceOptions));
   ok('版式下拉 = 自动 + 8 套', out.layoutOptions.count === 8 && out.layoutOptions.hasAuto, `count=${out.layoutOptions.count}`);
 
   /* 拦空值 */
-  ok('未选型号被拦下', out.guardEmptyModel.planCount === 0 && out.guardEmptyModel.cardsHidden, out.guardEmptyModel.status);
+  ok('没选产品被拦下', out.guardNoProduct.planCount === 0 && out.guardNoProduct.cardsHidden, out.guardNoProduct.status);
+
+  /* 选产品 */
+  ok('选产品后自动带出主标题', /怎么选/.test(out.afterProduct.main), out.afterProduct.main);
+  ok('选产品后自动带出亮点', out.afterProduct.emph.length > 0, out.afterProduct.emph);
+
+  /* 文案面板 */
+  ok('生成文案后面板出现', out.draftPanel.hidden === false, out.draftPanel.hidden);
+  ok('三平台文案都可编辑', out.draftPanel.allThreeEditable && out.draftPanel.bodyLength > 100, out.draftPanel.bodyLength);
 
   /* 多套方案 */
-  ok('选型号同步产品', out.afterModelSelect.promotionProduct === 'MateBook D 16 SE 版', out.afterModelSelect.promotionProduct);
   ok('大学生一次给 3 套', out.studentPlans.count === 3, `count=${out.studentPlans.count}`);
   ok('按人群配版式', JSON.stringify(out.studentPlans.layoutIds) === JSON.stringify(out.studentPlans.expected), JSON.stringify(out.studentPlans.layoutIds));
   ok('3 套版式互不相同', out.studentPlans.distinctLayouts, JSON.stringify(out.studentPlans.layoutIds));
@@ -353,9 +459,15 @@ async function connect() {
   ok('提示词含人群口吻', out.studentPromptContent.hasVoice, out.studentPromptContent.hasVoice);
   ok('提示词含人群禁忌', out.studentPromptContent.hasAvoid, out.studentPromptContent.hasAvoid);
   ok('提示词含自身版式名', out.studentPromptContent.hasLayoutName, out.studentPromptContent.hasLayoutName);
+  ok('提示词含主标题', out.studentPromptContent.hasMain, out.studentPromptContent.hasMain);
+  ok('提示词含亮点', out.studentPromptContent.hasEmph, out.studentPromptContent.hasEmph);
+  ok('提示词含主色', out.studentPromptContent.hasColor, out.studentPromptContent.hasColor);
+  ok('主标题要求原样出现', out.studentPromptContent.mainLocked, out.studentPromptContent.mainLocked);
   ok('提示词禁编造价格活动', out.studentPromptContent.forbidFake, out.studentPromptContent.forbidFake);
   ok('提示词无占位符残留', out.studentPromptContent.noPlaceholder, out.studentPromptContent.noPlaceholder);
-  ok('亮点留空自动补充', out.studentPromptContent.autoHighlight, out.studentPromptContent.autoHighlight);
+
+  /* 主色联动 */
+  ok('改主色后提示词跟着变', out.darkColor.invalidatedThenRebuilt && out.darkColor.nameInPrompt && out.darkColor.hexInPrompt, JSON.stringify(out.darkColor));
 
   /* 深链 */
   const dl = out.deepLinks;
@@ -364,46 +476,38 @@ async function connect() {
   ok('每套提示词可往返还原', dl.every(d => d.questionOk && d.typeOk), JSON.stringify(dl.map(d => d.questionOk)));
   ok('每套深链长度 ≤ 8000', dl.every(d => d.underLimit), JSON.stringify(dl.map(d => d.length)));
 
-  /* 卡片交互 */
+  /* 卡片 */
   ok('方案卡片全部渲染', out.cards.visible && out.cards.count === 3, `cards=${out.cards.count}`);
-  ok('每张卡三个按钮', out.cards.openButtons === 3 && out.cards.copyButtons === 3 && out.cards.editButtons === 3, JSON.stringify({ o: out.cards.openButtons, c: out.cards.copyButtons, e: out.cards.editButtons }));
+  ok('按钮文案为跳转图片生成网站', out.cards.openLabel === '跳转图片生成网站', out.cards.openLabel);
+  ok('旧的「打开当前这套」按钮已移除', out.cards.noStaleOpenBtn, out.cards.noStaleOpenBtn);
+  ok('每张卡还有复制与编辑', out.cards.copyButtons === 3 && out.cards.editButtons === 3, JSON.stringify({ c: out.cards.copyButtons, e: out.cards.editButtons }));
   ok('卡片显示方案总数', /共 3 套方案/.test(out.cards.countText), out.cards.countText);
-  ok('首套默认选中', out.cards.firstActive && out.cards.openEnabled, `${out.cards.firstActive}/${out.cards.openEnabled}`);
-  ok('编辑按钮切到对应套', out.editSwitch.activeIndex === 3 && out.editSwitch.promptMatchesThird && out.editSwitch.boxOpen, JSON.stringify(out.editSwitch));
+  ok('编辑按钮打开对应提示词', out.editSwitch.activeIndex === 2 && out.editSwitch.boxOpen && out.editSwitch.editedPromptLength > 100, JSON.stringify(out.editSwitch));
 
   /* 失效机制 */
-  ok('换人群作废旧方案', out.invalidateOnAudience.plansCleared && out.invalidateOnAudience.cardsHidden && out.invalidateOnAudience.promptCleared, JSON.stringify(out.invalidateOnAudience));
-  ok('换人群后清空方案栏', out.invalidateOnAudience.barHidden && out.invalidateOnAudience.openDisabled, JSON.stringify(out.invalidateOnAudience));
-  ok('换人群给出提示', !!out.invalidateOnAudience.statusHint, out.invalidateOnAudience.statusHint);
-
-  /* 不同人群不同结果 */
+  ok('改主标题作废旧方案', out.invalidateOnMain.plansBefore > 0 && out.invalidateOnMain.plansCleared && out.invalidateOnMain.cardsHidden && out.invalidateOnMain.promptCleared, JSON.stringify(out.invalidateOnMain));
+  ok('改主标题给出提示', !!out.invalidateOnMain.status, out.invalidateOnMain.status);
+  ok('换人群作废旧方案', out.workerPlans.invalidatedFirst, out.workerPlans.invalidatedFirst);
   ok('工作党给 3 套', out.workerPlans.count === 3, `count=${out.workerPlans.count}`);
   ok('工作党用自己的版式', JSON.stringify(out.workerPlans.layoutIds) === JSON.stringify(out.workerPlans.expected), JSON.stringify(out.workerPlans.layoutIds));
   ok('不同人群版式不重复', out.workerPlans.distinctFromStudent, JSON.stringify(out.workerPlans.layoutIds));
-  ok('工作党口吻生效', out.workerPlans.promptHasWorkerVoice, out.workerPlans.promptHasWorkerVoice);
-
-  /* 单版式 */
+  ok('工作党口吻生效', out.workerPlans.hasWorkerVoice, out.workerPlans.hasWorkerVoice);
   ok('锁定版式先作废旧方案', out.singleLayout.invalidatedFirst, out.singleLayout.invalidatedFirst);
-  ok('锁版式只出 1 套', out.singleLayout.count === 1 && out.singleLayout.layoutId === 'industrial', JSON.stringify(out.singleLayout));
+  ok('锁版式只出 1 套', out.singleLayout.count === 1 && out.singleLayout.layoutId === 'giant', JSON.stringify(out.singleLayout));
+  ok('换产品清空全部方案', out.staleOnProduct.plansBefore > 0 && out.staleOnProduct.plansCleared && out.staleOnProduct.cardsHidden && out.staleOnProduct.promptCleared, JSON.stringify(out.staleOnProduct));
 
-  /* 降级与联动 */
-  ok('超长提示词降级复制', out.tooLongFallback.degraded, `${out.tooLongFallback.urlLength} / ${out.tooLongFallback.status}`);
-  ok('清空提示词禁用打开', out.promptToggle.emptyDisabled, out.promptToggle.emptyDisabled);
-  ok('填入提示词启用打开', out.promptToggle.filledEnabled, out.promptToggle.filledEnabled);
-  ok('换型号清空全部方案', out.staleOnModel.plansBefore > 0 && out.staleOnModel.plansCleared && out.staleOnModel.cardsHidden, JSON.stringify(out.staleOnModel));
-  ok('换型号清空提示词', out.staleOnModel.promptCleared && out.staleOnModel.openDisabled, JSON.stringify(out.staleOnModel));
+  /* 降级 */
+  ok('超长提示词降级复制', out.tooLong.degraded, `${out.tooLong.urlLength} / ${out.tooLong.status}`);
 
-  /* 原有功能 */
-  ok('12 套本地模板完好', out.templatesIntact.count === 12, `count=${out.templatesIntact.count}`);
-  ok('海报舞台正常', out.templatesIntact.hasStage, out.templatesIntact.hasStage);
-  ok('可画区块保留', out.templatesIntact.canvaBlock && out.templatesIntact.copyCardBtn, out.templatesIntact.canvaBlock);
+  /* 底部清单 */
+  ok('拍摄清单还在且在自己的区块里', out.footnoteContent.shots && out.footnoteContent.checkboxes === 4 && out.footnoteContent.insideOwnBlock, JSON.stringify(out.footnoteContent));
 
   /* 布局与异常 */
   ok('窄屏无横向溢出', narrow.scrollWidth <= narrow.docWidth + 1, `${narrow.docWidth}/${narrow.scrollWidth}`);
   ok('窄屏区块内无溢出', narrow.overflow.length === 0, JSON.stringify(narrow.overflow));
   ok('无运行时异常', runtimeErrors.length === 0, JSON.stringify(runtimeErrors.slice(0, 3)));
 
-  console.log('\n===== Accio 多套方案测试 =====');
+  console.log('\n===== 门店推广 · 封面方案测试 =====');
   checks.forEach(c => console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  → ' + c.detail}`));
   const failed = checks.filter(c => !c.pass);
   console.log(`\n合计 ${checks.length} 项，通过 ${checks.length - failed.length}，失败 ${failed.length}`);

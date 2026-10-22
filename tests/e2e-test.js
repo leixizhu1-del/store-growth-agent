@@ -10,6 +10,8 @@ const edge = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(p => fs.existsSync(p));
 const pageUrl = 'file:///' + path.resolve('index.html').replace(/\\/g, '/');
 const profile = path.join(process.env.TEMP || '/tmp', 'e2e-' + Date.now());
+const downloadDir = path.resolve('outputs/e2e-download');
+fs.mkdirSync(downloadDir, { recursive: true });
 
 function requestJson(url) {
   return new Promise((resolve, reject) => {
@@ -40,100 +42,123 @@ const child = spawn(edge, ['--headless=new', '--disable-gpu', '--no-first-run', 
     return r.result.value;
   };
   await send('Runtime.enable'); await send('Page.enable'); await send('DOM.enable');
+  await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloadDir, eventsEnabled: true });
   await wait(2400);
 
   const out = {};
 
-  // 1. 选产品
+  // 1. 进反馈与交接页，准备一份可归档的执行记录
   out.setup = await evalJs(`(async()=>{
     const $=id=>document.getElementById(id); const s=ms=>new Promise(r=>setTimeout(r,ms));
-    location.hash='#/promotion'; await s(400);
-    $('promotionProductQuery').value='MateBook D 16 SE';
-    $('promotionProductQuery').dispatchEvent(new Event('input',{bubbles:true}));
-    await s(700);
-    const c=document.querySelector('#promotionProductCandidates button'); if(c)c.click();
-    await s(600);
-    return { product: promotion.product?.name, main: $('promotionCoverMain').value };
+    location.hash='#/plan-feedback'; await s(600);
+    $('handoffOwner').value='晚班 李四';
+    $('cardNeed').value='经常出差，重视轻薄与屏幕';
+    return {
+      panels:[...document.querySelectorAll('[data-page="plan-feedback"] > .panel h3')].map(h=>h.textContent),
+      hasCard:!!$('cardPreview'),
+      cardRendered:!!$('cardPreview').firstElementChild
+    };
   })()`);
 
-  // 2. 真实键盘输入到图内文字（不是直接改 textContent）
-  out.keyboardEdit = await evalJs(`(async()=>{
-    const s=ms=>new Promise(r=>setTimeout(r,ms));
-    const el=document.getElementById('promotionPosterStage').querySelector('[data-field="main"]');
+  // 2. 真实键盘输入到执行记录（Input.insertText，而不是直接赋值）
+  const focusOk = await evalJs(`(()=>{
+    const el=document.getElementById('planOutcome');
     el.focus();
     const sel=window.getSelection(); const r=document.createRange();
     r.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(r);
-    await s(120);
-    return { focused: document.activeElement===el, selectedText: sel.toString().slice(0,12) };
+    return document.activeElement===el;
   })()`);
+  await send('Input.insertText', { text: '客户认可轻薄，价格还差约 800，约周六到店再试一次。' });
+  await wait(300);
+  out.keyboardEdit = { focused: focusOk, value: await evalJs(`document.getElementById('planOutcome').value`) };
 
-  // 用 Input.insertText 模拟真实输入
-  await send('Input.insertText', { text: '这一台先看三点就够' });
-  await wait(350);
-  out.afterType = await evalJs(`(()=>{
-    const $=id=>document.getElementById(id);
+  // 3. 真实点击「保存并归档」
+  await evalJs(`document.getElementById('saveOutcomeBtn').click()`);
+  await wait(400);
+  out.archive = await evalJs(`(()=>({
+    status:document.getElementById('outcomeStatus').textContent.slice(0,50),
+    savedAt:document.getElementById('outcomeSavedAt').textContent,
+    archiveHasOwner:document.getElementById('handoffArchive').textContent.includes('晚班 李四'),
+    archiveHasNote:document.getElementById('handoffArchive').textContent.includes('价格还差约 800'),
+    persisted:!!localStorage.getItem('pc-agent-handoff')
+  }))()`);
+
+  // 4. 刷新后归档仍在（跨会话交接能力）
+  await send('Page.reload'); await wait(1600);
+  out.afterReload = await evalJs(`(async()=>{
+    const s=ms=>new Promise(r=>setTimeout(r,ms));
+    location.hash='#/plan-feedback'; await s(700);
     return {
-      form: $('promotionCoverMain').value,
-      dom: document.getElementById('promotionPosterStage').querySelector('[data-field="main"]').textContent.trim(),
-      downloadDisabled: $('promotionCoverDownload').disabled
+      note:document.getElementById('planOutcome').value.slice(0,20),
+      owner:document.getElementById('handoffOwner').value,
+      archive:document.getElementById('handoffArchive').textContent.slice(0,40),
+      savedAt:document.getElementById('outcomeSavedAt').textContent
     };
   })()`);
 
-  // 3. 真实 file input 上传（DOM.setFileInputFiles）
+  // 5. 真实 file input 上传产品照片（门店推广页）
   const pngPath = path.resolve('tests/fixtures/sample-photo.png');
+  await evalJs(`location.hash='#/promotion'`); await wait(700);
   const doc = await send('DOM.getDocument', { depth: -1 });
   const q = await send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '#promotionCoverPhoto' });
   await send('DOM.setFileInputFiles', { nodeId: q.nodeId, files: [pngPath] });
-  await wait(1400);
-  out.upload = await evalJs(`(async()=>{
-    const s=ms=>new Promise(r=>setTimeout(r,ms));
-    setPosterTemplate('split', true);
-    await s(500);
-    const img=document.getElementById('promotionPosterStage').querySelector('.poster-photo');
-    return {
-      status: document.getElementById('promotionCoverPhotoStatus').textContent.slice(0,44),
-      photoUrlSet: !!coverState.photoUrl,
-      hasImg: !!img,
-      imgLoaded: img?img.naturalWidth>0:false,
-      imgSize: img?img.naturalWidth+'x'+img.naturalHeight:''
-    };
-  })()`);
+  await wait(1200);
+  out.upload = await evalJs(`(()=>({
+    status:document.getElementById('promotionCoverPhotoStatus').textContent.slice(0,40),
+    previewShown:!document.getElementById('promotionCoverPhotoPreview').hidden,
+    imgLoaded:(()=>{const i=document.querySelector('#promotionCoverPhotoPreview img');return i?i.naturalWidth>0:false;})()
+  }))()`);
 
-  // 4. 生成 + 真实触发下载按钮
-  out.download = await evalJs(`(async()=>{
-    const $=id=>document.getElementById(id); const s=ms=>new Promise(r=>setTimeout(r,ms));
-    $('promotionCoverMain').value='16寸大屏，表格不缩行';
-    renderPoster(); await s(200);
-    await generatePoster(); await s(900);
-    const btn=$('promotionCoverDownload');
-    const before={disabled:btn.disabled, href:!!$('promotionCoverSaveLink').href};
-    let clicked=false;
-    btn.click(); await s(200);
-    clicked=true;
-    return {
-      before, clicked,
-      status:$('promotionCoverStatus').textContent.slice(0,50),
-      linksShown:!$('promotionCoverLinks').hidden
-    };
-  })()`);
+  // 6. 真实点击下载 SVG / PNG
+  await evalJs(`location.hash='#/plan-feedback'`); await wait(700);
+  const before = fs.existsSync(downloadDir) ? fs.readdirSync(downloadDir).length : 0;
+  await evalJs(`document.getElementById('downloadSvgBtn').click()`);
+  await wait(1500);
+  await evalJs(`document.getElementById('downloadPngBtn').click()`);
+  await wait(2000);
+  const files = fs.readdirSync(downloadDir).filter(f => /\.(svg|png)$/i.test(f));
+  out.download = {
+    files,
+    grew: files.length > 0 && fs.readdirSync(downloadDir).length >= before,
+    status: await evalJs(`document.getElementById('exportStatus').textContent.slice(0,44)`),
+    links: await evalJs(`document.querySelectorAll('#exportLinks a').length`),
+    svgHasProduct: files.some(f => /\.svg$/i.test(f)) ? fs.readFileSync(path.join(downloadDir, files.find(f => /\.svg$/i.test(f))), 'utf8').includes('<svg') : false
+  };
 
-  // 5. 刷新后状态不残留（localStorage 里不该存图片）
+  // 7. localStorage 不应存图片二进制
   out.storage = await evalJs(`(()=>{
     const keys=Object.keys(localStorage);
-    const blobish=keys.filter(k=>/blob:|data:image/.test(localStorage.getItem(k)||''));
-    return { keyCount:keys.length, blobishKeys:blobish };
+    return { keyCount:keys.length, blobishKeys:keys.filter(k=>/blob:|data:image/.test(localStorage.getItem(k)||'')) };
+  })()`);
+
+  // 8. 情境题库折叠与筛选
+  await evalJs(`location.hash='#/consult'`); await wait(600);
+  out.scenario = await evalJs(`(async()=>{
+    const s=ms=>new Promise(r=>setTimeout(r,ms));
+    const box=document.getElementById('scenarioBankBox');
+    const closed=!box.open;
+    box.open=true; await s(120);
+    const all=document.querySelectorAll('.scenario-item').length;
+    const chip=[...document.querySelectorAll('.scenario-chip')].find(c=>c.dataset.scenario==='compat');
+    chip.click(); await s(150);
+    return {closedByDefault:closed, total:all, compat:document.querySelectorAll('.scenario-item').length, active:document.querySelector('.scenario-chip.is-active').dataset.scenario};
   })()`);
 
   out.runtimeErrors = errs;
   console.log(JSON.stringify(out, null, 2));
 
   const fail = [];
-  if (!out.keyboardEdit.focused) fail.push('图内文字无法聚焦');
-  if (out.afterType.form !== '这一台先看三点就够') fail.push('键盘输入未写回表单：' + out.afterType.form);
-  if (!out.upload.photoUrlSet || !out.upload.imgLoaded) fail.push('真实上传未生效');
-  if (out.download.before.disabled !== false) fail.push('生成后按钮仍禁用');
+  if (out.keyboardEdit.focused !== true) fail.push('执行记录无法聚焦');
+  if (!out.keyboardEdit.value.includes('价格还差约 800')) fail.push('键盘输入未写入：' + out.keyboardEdit.value.slice(0, 30));
+  if (!out.archive.persisted || !out.archive.archiveHasOwner) fail.push('归档未生效');
+  if (!out.afterReload.note.includes('价格还差约')) fail.push('刷新后记录丢失：' + out.afterReload.note);
+  if (!out.upload.previewShown || !out.upload.imgLoaded) fail.push('真实上传未生效');
+  if (!out.download.files.length) fail.push('下载未产生文件');
+  if (!out.download.svgHasProduct) fail.push('下载的 SVG 内容异常');
   if (out.storage.blobishKeys.length) fail.push('图片被写入 localStorage');
-  if (errs.length) fail.push('有运行时异常');
+  if (!out.scenario.closedByDefault) fail.push('题库默认未折叠');
+  if (out.scenario.compat >= out.scenario.total) fail.push('题库分类筛选无效');
+  if (errs.length) fail.push('有运行时异常：' + errs[0].slice(0, 80));
   ws.close(); child.kill();
   if (fail.length) { console.error('\nFAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
   console.log('\nALL PASS');

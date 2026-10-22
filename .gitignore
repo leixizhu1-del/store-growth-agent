@@ -1,3 +1,11 @@
 .workbuddy/
 outputs/
 .tmp-check.js
+
+# 本地临时脚本与探针（不参与版本管理）
+.probe*.js
+.tmp-*
+.tmp/
+
+# 本地预览部署标记（含本机绝对路径，不入库）
+.wbapp_*.genie

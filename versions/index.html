@@ -53,11 +53,21 @@
   <a class="card current" href="../index.html">
     <div class="row">
       <span class="ver">现役</span>
-      <span class="name">v2 · 12 套海报模板</span>
-      <span class="badge on">线上用这个</span>
+      <span class="name">v3 · 五板块收口版</span>
+      <span class="badge on">推荐用这个</span>
     </div>
-    <p class="desc">封面改为 12 套 HTML 模板，图上文字点击即可修改，导出 1080×1440 PNG。免登录、无外部依赖、无费用。</p>
-    <p class="meta">index.html · 2115 行 · 261 KB · 提交 f28a18b</p>
+    <p class="desc">页面从 11 个路由收口到 8 个：删掉「内容生成」「演示物料」「邀约话术」三个页面，内容分别并入咨询中心、反馈与交接、跟进时间表。产品报价页接入 141 条官方价格参考库（A/B/C 三档），手册录价后必须逐项勾选确认才算入总额。咨询中心新增 23 条可折叠情境题库，反馈与交接新增可下载 SVG/PNG 的产品组合介绍卡与带时间戳的归档摘要。</p>
+    <p class="meta">index.html · 2383 行 · 305 KB · 8 个路由 · 提交待推送</p>
+  </a>
+
+  <a class="card" href="v2-poster-12tpl/index.html">
+    <div class="row">
+      <span class="ver">v2</span>
+      <span class="name">12 套海报模板</span>
+      <span class="badge">存档</span>
+    </div>
+    <p class="desc">封面用 12 套 HTML 模板，图上文字点击即可修改，导出 1080×1440 PNG。免登录、无外部依赖、无费用。后续因模板数量过多反而干扰现场使用，v3 改回「选版式 → 生成提示词 → 到图片站出图」的轻量路线。</p>
+    <p class="meta">v2-poster-12tpl/index.html · 2818 行 · 302 KB · 提交 eb9b460</p>
   </a>
 
   <a class="card" href="v1-canvas-3tpl/index.html">
@@ -73,29 +83,29 @@
   <a class="card" href="v0-canvas-basic/index.html">
     <div class="row">
       <span class="ver">v0</span>
-      <span class="name">Canvas 单版式（线上现役前一版）</span>
+      <span class="name">Canvas 单版式（可用基线）</span>
       <span class="badge">存档</span>
     </div>
     <p class="desc">最早的可用版本，封面只有一种 Canvas 版式，无版式切换。</p>
     <p class="meta">v0-canvas-basic/index.html · 1241 行 · 212 KB · 提交 7a950a4（= 标签 v0.1-可用基线）</p>
   </a>
 
-  <h2>三个版本的区别</h2>
+  <h2>四个版本的区别</h2>
   <table>
-    <thead><tr><th>项目</th><th>v0</th><th>v1</th><th>v2（现役）</th></tr></thead>
+    <thead><tr><th>项目</th><th>v0</th><th>v1</th><th>v2</th><th>v3（现役）</th></tr></thead>
     <tbody>
-      <tr><td>封面版式数量</td><td>1 种</td><td>3 种</td><td>12 套</td></tr>
-      <tr><td>版式切换</td><td>无</td><td>三个按钮</td><td>12 张缩略图，所见即所得</td></tr>
-      <tr><td>图上改字</td><td>无</td><td>无</td><td>点击即改，实时生效</td></tr>
-      <tr><td>导出方式</td><td>Canvas → PNG</td><td>Canvas → PNG</td><td>HTML → SVG → PNG</td></tr>
-      <tr><td>中文断行</td><td>手算字符宽度</td><td>手算字符宽度</td><td>浏览器原生 + 均衡断行</td></tr>
-      <tr><td>产品数量</td><td>18</td><td>18</td><td>18</td></tr>
-      <tr><td>路由数量</td><td>11</td><td>11</td><td>11</td></tr>
+      <tr><td>页面路由</td><td>11</td><td>11</td><td>11</td><td>8</td></tr>
+      <tr><td>封面方案</td><td>Canvas 1 种</td><td>Canvas 3 种</td><td>HTML 12 套</td><td>8 版式 × 6 人群，出提示词外跳</td></tr>
+      <tr><td>官方价格参考库</td><td>无</td><td>无</td><td>无</td><td>141 条 / 65 产品 / A·B·C 三档</td></tr>
+      <tr><td>报价录价规则</td><td>可手填</td><td>可手填</td><td>可手填</td><td>手填后必须逐项勾选才入总额</td></tr>
+      <tr><td>情境题库</td><td>无</td><td>无</td><td>无</td><td>23 条 × 8 分类，可折叠筛选</td></tr>
+      <tr><td>产品介绍卡</td><td>无</td><td>无</td><td>无</td><td>本地 SVG/PNG 下载</td></tr>
+      <tr><td>交接归档</td><td>无</td><td>无</td><td>无</td><td>带时间戳，刷新仍在</td></tr>
     </tbody>
   </table>
 
   <div class="note">
-    <p style="margin:0"><b>关于改版</b>：新版只在<code>dev</code>分支上开发，<code>main</code>分支（线上）保持不变，直到验证通过才合并。三个版本各自独立，随时可以打开旧版对照。</p>
+    <p style="margin:0"><b>关于改版</b>：新版只在<code>dev</code>分支上开发，<code>main</code>分支（线上）保持不变，直到验证通过才合并。四个版本各自独立，随时可以打开旧版对照。</p>
     <p style="margin:10px 0 0"><b>怎么回到旧版</b>：直接打开对应目录的<code>index.html</code>即可，不需要切换分支。如果要让线上回到旧版，见《版本与协作手册》第六条。</p>
   </div>
 
